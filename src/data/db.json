@@ -770,6 +770,28 @@
   ],
   "pageViews": [
     {
+      "id": "pv-1792881727455-262",
+      "sessionId": "sess_1792871541438_ql8wrvk",
+      "path": "/",
+      "title": "",
+      "referrer": "http://localhost:3000/farm",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-10-24T22:42:07.455Z"
+    },
+    {
+      "id": "pv-1792872183094-396",
+      "sessionId": "sess_1792872183073_g420dcz",
+      "path": "/confirmation/EM-0126-A-9906",
+      "title": "Eathamozhy Coconut Farm | Authentic GI-Tagged Saplings & Traceability",
+      "referrer": "http://localhost:3000/confirmation/EM-0126-A-9906?name=raja+sekar+k&qty=200&batch=EM-0126-A&amount=30000&mobile=9486880641&date=2026-10-31&courier=ST+Couriers&hub=Tiruvannamalai&addr=Periyakilambadi%0ANo+38%2C+Kanyakumari%2C+Tamil+Nadu+-+624825",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1127x732",
+      "timestamp": "2026-10-24T20:03:03.094Z"
+    },
+    {
       "id": "pv-1792871722739-583",
       "sessionId": "sess_1792871219224_kcujkix",
       "path": "/",
@@ -893,12 +915,24 @@
   ],
   "visitorJourneys": [
     {
-      "sessionId": "sess_1792871541438_ql8wrvk",
-      "startedAt": "2026-10-24T19:52:21.501Z",
-      "lastActiveAt": "2026-10-24T19:52:44.614Z",
+      "sessionId": "sess_1792872183073_g420dcz",
+      "startedAt": "2026-10-24T20:03:03.094Z",
+      "lastActiveAt": "2026-10-24T20:03:03.094Z",
       "device": "desktop",
       "referrerSource": "localhost",
-      "pathCount": 5,
+      "pathCount": 1,
+      "steps": [
+        "/confirmation/EM-0126-A-9906"
+      ],
+      "convertedToOrder": true
+    },
+    {
+      "sessionId": "sess_1792871541438_ql8wrvk",
+      "startedAt": "2026-10-24T19:52:21.501Z",
+      "lastActiveAt": "2026-10-24T22:42:07.455Z",
+      "device": "desktop",
+      "referrerSource": "localhost",
+      "pathCount": 6,
       "steps": [
         "/batches",
         "/",
