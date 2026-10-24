@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
+import AnalyticsTracker from '@/components/AnalyticsTracker';
+import ExternalAnalytics from '@/components/ExternalAnalytics';
 
 export const metadata: Metadata = {
   title: 'Eathamozhy Coconut Farm | Authentic GI-Tagged Saplings & Traceability',
@@ -25,8 +27,10 @@ export default function RootLayout({
           rel="stylesheet" 
           href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" 
         />
+        <ExternalAnalytics />
       </head>
       <body className="bg-light">
+        <AnalyticsTracker />
         {/* Active Page Aware Navigation */}
         <Navbar />
 
@@ -34,6 +38,7 @@ export default function RootLayout({
         <main className="min-vh-100">
           {children}
         </main>
+
 
         {/* Desktop Floating WhatsApp Assistant Button */}
         <a 

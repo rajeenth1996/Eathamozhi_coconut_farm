@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import AdminLogoutButton from '@/components/AdminLogoutButton';
 
 export default function AdminDashboardPage() {
   const [batches, setBatches] = useState<any[]>([]);
@@ -45,7 +46,14 @@ export default function AdminDashboardPage() {
               <span className="badge bg-danger mb-1">SECURE ADMIN PORTAL</span>
               <h1 className="fw-bold mb-0 text-light">Eathamozhy Farm Admin Dashboard</h1>
             </div>
-            <div className="d-flex align-items-center gap-2">
+            <div className="d-flex align-items-center gap-2 flex-wrap">
+              <span className="badge bg-dark border border-secondary text-light px-2 py-1 small d-none d-md-inline-flex align-items-center gap-1">
+                <i className="bi bi-shield-check text-success"></i> Administrator
+              </span>
+              <Link href="/admin/analytics" className="btn btn-warning fw-bold btn-sm d-inline-flex align-items-center gap-1 shadow-sm text-dark">
+                <i className="bi bi-graph-up-arrow fs-6"></i>
+                <span>Visitor Analytics</span>
+              </Link>
               <a 
                 href="/api/admin/export?type=all" 
                 download
@@ -53,11 +61,12 @@ export default function AdminDashboardPage() {
                 title="Download all farm records in Excel spreadsheet"
               >
                 <i className="bi bi-file-earmark-excel-fill fs-6"></i>
-                <span>Download All Data (Excel)</span>
+                <span>Download (Excel)</span>
               </a>
               <Link href="/" className="btn btn-outline-light btn-sm">
-                <i className="bi bi-box-arrow-right me-1"></i> Exit Admin
+                <i className="bi bi-house-door me-1"></i> Public Site
               </Link>
+              <AdminLogoutButton />
             </div>
           </div>
         </div>
@@ -244,6 +253,16 @@ export default function AdminDashboardPage() {
                 <p className="text-secondary small mb-3">Adjust inventory for damaged/rejected saplings with mandatory audit log reasons.</p>
                 <Link href="/admin/inventory" className="btn btn-outline-secondary fw-bold mt-auto">
                   Adjust Inventory Audit <i className="bi bi-arrow-right ms-1"></i>
+                </Link>
+              </div>
+            </div>
+
+            <div className="col-md-4">
+              <div className="card border-0 shadow-sm rounded-4 p-4 bg-white h-100 border-start border-warning border-4">
+                <h5 className="fw-bold text-dark mb-2"><i className="bi bi-graph-up-arrow text-warning me-2"></i> Visitor &amp; Navigation Analytics</h5>
+                <p className="text-secondary small mb-3">Real-time visitor counts, customer purchase funnel, live navigation trails &amp; WhatsApp acquisition.</p>
+                <Link href="/admin/analytics" className="btn btn-warning text-dark fw-bold mt-auto">
+                  Explore Visitor Analytics <i className="bi bi-arrow-right ms-1"></i>
                 </Link>
               </div>
             </div>

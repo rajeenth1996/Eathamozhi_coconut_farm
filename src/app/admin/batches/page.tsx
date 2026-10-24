@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { getSaplingMetrics } from '@/lib/dataStore';
+import { getSaplingMetrics } from '@/lib/metrics';
 
 export default function AdminBatchesPage() {
   const [batches, setBatches] = useState<any[]>([]);
@@ -251,22 +251,15 @@ export default function AdminBatchesPage() {
         body: formData
       });
       const data = await res.json();
-      if (res.ok && data.urls) {
-        setEditImages(prev => [...prev, ...data.urls]);
-        alert(`Successfully added ${data.urls.length} photo(s)!`);
+      if (res.ok && (data.urls || data.url)) {
+        const newUrls = data.urls || [data.url];
+        setEditImages(prev => [...prev, ...newUrls]);
+        alert(`Successfully uploaded ${newUrls.length} photo(s) to Cloudinary!`);
       } else {
-        // Fallback to FileReader if server upload fails
-        files.forEach(file => {
-          const reader = new FileReader();
-          reader.onload = (evt) => {
-            const url = evt.target?.result as string;
-            if (url) setEditImages(prev => [...prev, url]);
-          };
-          reader.readAsDataURL(file);
-        });
+        alert(data.error || 'Failed to upload images to cloud storage');
       }
     } catch (err) {
-      alert('Error uploading images');
+      alert('Network error while uploading images to cloud storage');
     } finally {
       setUploading(false);
     }

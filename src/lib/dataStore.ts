@@ -102,6 +102,31 @@ export interface Enquiry {
   createdAt: string;
 }
 
+export interface PageViewEvent {
+  id: string;
+  sessionId: string;
+  path: string;
+  title?: string;
+  referrer?: string;
+  referrerSource: string;
+  device: 'mobile' | 'tablet' | 'desktop';
+  screenSize?: string;
+  timestamp: string;
+}
+
+export interface VisitorJourney {
+  sessionId: string;
+  startedAt: string;
+  lastActiveAt: string;
+  device: 'mobile' | 'tablet' | 'desktop';
+  referrerSource: string;
+  pathCount: number;
+  steps: string[];
+  convertedToOrder: boolean;
+  orderId?: string;
+}
+
+
 // Helper to compute age & height dynamically from Seeded Date
 export function getSaplingMetrics(seededDateStr: string) {
   if (!seededDateStr) return { age: 'N/A', height: 'N/A', monthsCount: 0 };
@@ -904,6 +929,9 @@ let enquiries: Enquiry[] = [
   }
 ];
 
+let pageViews: PageViewEvent[] = [];
+let visitorJourneys: VisitorJourney[] = [];
+
 // Persistent File Storage (JSON DB in src/data/db.json)
 function getNodeModule(moduleName: string) {
   if (typeof window === 'undefined' && typeof process !== 'undefined' && process.versions?.node) {
@@ -956,6 +984,8 @@ function loadFromDb() {
       if (Array.isArray(data.enquiries)) enquiries = data.enquiries;
       if (Array.isArray(data.reviews)) reviews = data.reviews;
       if (Array.isArray(data.faqs) && data.faqs.length > 0) faqs = data.faqs;
+      if (Array.isArray(data.pageViews)) pageViews = data.pageViews;
+      if (Array.isArray(data.visitorJourneys)) visitorJourneys = data.visitorJourneys;
     }
   } catch (err) {
     // Non-fatal fallback to initial data
@@ -972,7 +1002,9 @@ function saveToDb() {
       adjustments,
       enquiries,
       reviews,
-      faqs
+      faqs,
+      pageViews: pageViews.slice(0, 1000),
+      visitorJourneys: visitorJourneys.slice(0, 500)
     };
     const jsonStr = JSON.stringify(payload, null, 2);
 
@@ -1449,5 +1481,132 @@ export const DataStore = {
   getFaqs: () => {
     loadFromDb();
     return faqs;
+  },
+
+  recordPageView: (event: {
+    sessionId: string;
+    path: string;
+    title?: string;
+    referrer?: string;
+    referrerSource?: string;
+    device?: 'mobile' | 'tablet' | 'desktop';
+    screenSize?: string;
+    orderId?: string;
+  }) => {
+    loadFromDb();
+    const timestamp = new Date().toISOString();
+    const id = `pv-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
+    const pageView: PageViewEvent = {
+      id,
+      sessionId: event.sessionId,
+      path: event.path,
+      title: event.title,
+      referrer: event.referrer,
+      referrerSource: event.referrerSource || 'Direct / Bookmark',
+      device: event.device || 'desktop',
+      screenSize: event.screenSize,
+      timestamp,
+    };
+
+    pageViews.unshift(pageView);
+    if (pageViews.length > 1000) pageViews.pop();
+
+    // Update or create Visitor Journey
+    let journey = visitorJourneys.find(j => j.sessionId === event.sessionId);
+    if (!journey) {
+      journey = {
+        sessionId: event.sessionId,
+        startedAt: timestamp,
+        lastActiveAt: timestamp,
+        device: event.device || 'desktop',
+        referrerSource: event.referrerSource || 'Direct / Bookmark',
+        pathCount: 1,
+        steps: [event.path],
+        convertedToOrder: Boolean(event.orderId || event.path.startsWith('/confirmation')),
+        orderId: event.orderId,
+      };
+      visitorJourneys.unshift(journey);
+    } else {
+      journey.lastActiveAt = timestamp;
+      journey.pathCount = (journey.pathCount || 0) + 1;
+      if (!journey.steps.includes(event.path)) {
+        journey.steps.push(event.path);
+      }
+      if (event.orderId || event.path.startsWith('/confirmation')) {
+        journey.convertedToOrder = true;
+        if (event.orderId) journey.orderId = event.orderId;
+      }
+    }
+
+    if (visitorJourneys.length > 500) visitorJourneys.pop();
+    saveToDb();
+    return pageView;
+  },
+
+  getAnalyticsSummary: () => {
+    loadFromDb();
+    const now = new Date();
+    const todayStr = now.toISOString().split('T')[0];
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+    const totalViews = pageViews.length;
+    const viewsToday = pageViews.filter(pv => pv.timestamp.startsWith(todayStr)).length;
+    const views7d = pageViews.filter(pv => pv.timestamp >= sevenDaysAgo).length;
+
+    const uniqueSessions = visitorJourneys.length;
+    const sessionsToday = visitorJourneys.filter(j => j.startedAt.startsWith(todayStr)).length;
+    const convertedSessions = visitorJourneys.filter(j => j.convertedToOrder).length;
+
+    // Top Pages
+    const pageCounts: { [path: string]: number } = {};
+    for (const pv of pageViews) {
+      pageCounts[pv.path] = (pageCounts[pv.path] || 0) + 1;
+    }
+    const topPages = Object.entries(pageCounts)
+      .map(([path, count]) => ({ path, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10);
+
+    // Traffic Sources
+    const sourceCounts: { [src: string]: number } = {};
+    for (const j of visitorJourneys) {
+      const src = j.referrerSource || 'Direct / Bookmark';
+      sourceCounts[src] = (sourceCounts[src] || 0) + 1;
+    }
+
+    // Devices
+    const deviceCounts: { [dev: string]: number } = { mobile: 0, desktop: 0, tablet: 0 };
+    for (const j of visitorJourneys) {
+      const dev = j.device || 'desktop';
+      deviceCounts[dev] = (deviceCounts[dev] || 0) + 1;
+    }
+
+    // Funnel
+    const funnel = {
+      home: visitorJourneys.filter(j => j.steps.some(s => s === '/')).length,
+      motherTrees: visitorJourneys.filter(j => j.steps.some(s => s.startsWith('/farm') || s.startsWith('/parent-palm'))).length,
+      batches: visitorJourneys.filter(j => j.steps.some(s => s.startsWith('/batches'))).length,
+      checkout: visitorJourneys.filter(j => j.steps.some(s => s.startsWith('/book'))).length,
+      converted: convertedSessions,
+    };
+
+    return {
+      kpis: {
+        totalViews,
+        viewsToday,
+        views7d,
+        uniqueSessions,
+        sessionsToday,
+        convertedSessions,
+        conversionRate: uniqueSessions > 0 ? ((convertedSessions / uniqueSessions) * 100).toFixed(1) : '0',
+      },
+      topPages,
+      trafficSources: sourceCounts,
+      devices: deviceCounts,
+      funnel,
+      recentJourneys: visitorJourneys.slice(0, 20),
+    };
   }
 };
+

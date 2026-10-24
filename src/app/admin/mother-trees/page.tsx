@@ -145,10 +145,12 @@ export default function AdminMotherTreesPage() {
         body: formData
       });
       const data = await res.json();
-      if (res.ok && data.urls && data.urls.length > 0) {
+      const uploadedUrls: string[] = data.urls || (data.url ? [data.url] : []);
+
+      if (res.ok && uploadedUrls.length > 0) {
         const newImages = makePrimaryOnUpload
-          ? [...data.urls, ...editTreeImages]
-          : [...editTreeImages, ...data.urls];
+          ? [...uploadedUrls, ...editTreeImages]
+          : [...editTreeImages, ...uploadedUrls];
         setEditTreeImages(newImages);
 
         // Auto-save updated photos immediately to DB so they persist across all pages
@@ -168,32 +170,12 @@ export default function AdminMotherTreesPage() {
           console.error('Error auto-persisting uploaded images:', saveErr);
         }
 
-        alert(`Successfully uploaded and saved ${data.urls.length} photo(s)! ${makePrimaryOnUpload ? 'Set as new primary cover photo.' : 'Added to gallery.'}\nAll pages now reflect the updated image.`);
+        alert(`Successfully uploaded ${uploadedUrls.length} photo(s) to Cloudinary! ${makePrimaryOnUpload ? 'Set as new primary cover photo.' : 'Added to gallery.'}\nAll pages now reflect the updated image.`);
       } else {
-        // Fallback to FileReader base64 if server upload cannot write disk
-        files.forEach(file => {
-          const reader = new FileReader();
-          reader.onload = async (evt) => {
-            const url = evt.target?.result as string;
-            if (url) {
-              const newImages = makePrimaryOnUpload ? [url, ...editTreeImages] : [...editTreeImages, url];
-              setEditTreeImages(newImages);
-              try {
-                await fetch(`/api/parent-palms/${editingTree.code}`, {
-                  method: 'PATCH',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ images: newImages })
-                });
-                fetchPalms();
-              } catch {}
-            }
-          };
-          reader.readAsDataURL(file);
-        });
-        alert(`Uploaded ${files.length} photo(s).`);
+        alert(data.error || 'Failed to upload images to cloud storage');
       }
     } catch (err) {
-      alert('Error uploading images');
+      alert('Network error while uploading images to cloud storage');
     } finally {
       setUploading(false);
       e.target.value = '';

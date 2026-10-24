@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { DataStore } from '@/lib/dataStore';
+import { ReviewCreateSchema, validateRequest } from '@/lib/validations';
+import { checkRateLimit, rateLimitResponse } from '@/lib/rateLimit';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,16 +15,28 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  // 1. Rate Limiting: Max 5 reviews per 10 minutes per IP
+  const rateLimit = checkRateLimit(request, 'review');
+  if (!rateLimit.success) {
+    return rateLimitResponse(rateLimit, 'Too many review submissions. Please wait before submitting another review.');
+  }
+
   try {
     const body = await request.json();
-    if (!body.customerName || !body.comment) {
+
+    // 2. Input Validation with Zod
+    const validation = validateRequest(ReviewCreateSchema, body);
+    if (!validation.success) {
       return NextResponse.json(
-        { error: 'Customer name and review comment are required' },
+        {
+          error: validation.error,
+          issues: validation.issues,
+        },
         { status: 400 }
       );
     }
 
-    const newReview = DataStore.addReview(body);
+    const newReview = DataStore.addReview(validation.data);
     return NextResponse.json(newReview, { status: 201 });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Failed to create review' }, { status: 400 });
