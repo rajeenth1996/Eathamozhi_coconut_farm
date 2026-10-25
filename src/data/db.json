@@ -179,6 +179,9 @@
       "batchCode": "EM-0126-A",
       "parentPalmId": "mp-1",
       "parentPalmCode": "EM-MP-001",
+      "parentPalmCodes": [
+        "EM-MP-001"
+      ],
       "name": "January 2026 Ready Batch (EM-0126-A)",
       "harvestDate": "2025-09-10",
       "seededDate": "2025-09-25",
@@ -191,9 +194,6 @@
       "viewsCount": 120,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909327/eathamozhi-farm/batches/25b2b6ad-0a44-47b6-a4b4-a45d1e426cca-1792909327401.jpg"
-      ],
-      "parentPalmCodes": [
-        "EM-MP-001"
       ]
     },
     {
@@ -201,6 +201,9 @@
       "batchCode": "EM-0226-B",
       "parentPalmId": "mp-2",
       "parentPalmCode": "EM-MP-002",
+      "parentPalmCodes": [
+        "EM-MP-002"
+      ],
       "name": "February 2026 Prime Batch (EM-0226-B)",
       "harvestDate": "2025-10-05",
       "seededDate": "2025-10-20",
@@ -213,9 +216,6 @@
       "viewsCount": 120,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909391/eathamozhi-farm/batches/5700477e-967d-4133-9a99-76560430a143-1792909391250.jpg"
-      ],
-      "parentPalmCodes": [
-        "EM-MP-002"
       ]
     },
     {
@@ -223,6 +223,9 @@
       "batchCode": "EM-0326-C",
       "parentPalmId": "mp-3",
       "parentPalmCode": "EM-MP-003",
+      "parentPalmCodes": [
+        "EM-MP-003"
+      ],
       "name": "March 2026 Coastal Batch (EM-0326-C)",
       "harvestDate": "2025-11-01",
       "seededDate": "2025-11-15",
@@ -235,9 +238,6 @@
       "viewsCount": 120,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792893909/eathamozhy-farm/batches/74cbbdcb-f064-459c-9267-d045737e799c-1792893907395.jpg"
-      ],
-      "parentPalmCodes": [
-        "EM-MP-003"
       ]
     },
     {
@@ -245,6 +245,9 @@
       "batchCode": "EM-0426-D",
       "parentPalmId": "mp-4",
       "parentPalmCode": "EM-MP-004",
+      "parentPalmCodes": [
+        "EM-MP-004"
+      ],
       "name": "April 2026 Central Batch (EM-0426-D)",
       "harvestDate": "2025-12-01",
       "seededDate": "2025-12-15",
@@ -257,9 +260,6 @@
       "viewsCount": 120,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909327/eathamozhi-farm/batches/25b2b6ad-0a44-47b6-a4b4-a45d1e426cca-1792909327401.jpg"
-      ],
-      "parentPalmCodes": [
-        "EM-MP-004"
       ]
     },
     {
@@ -267,6 +267,9 @@
       "batchCode": "EM-0526-E",
       "parentPalmId": "mp-5",
       "parentPalmCode": "EM-MP-005",
+      "parentPalmCodes": [
+        "EM-MP-005"
+      ],
       "name": "May 2026 Summer Batch (EM-0526-E)",
       "harvestDate": "2026-01-05",
       "seededDate": "2026-01-20",
@@ -279,9 +282,6 @@
       "viewsCount": 120,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909391/eathamozhi-farm/batches/5700477e-967d-4133-9a99-76560430a143-1792909391250.jpg"
-      ],
-      "parentPalmCodes": [
-        "EM-MP-005"
       ]
     },
     {
@@ -289,6 +289,9 @@
       "batchCode": "EM-0626-F",
       "parentPalmId": "mp-6",
       "parentPalmCode": "EM-MP-006",
+      "parentPalmCodes": [
+        "EM-MP-006"
+      ],
       "name": "June 2026 Monsoon Pre-Booking (EM-0626-F)",
       "harvestDate": "2026-02-01",
       "seededDate": "2026-02-15",
@@ -301,9 +304,6 @@
       "viewsCount": 120,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792893909/eathamozhy-farm/batches/74cbbdcb-f064-459c-9267-d045737e799c-1792893907395.jpg"
-      ],
-      "parentPalmCodes": [
-        "EM-MP-006"
       ]
     },
     {
@@ -311,6 +311,9 @@
       "batchCode": "EM-0726-G",
       "parentPalmId": "mp-7",
       "parentPalmCode": "EM-MP-007",
+      "parentPalmCodes": [
+        "EM-MP-007"
+      ],
       "name": "July 2026 Heritage Giant Batch (EM-0726-G)",
       "harvestDate": "2026-03-01",
       "seededDate": "2026-03-15",
@@ -323,9 +326,6 @@
       "viewsCount": 120,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909327/eathamozhi-farm/batches/25b2b6ad-0a44-47b6-a4b4-a45d1e426cca-1792909327401.jpg"
-      ],
-      "parentPalmCodes": [
-        "EM-MP-007"
       ]
     },
     {
@@ -333,6 +333,9 @@
       "batchCode": "EM-0826-H",
       "parentPalmId": "mp-8",
       "parentPalmCode": "EM-MP-008",
+      "parentPalmCodes": [
+        "EM-MP-008"
+      ],
       "name": "August 2026 Fast Growth Batch (EM-0826-H)",
       "harvestDate": "2026-04-01",
       "seededDate": "2026-04-15",
@@ -345,9 +348,6 @@
       "viewsCount": 120,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909391/eathamozhi-farm/batches/5700477e-967d-4133-9a99-76560430a143-1792909391250.jpg"
-      ],
-      "parentPalmCodes": [
-        "EM-MP-008"
       ]
     },
     {
@@ -355,6 +355,9 @@
       "batchCode": "EM-0926-I",
       "parentPalmId": "mp-9",
       "parentPalmCode": "EM-MP-009",
+      "parentPalmCodes": [
+        "EM-MP-009"
+      ],
       "name": "September 2026 Deep Root Batch (EM-0926-I)",
       "harvestDate": "2026-05-01",
       "seededDate": "2026-05-15",
@@ -367,9 +370,6 @@
       "viewsCount": 120,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792893909/eathamozhy-farm/batches/74cbbdcb-f064-459c-9267-d045737e799c-1792893907395.jpg"
-      ],
-      "parentPalmCodes": [
-        "EM-MP-009"
       ]
     },
     {
@@ -377,6 +377,9 @@
       "batchCode": "EM-1026-J",
       "parentPalmId": "mp-10",
       "parentPalmCode": "EM-MP-010",
+      "parentPalmCodes": [
+        "EM-MP-010"
+      ],
       "name": "October 2026 Sweet Water Batch (EM-1026-J)",
       "harvestDate": "2026-06-01",
       "seededDate": "2026-06-15",
@@ -389,9 +392,6 @@
       "viewsCount": 120,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909327/eathamozhi-farm/batches/25b2b6ad-0a44-47b6-a4b4-a45d1e426cca-1792909327401.jpg"
-      ],
-      "parentPalmCodes": [
-        "EM-MP-010"
       ]
     }
   ],
@@ -401,19 +401,45 @@
   "reviews": [],
   "faqs": [
     {
+      "_id": "6adcbf26b8d60f4e7de952eb",
       "id": "faq-1",
-      "question": "Where are your saplings grown?",
+      "__v": 0,
       "answer": "All our coconut saplings are raised directly on our own ancestral farm in Eathamozhi, Kanyakumari district, Tamil Nadu.",
-      "category": "General"
+      "category": "General",
+      "question": "Where are your saplings grown?"
     },
     {
+      "_id": "6adcbf26b8d60f4e7de952ec",
       "id": "faq-2",
-      "question": "How are saplings packaged for long-distance transport?",
+      "__v": 0,
       "answer": "Saplings are carefully rooted in nutrient-rich growing media and wrapped with protective moisture-retaining material to safeguard the fronds and collar stem during transit. Each consignment is securely packed and dispatched via trusted freight partners.",
-      "category": "Logistics"
+      "category": "Logistics",
+      "question": "How are saplings packaged for long-distance transport?"
     }
   ],
   "pageViews": [
+    {
+      "id": "pv-1792914747275-718",
+      "sessionId": "sess_1792913091087_ndcxpjn",
+      "path": "/farm",
+      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
+      "referrer": "http://localhost:3000/farm",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1536x695",
+      "timestamp": "2026-10-25T07:52:27.275Z"
+    },
+    {
+      "id": "pv-1792914691595-364",
+      "sessionId": "sess_1792913091087_ndcxpjn",
+      "path": "/farm",
+      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
+      "referrer": "http://localhost:3000/farm",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1536x695",
+      "timestamp": "2026-10-25T07:51:31.595Z"
+    },
     {
       "id": "pv-1792913284802-750",
       "sessionId": "sess_1792913271876_lgasyu8",
@@ -542,10 +568,10 @@
     {
       "sessionId": "sess_1792913091087_ndcxpjn",
       "startedAt": "2026-10-25T07:24:51.345Z",
-      "lastActiveAt": "2026-10-25T07:24:51.345Z",
+      "lastActiveAt": "2026-10-25T07:52:27.275Z",
       "device": "desktop",
       "referrerSource": "localhost",
-      "pathCount": 1,
+      "pathCount": 3,
       "steps": [
         "/farm"
       ],
