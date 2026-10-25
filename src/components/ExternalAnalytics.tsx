@@ -4,7 +4,7 @@ import Script from 'next/script';
 
 export default function ExternalAnalytics() {
   const clarityId = process.env.NEXT_PUBLIC_CLARITY_ID;
-  const gaId = process.env.NEXT_PUBLIC_GA_ID;
+  const gaId = process.env.NEXT_PUBLIC_GA_ID || process.env.NEXT_PUBLIC_GTAG_ID || process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID;
 
   return (
     <>

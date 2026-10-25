@@ -43,18 +43,21 @@ export const metadata: Metadata = {
     title: 'Eathamozhy Coconut Farm | Certified Coconut Seedlings & Saplings',
     description: 'Mainland India’s only GI-Tagged coconut cultivar. Buy authentic coconut seedlings online directly from the farmer.',
   },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
+    robots: {
       index: true,
       follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
     },
-  },
-};
+    verification: {
+      google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || undefined,
+    },
+  };
 
 export default function RootLayout({
   children,
