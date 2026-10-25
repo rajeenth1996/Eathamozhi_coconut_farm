@@ -13,9 +13,33 @@ export default function Home() {
 
   return (
     <>
-      {/* 1. LUXURY HERO SECTION */}
-      <section className="position-relative hero-ambient-mesh text-white py-5 overflow-hidden border-bottom border-success border-opacity-25">
-        <div className="container position-relative py-5">
+      {/* 1. LUXURY HERO SECTION WITH SILENT AMBIENT BACKGROUND VIDEO */}
+      <section className="position-relative text-white py-5 overflow-hidden border-bottom border-success border-opacity-25" style={{ minHeight: '82vh', display: 'flex', alignItems: 'center' }}>
+        
+        {/* Silent Background Video of Slow-Moving Coconut Trees */}
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          poster="/images/placeholder.png"
+          className="position-absolute top-0 start-0 w-100 h-100 object-fit-cover"
+          style={{ zIndex: 0, filter: 'brightness(0.58) saturate(1.2) contrast(1.05)' }}
+        >
+          <source src="/images/placeholder_video.mp4" type="video/mp4" />
+        </video>
+
+        {/* Ambient Deep Forest Overlay for Crisp High-Contrast Text Legibility */}
+        <div 
+          className="position-absolute top-0 start-0 w-100 h-100"
+          style={{
+            zIndex: 1,
+            background: 'linear-gradient(180deg, rgba(2, 35, 25, 0.80) 0%, rgba(3, 27, 20, 0.62) 45%, rgba(2, 19, 14, 0.92) 100%)',
+            pointerEvents: 'none',
+          }}
+        />
+
+        <div className="container position-relative py-5" style={{ zIndex: 2 }}>
           <div className="row align-items-center justify-content-center text-center">
             <div className="col-lg-10">
               
