@@ -4,11 +4,30 @@ import Script from 'next/script';
 
 export default function ExternalAnalytics() {
   const clarityId = process.env.NEXT_PUBLIC_CLARITY_ID;
-  const gaId = process.env.NEXT_PUBLIC_GA_ID || process.env.NEXT_PUBLIC_GTAG_ID || process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS_ID;
+  // GA Measurement ID – safe to publish; visible in every page source anyway
+  const gaId = process.env.NEXT_PUBLIC_GA_ID || 'G-MY74CYP729';
 
   return (
     <>
-      {/* 1. Microsoft Clarity (Heatmaps & Session Video Replays) */}
+      {/* 1. Google Analytics 4 – gtag.js snippet (loads on every page) */}
+      <Script
+        strategy="afterInteractive"
+        src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+      />
+      <Script
+        id="google-analytics"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{
+          __html: `
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${gaId}');
+          `,
+        }}
+      />
+
+      {/* 2. Microsoft Clarity – Heatmaps & Session Replays (optional, env-gated) */}
       {clarityId && (
         <Script
           id="microsoft-clarity"
@@ -23,30 +42,6 @@ export default function ExternalAnalytics() {
             `,
           }}
         />
-      )}
-
-      {/* 2. Google Analytics 4 (Audience & Realtime Analytics) */}
-      {gaId && (
-        <>
-          <Script
-            strategy="afterInteractive"
-            src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
-          />
-          <Script
-            id="google-analytics"
-            strategy="afterInteractive"
-            dangerouslySetInnerHTML={{
-              __html: `
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
-                gtag('config', '${gaId}', {
-                  page_path: window.location.pathname,
-                });
-              `,
-            }}
-          />
-        </>
       )}
     </>
   );
