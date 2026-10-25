@@ -5,7 +5,11 @@ import Navbar from '@/components/Navbar';
 import AnalyticsTracker from '@/components/AnalyticsTracker';
 import ExternalAnalytics from '@/components/ExternalAnalytics';
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : 'https://eathamozhy-coconut-farm.vercel.app');
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: 'Eathamozhy Coconut Farm | Buy Coconut Seedlings & Saplings Online',
   description: 'Mainland India’s only GI-Tagged coconut cultivar. Buy authentic, high-yielding coconut seedlings and saplings directly from our ancestral grove in Kanyakumari. 100% farm-grown with mother tree traceability and pan-India express freight delivery.',
   keywords: [
@@ -29,7 +33,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Eathamozhy Coconut Farm | Buy Certified Coconut Seedlings & Saplings',
     description: 'Direct from our ancestral farm in Kanyakumari. 100% farm-grown GI-Tagged Eathamozhy Tall coconut seedlings with mother tree traceability.',
-    url: 'https://eathamozhycoconutfarm.com',
+    url: siteUrl,
     siteName: 'Eathamozhy Coconut Farm',
     locale: 'en_IN',
     type: 'website',
@@ -100,7 +104,7 @@ export default function RootLayout({
                 latitude: '8.1367',
                 longitude: '77.4278',
               },
-              url: 'https://eathamozhycoconutfarm.com',
+              url: siteUrl,
               sameAs: [facebookUrl, youtubeUrl, instagramUrl],
               hasOfferCatalog: {
                 '@type': 'OfferCatalog',

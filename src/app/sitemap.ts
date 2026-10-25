@@ -2,7 +2,8 @@ import type { MetadataRoute } from 'next';
 import { DataStore } from '@/lib/dataStore';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://eathamozhycoconutfarm.com';
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : 'https://eathamozhy-coconut-farm.vercel.app');
 
   const staticRoutes: MetadataRoute.Sitemap = [
     {
