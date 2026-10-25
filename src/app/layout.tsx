@@ -6,7 +6,7 @@ import AnalyticsTracker from '@/components/AnalyticsTracker';
 import ExternalAnalytics from '@/components/ExternalAnalytics';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 
-  (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : 'https://eathamozhy-coconut-farm.vercel.app');
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : 'https://eathamozhi-coconut-farm.vercel.app');
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
