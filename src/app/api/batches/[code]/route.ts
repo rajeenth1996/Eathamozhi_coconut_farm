@@ -1,12 +1,14 @@
 import { NextResponse } from 'next/server';
 import { DataStore } from '@/lib/dataStore';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ code: string }> }
 ) {
   const { code } = await params;
-  const batch = DataStore.getBatchByCode(code);
+  const batch = await DataStore.getBatchByCodeAsync(code);
   if (!batch) {
     return NextResponse.json({ error: 'Batch not found' }, { status: 404 });
   }
@@ -20,11 +22,10 @@ export async function PATCH(
   try {
     const { code } = await params;
     const body = await request.json();
-    // Only allow updating the images array via this endpoint
     if (!Array.isArray(body.images)) {
       return NextResponse.json({ error: 'images array is required' }, { status: 400 });
     }
-    const updated = DataStore.updateBatch(code, { images: body.images });
+    const updated = await DataStore.updateBatchAsync(code, { images: body.images });
     if (!updated) {
       return NextResponse.json({ error: 'Batch not found' }, { status: 404 });
     }

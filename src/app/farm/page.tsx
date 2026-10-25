@@ -4,9 +4,9 @@ import ImageCarousel from '@/components/ImageCarousel';
 
 export const dynamic = 'force-dynamic';
 
-export default function MotherTreesPage() {
-  const palms = DataStore.getParentPalms();
-  const batches = DataStore.getBatches();
+export default async function MotherTreesPage() {
+  const palms = await DataStore.getParentPalmsAsync();
+  const batches = await DataStore.getBatchesAsync();
 
   const getActiveBatchesForPalm = (palmCode: string) => {
     return batches.filter(b => {

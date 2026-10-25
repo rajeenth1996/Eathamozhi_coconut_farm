@@ -9,7 +9,7 @@ export async function GET(
   const { searchParams } = new URL(request.url);
   const mobile = searchParams.get('mobile') || undefined;
 
-  const booking = DataStore.getBookingById(id, mobile);
+  const booking = await DataStore.getBookingByIdAsync(id, mobile);
   if (!booking) {
     return NextResponse.json({ error: 'Booking reference not found' }, { status: 404 });
   }
@@ -23,7 +23,7 @@ export async function PUT(
 ) {
   const { id } = await params;
   const body = await request.json();
-  const updated = DataStore.updateBookingStatus(id, body.status, body.courierName, body.trackingId);
+  const updated = await DataStore.updateBookingStatusAsync(id, body.status, body.courierName, body.trackingId);
   if (!updated) {
     return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
   }

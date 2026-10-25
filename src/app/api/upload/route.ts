@@ -153,7 +153,7 @@ export async function POST(request: Request) {
     // 6. Optional Order Receipt Linking (if orderId was supplied)
     const orderId = form.get('orderId') as string | null;
     if (orderId && uploadedUrls.length > 0) {
-      DataStore.updateOrder(orderId, { receiptUrl: uploadedUrls[0] });
+      await DataStore.updateOrderAsync(orderId, { receiptUrl: uploadedUrls[0] });
     }
 
     return NextResponse.json(

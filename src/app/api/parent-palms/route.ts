@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server';
 import { DataStore } from '@/lib/dataStore';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
-  return NextResponse.json(DataStore.getParentPalms());
+  const palms = await DataStore.getParentPalmsAsync();
+  return NextResponse.json(palms);
 }
 
 export async function POST(request: Request) {
@@ -12,7 +15,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Mother tree code and name required' }, { status: 400 });
     }
 
-    const created = DataStore.addParentPalm(body);
+    const created = await DataStore.addParentPalmAsync(body);
     return NextResponse.json(created, { status: 201 });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Failed to create mother tree record' }, { status: 500 });
@@ -26,7 +29,7 @@ export async function PUT(request: Request) {
     if (!identifier) {
       return NextResponse.json({ error: 'Mother tree id or code is required' }, { status: 400 });
     }
-    const updated = DataStore.updateParentPalm(identifier, body);
+    const updated = await DataStore.updateParentPalmAsync(identifier, body);
     return NextResponse.json(updated);
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Failed to update mother tree' }, { status: 500 });
@@ -40,7 +43,7 @@ export async function DELETE(request: Request) {
     if (!code) {
       return NextResponse.json({ error: 'code parameter required' }, { status: 400 });
     }
-    DataStore.deleteParentPalm(code);
+    await DataStore.deleteParentPalmAsync(code);
     return NextResponse.json({ success: true, message: `Mother tree ${code} deleted.` });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Failed to delete mother tree' }, { status: 500 });

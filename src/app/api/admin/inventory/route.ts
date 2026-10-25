@@ -2,8 +2,11 @@ import { NextResponse } from 'next/server';
 import { DataStore } from '@/lib/dataStore';
 import { InventoryAdjustmentSchema, validateRequest } from '@/lib/validations';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
-  return NextResponse.json(DataStore.getAdjustments());
+  const adjustments = await DataStore.getAdjustmentsAsync();
+  return NextResponse.json(adjustments);
 }
 
 export async function POST(request: Request) {
@@ -32,8 +35,8 @@ export async function POST(request: Request) {
       adminName: validAdmin,
     } = validation.data;
 
-    const log = DataStore.adjustInventory(validBatch, validChange, validReason, validAdmin);
-    const updatedBatch = DataStore.getBatchByCode(validBatch);
+    const log = await DataStore.adjustInventoryAsync(validBatch, validChange, validReason, validAdmin);
+    const updatedBatch = await DataStore.getBatchByCodeAsync(validBatch);
 
     return NextResponse.json({
       success: true,

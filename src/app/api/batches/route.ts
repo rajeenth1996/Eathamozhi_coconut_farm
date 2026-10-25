@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
 import { DataStore } from '@/lib/dataStore';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
-  const batches = DataStore.getBatches();
+  const batches = await DataStore.getBatchesAsync();
   return NextResponse.json(batches);
 }
 
@@ -13,7 +15,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'batchCode is required' }, { status: 400 });
     }
 
-    const newBatch = DataStore.addBatch(body);
+    const newBatch = await DataStore.addBatchAsync(body);
     return NextResponse.json(newBatch, { status: 201 });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Failed to create batch' }, { status: 400 });
@@ -27,7 +29,7 @@ export async function PUT(request: Request) {
     if (!batchCode) {
       return NextResponse.json({ error: 'batchCode is required for editing' }, { status: 400 });
     }
-    const updated = DataStore.updateBatch(batchCode, updatedFields);
+    const updated = await DataStore.updateBatchAsync(batchCode, updatedFields);
     return NextResponse.json(updated);
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Failed to update batch' }, { status: 400 });
@@ -41,7 +43,7 @@ export async function DELETE(request: Request) {
     if (!code) {
       return NextResponse.json({ error: 'Batch code parameter required' }, { status: 400 });
     }
-    DataStore.deleteBatch(code);
+    await DataStore.deleteBatchAsync(code);
     return NextResponse.json({ success: true, message: `Batch ${code} deleted.` });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Failed to delete batch' }, { status: 500 });

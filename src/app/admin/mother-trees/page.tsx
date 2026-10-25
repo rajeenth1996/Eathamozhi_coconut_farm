@@ -91,7 +91,7 @@ export default function AdminMotherTreesPage() {
     }
 
     if (finalImages.length === 0) {
-      finalImages = [`/images/parent-palms/${newTree.code}/tree_1.jpg`];
+      finalImages = ['/images/placeholder.png'];
     }
 
     try {

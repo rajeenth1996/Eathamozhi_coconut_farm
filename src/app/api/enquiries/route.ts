@@ -3,8 +3,11 @@ import { DataStore } from '@/lib/dataStore';
 import { EnquiryCreateSchema, validateRequest } from '@/lib/validations';
 import { checkRateLimit, rateLimitResponse } from '@/lib/rateLimit';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
-  return NextResponse.json(DataStore.getEnquiries());
+  const enquiries = await DataStore.getEnquiriesAsync();
+  return NextResponse.json(enquiries);
 }
 
 export async function POST(request: Request) {
@@ -29,7 +32,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const newEnquiry = DataStore.addEnquiry(validation.data);
+    const newEnquiry = await DataStore.addEnquiryAsync(validation.data);
     return NextResponse.json(newEnquiry, { status: 201 });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Failed to submit enquiry' }, { status: 500 });
@@ -43,7 +46,7 @@ export async function PUT(request: Request) {
     if (!id || !status) {
       return NextResponse.json({ error: 'id and status required' }, { status: 400 });
     }
-    const updated = DataStore.updateEnquiryStatus(id, status);
+    const updated = await DataStore.updateEnquiryStatusAsync(id, status);
     return NextResponse.json(updated);
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Failed to update enquiry' }, { status: 500 });

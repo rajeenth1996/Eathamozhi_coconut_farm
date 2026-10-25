@@ -1,3 +1,14 @@
+import { connectToDatabase } from '@/lib/mongodb';
+import {
+  ParentPalmModel,
+  BatchModel,
+  BookingModel,
+  ReviewModel,
+  FAQModel,
+  EnquiryModel,
+  InventoryAdjustmentModel
+} from '@/lib/models';
+
 export interface ParentPalm {
   id: string;
   code: string;
@@ -26,6 +37,8 @@ export interface Batch {
   totalQuantity: number;
   bookedQuantity: number;
   inventoryAdjustments: number;
+  availableQuantity?: number;
+  bookedPercentage?: number;
   price: number;
   status: 'AVAILABLE' | 'LIMITED' | 'SOLD_OUT' | 'COMING_SOON';
   description: string;
@@ -370,6 +383,102 @@ if (typeof window === 'undefined') {
 }
 
 // Helper Functions
+
+let mongoSyncPromise: Promise<void> | null = null;
+let lastMongoSyncTime = 0;
+const MONGO_SYNC_TTL = 3000; // 3 seconds in-memory cache TTL between syncs
+
+async function syncFromMongo(force = false): Promise<void> {
+  const now = Date.now();
+  if (!force && now - lastMongoSyncTime < MONGO_SYNC_TTL) {
+    return;
+  }
+  if (mongoSyncPromise) {
+    return mongoSyncPromise;
+  }
+
+  mongoSyncPromise = (async () => {
+    try {
+      const conn = await connectToDatabase();
+      if (!conn) return;
+
+      const [mPalms, mBatches, mBookings, mEnquiries, mReviews, mAdjustments, mFaqs] = await Promise.all([
+        ParentPalmModel.find({}).lean(),
+        BatchModel.find({}).lean(),
+        BookingModel.find({}).lean(),
+        EnquiryModel.find({}).lean(),
+        ReviewModel.find({}).lean(),
+        InventoryAdjustmentModel.find({}).lean(),
+        FAQModel.find({}).lean(),
+      ]);
+
+      if (Array.isArray(mPalms) && mPalms.length > 0) {
+        parentPalms = mPalms.map((p: any) => ({
+          id: p.id || `mp-${Date.now()}`,
+          code: p.code,
+          name: p.name,
+          age: Number(p.age) || 40,
+          location: p.location || 'Eathamozhi Farm',
+          healthStatus: p.healthStatus || 'Excellent',
+          yieldHistory: p.yieldHistory || '',
+          description: p.description || '',
+          nutCharacteristics: p.nutCharacteristics || '',
+          whySelected: p.whySelected || '',
+          images: Array.isArray(p.images) ? p.images : []
+        }));
+      }
+
+      if (Array.isArray(mBatches) && mBatches.length > 0) {
+        batches = mBatches.map((b: any) => ({
+          id: b.id || `b-${Date.now()}`,
+          batchCode: b.batchCode,
+          parentPalmId: b.parentPalmId || 'mp-1',
+          parentPalmCode: b.parentPalmCode || 'EM-MP-001',
+          parentPalmCodes: (Array.isArray(b.parentPalmCodes) && b.parentPalmCodes.length > 0) ? b.parentPalmCodes : [b.parentPalmCode || 'EM-MP-001'],
+          name: b.name,
+          harvestDate: b.harvestDate,
+          seededDate: b.seededDate,
+          age: b.age,
+          height: b.height,
+          totalQuantity: Number(b.totalQuantity),
+          bookedQuantity: Number(b.bookedQuantity) || 0,
+          inventoryAdjustments: Number(b.inventoryAdjustments) || 0,
+          price: Number(b.price),
+          status: b.status || 'AVAILABLE',
+          description: b.description || '',
+          viewsCount: Number(b.viewsCount) || 0,
+          images: Array.isArray(b.images) ? b.images : []
+        }));
+      }
+
+      if (Array.isArray(mBookings) && mBookings.length > 0) {
+        bookings = mBookings.map((b: any) => ({ ...b }));
+      }
+      if (Array.isArray(mEnquiries) && mEnquiries.length > 0) {
+        enquiries = mEnquiries.map((e: any) => ({ ...e }));
+      }
+      if (Array.isArray(mReviews) && mReviews.length > 0) {
+        reviews = mReviews.map((r: any) => ({ ...r }));
+      }
+      if (Array.isArray(mAdjustments) && mAdjustments.length > 0) {
+        adjustments = mAdjustments.map((a: any) => ({ ...a }));
+      }
+      if (Array.isArray(mFaqs) && mFaqs.length > 0) {
+        faqs = mFaqs.map((f: any) => ({ ...f }));
+      }
+
+      lastMongoSyncTime = Date.now();
+      saveToDb();
+    } catch (err) {
+      console.warn('MongoDB syncFromMongo warning:', err);
+    } finally {
+      mongoSyncPromise = null;
+    }
+  })();
+
+  return mongoSyncPromise;
+}
+
 export const DataStore = {
   getBatches: () => {
     loadFromDb();
@@ -883,6 +992,322 @@ export const DataStore = {
       funnel,
       recentJourneys: visitorJourneys.slice(0, 20),
     };
-  }
+  },
+
+  // ─── Async MongoDB Synchronized Methods ─────────────────────────────
+  syncFromMongo: async () => {
+    await syncFromMongo(true);
+  },
+
+  getParentPalmsAsync: async (): Promise<ParentPalm[]> => {
+    loadFromDb();
+    await syncFromMongo();
+    return DataStore.getParentPalms();
+  },
+
+  getParentPalmByCodeAsync: async (code: string): Promise<ParentPalm | null> => {
+    loadFromDb();
+    await syncFromMongo();
+    return DataStore.getParentPalmByCode(code);
+  },
+
+  addParentPalmAsync: async (data: Omit<ParentPalm, 'id'>): Promise<ParentPalm> => {
+    const created = DataStore.addParentPalm(data);
+    try {
+      const conn = await connectToDatabase();
+      if (conn) {
+        await ParentPalmModel.findOneAndUpdate({ code: created.code }, created, { upsert: true, new: true });
+        lastMongoSyncTime = 0;
+      }
+    } catch (err) {
+      console.error('Failed to persist ParentPalm to MongoDB:', err);
+    }
+    return created;
+  },
+
+  updateParentPalmAsync: async (identifier: string, updatedFields: Partial<ParentPalm>): Promise<ParentPalm> => {
+    const updated = DataStore.updateParentPalm(identifier, updatedFields);
+    try {
+      const conn = await connectToDatabase();
+      if (conn) {
+        await ParentPalmModel.findOneAndUpdate(
+          { $or: [{ id: identifier }, { code: new RegExp('^' + identifier + '$', 'i') }] },
+          { $set: updated },
+          { new: true }
+        );
+        lastMongoSyncTime = 0;
+      }
+    } catch (err) {
+      console.error('Failed to update ParentPalm in MongoDB:', err);
+    }
+    return updated;
+  },
+
+  deleteParentPalmAsync: async (codeOrId: string): Promise<boolean> => {
+    DataStore.deleteParentPalm(codeOrId);
+    try {
+      const conn = await connectToDatabase();
+      if (conn) {
+        await ParentPalmModel.deleteOne({
+          $or: [{ id: codeOrId }, { code: new RegExp('^' + codeOrId + '$', 'i') }]
+        });
+        lastMongoSyncTime = 0;
+      }
+    } catch (err) {
+      console.error('Failed to delete ParentPalm from MongoDB:', err);
+    }
+    return true;
+  },
+
+  getBatchesAsync: async (): Promise<Batch[]> => {
+    loadFromDb();
+    await syncFromMongo();
+    return DataStore.getBatches();
+  },
+
+  getOldestAvailableBatchAsync: async (): Promise<Batch | undefined> => {
+    loadFromDb();
+    await syncFromMongo();
+    return DataStore.getOldestAvailableBatch();
+  },
+
+  getBatchByCodeAsync: async (code: string): Promise<Batch | null> => {
+    loadFromDb();
+    await syncFromMongo();
+    return DataStore.getBatchByCode(code);
+  },
+
+  addBatchAsync: async (newBatchData: any): Promise<Batch | null> => {
+    const created = DataStore.addBatch(newBatchData);
+    try {
+      const conn = await connectToDatabase();
+      if (conn && created) {
+        await BatchModel.findOneAndUpdate({ batchCode: created.batchCode }, created, { upsert: true, new: true });
+        lastMongoSyncTime = 0;
+      }
+    } catch (err) {
+      console.error('Failed to persist Batch to MongoDB:', err);
+    }
+    return created;
+  },
+
+  updateBatchAsync: async (code: string, updatedFields: any): Promise<Batch | null> => {
+    const updated = DataStore.updateBatch(code, updatedFields);
+    try {
+      const conn = await connectToDatabase();
+      if (conn && updated) {
+        await BatchModel.findOneAndUpdate(
+          { batchCode: new RegExp('^' + code + '$', 'i') },
+          { $set: updated },
+          { new: true }
+        );
+        lastMongoSyncTime = 0;
+      }
+    } catch (err) {
+      console.error('Failed to update Batch in MongoDB:', err);
+    }
+    return updated;
+  },
+
+  deleteBatchAsync: async (code: string): Promise<boolean> => {
+    DataStore.deleteBatch(code);
+    try {
+      const conn = await connectToDatabase();
+      if (conn) {
+        await BatchModel.deleteOne({ batchCode: new RegExp('^' + code + '$', 'i') });
+        lastMongoSyncTime = 0;
+      }
+    } catch (err) {
+      console.error('Failed to delete Batch from MongoDB:', err);
+    }
+    return true;
+  },
+
+  getBookingsAsync: async (): Promise<Booking[]> => {
+    loadFromDb();
+    await syncFromMongo();
+    return DataStore.getBookings();
+  },
+
+  getBookingByIdAsync: async (bookingId: string, mobile?: string): Promise<Booking | null> => {
+    loadFromDb();
+    await syncFromMongo();
+    return DataStore.getBookingById(bookingId, mobile);
+  },
+
+  getBookingsByMobileAsync: async (mobile: string): Promise<Booking[]> => {
+    loadFromDb();
+    await syncFromMongo();
+    return DataStore.getBookingsByMobile(mobile);
+  },
+
+  createBookingAsync: async (data: any): Promise<Booking> => {
+    const created = DataStore.createBooking(data);
+    try {
+      const conn = await connectToDatabase();
+      if (conn) {
+        await BookingModel.findOneAndUpdate({ bookingId: created.bookingId }, created, { upsert: true, new: true });
+        const batch = DataStore.getBatchByCode(data.batchCode);
+        if (batch) {
+          await BatchModel.findOneAndUpdate(
+            { batchCode: new RegExp('^' + batch.batchCode + '$', 'i') },
+            { $set: { bookedQuantity: batch.bookedQuantity } }
+          );
+        }
+        lastMongoSyncTime = 0;
+      }
+    } catch (err) {
+      console.error('Failed to persist Booking to MongoDB:', err);
+    }
+    return created;
+  },
+
+  updateOrderAsync: async (orderId: string, changes: Partial<Booking>): Promise<Booking> => {
+    const updated = DataStore.updateOrder(orderId, changes);
+    try {
+      const conn = await connectToDatabase();
+      if (conn) {
+        await BookingModel.findOneAndUpdate(
+          { $or: [{ id: orderId }, { bookingId: orderId }] },
+          { $set: updated },
+          { new: true }
+        );
+        lastMongoSyncTime = 0;
+      }
+    } catch (err) {
+      console.error('Failed to update Booking in MongoDB:', err);
+    }
+    return updated;
+  },
+
+  updateBookingStatusAsync: async (bookingId: string, status: any, courierName?: string, trackingId?: string): Promise<Booking | null> => {
+    const updated = DataStore.updateBookingStatus(bookingId, status, courierName, trackingId);
+    if (updated) {
+      try {
+        const conn = await connectToDatabase();
+        if (conn) {
+          await BookingModel.findOneAndUpdate(
+            { $or: [{ id: bookingId }, { bookingId: bookingId }] },
+            { $set: updated },
+            { new: true }
+          );
+          lastMongoSyncTime = 0;
+        }
+      } catch (err) {
+        console.error('Failed to update Booking status in MongoDB:', err);
+      }
+    }
+    return updated;
+  },
+
+  getEnquiriesAsync: async (): Promise<Enquiry[]> => {
+    loadFromDb();
+    await syncFromMongo();
+    return DataStore.getEnquiries();
+  },
+
+  addEnquiryAsync: async (data: any): Promise<Enquiry> => {
+    const created = DataStore.addEnquiry(data);
+    try {
+      const conn = await connectToDatabase();
+      if (conn) {
+        await EnquiryModel.findOneAndUpdate({ id: created.id }, created, { upsert: true, new: true });
+        lastMongoSyncTime = 0;
+      }
+    } catch (err) {
+      console.error('Failed to persist Enquiry to MongoDB:', err);
+    }
+    return created;
+  },
+
+  updateEnquiryStatusAsync: async (id: string, status: any): Promise<Enquiry | undefined> => {
+    const updated = DataStore.updateEnquiryStatus(id, status);
+    try {
+      const conn = await connectToDatabase();
+      if (conn) {
+        await EnquiryModel.findOneAndUpdate({ id }, { $set: { status } });
+        lastMongoSyncTime = 0;
+      }
+    } catch (err) {
+      console.error('Failed to update Enquiry status in MongoDB:', err);
+    }
+    return updated;
+  },
+
+  getReviewsAsync: async (): Promise<Review[]> => {
+    loadFromDb();
+    await syncFromMongo();
+    return DataStore.getReviews();
+  },
+
+  addReviewAsync: async (data: any): Promise<Review> => {
+    const created = DataStore.addReview(data);
+    try {
+      const conn = await connectToDatabase();
+      if (conn) {
+        await ReviewModel.findOneAndUpdate({ id: created.id }, created, { upsert: true, new: true });
+        lastMongoSyncTime = 0;
+      }
+    } catch (err) {
+      console.error('Failed to persist Review to MongoDB:', err);
+    }
+    return created;
+  },
+
+  updateReviewAsync: async (id: string, updatedFields: Partial<Review>): Promise<Review> => {
+    const updated = DataStore.updateReview(id, updatedFields);
+    try {
+      const conn = await connectToDatabase();
+      if (conn) {
+        await ReviewModel.findOneAndUpdate({ id }, { $set: updated }, { new: true });
+        lastMongoSyncTime = 0;
+      }
+    } catch (err) {
+      console.error('Failed to update Review in MongoDB:', err);
+    }
+    return updated;
+  },
+
+  deleteReviewAsync: async (id: string): Promise<boolean> => {
+    const deleted = DataStore.deleteReview(id);
+    try {
+      const conn = await connectToDatabase();
+      if (conn) {
+        await ReviewModel.deleteOne({ id });
+        lastMongoSyncTime = 0;
+      }
+    } catch (err) {
+      console.error('Failed to delete Review in MongoDB:', err);
+    }
+    return deleted;
+  },
+
+  getAdjustmentsAsync: async (): Promise<InventoryAdjustment[]> => {
+    loadFromDb();
+    await syncFromMongo();
+    return DataStore.getAdjustments();
+  },
+
+  adjustInventoryAsync: async (batchCode: string, change: number, reason: string, adminName: string): Promise<InventoryAdjustment> => {
+    const log = DataStore.adjustInventory(batchCode, change, reason, adminName);
+    try {
+      const conn = await connectToDatabase();
+      if (conn) {
+        await InventoryAdjustmentModel.create(log);
+        const batch = DataStore.getBatchByCode(batchCode);
+        if (batch) {
+          await BatchModel.findOneAndUpdate(
+            { batchCode: new RegExp('^' + batch.batchCode + '$', 'i') },
+            { $set: { inventoryAdjustments: batch.inventoryAdjustments } }
+          );
+        }
+        lastMongoSyncTime = 0;
+      }
+    } catch (err) {
+      console.error('Failed to persist InventoryAdjustment to MongoDB:', err);
+    }
+    return log;
+  },
+
 };
 

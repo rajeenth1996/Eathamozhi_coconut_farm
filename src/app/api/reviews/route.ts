@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const reviews = DataStore.getReviews();
+    const reviews = await DataStore.getReviewsAsync();
     return NextResponse.json(reviews);
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Failed to fetch reviews' }, { status: 500 });
@@ -36,7 +36,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const newReview = DataStore.addReview(validation.data);
+    const newReview = await DataStore.addReviewAsync(validation.data);
     return NextResponse.json(newReview, { status: 201 });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Failed to create review' }, { status: 400 });
@@ -50,7 +50,7 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: 'Review ID is required for editing' }, { status: 400 });
     }
 
-    const updated = DataStore.updateReview(body.id, body);
+    const updated = await DataStore.updateReviewAsync(body.id, body);
     return NextResponse.json(updated);
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Failed to update review' }, { status: 400 });
@@ -62,14 +62,11 @@ export async function DELETE(request: Request) {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
     if (!id) {
-      return NextResponse.json({ error: 'Review ID parameter required' }, { status: 400 });
+      return NextResponse.json({ error: 'Review ID is required' }, { status: 400 });
     }
 
-    const success = DataStore.deleteReview(id);
-    if (!success) {
-      return NextResponse.json({ error: 'Review not found' }, { status: 404 });
-    }
-    return NextResponse.json({ success: true, message: `Review ${id} deleted successfully.` });
+    await DataStore.deleteReviewAsync(id);
+    return NextResponse.json({ success: true, message: `Review ${id} deleted.` });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Failed to delete review' }, { status: 500 });
   }

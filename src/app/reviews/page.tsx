@@ -3,8 +3,8 @@ import { DataStore } from '@/lib/dataStore';
 
 export const dynamic = 'force-dynamic';
 
-export default function ReviewsPage() {
-  const reviews = DataStore.getReviews();
+export default async function ReviewsPage() {
+  const reviews = await DataStore.getReviewsAsync();
 
   const totalReviews = reviews.length;
   const avgRating = totalReviews > 0

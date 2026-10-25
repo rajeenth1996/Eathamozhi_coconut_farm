@@ -11,7 +11,7 @@ export default async function BatchDetailPage({
   params: Promise<{ code: string }>;
 }) {
   const { code } = await params;
-  const batch = DataStore.getBatchByCode(code);
+  const batch = await DataStore.getBatchByCodeAsync(code);
   if (!batch) {
     notFound();
   }
@@ -19,9 +19,9 @@ export default async function BatchDetailPage({
   const motherTreeCodes = (batch.parentPalmCodes && batch.parentPalmCodes.length > 0) 
     ? batch.parentPalmCodes 
     : [batch.parentPalmCode];
-  const motherPalms = motherTreeCodes
-    .map(c => DataStore.getParentPalmByCode(c))
-    .filter((p): p is NonNullable<typeof p> => Boolean(p));
+  const motherPalms = (await Promise.all(
+    motherTreeCodes.map(c => DataStore.getParentPalmByCodeAsync(c))
+  )).filter((p): p is NonNullable<typeof p> => Boolean(p));
 
   return (
     <>

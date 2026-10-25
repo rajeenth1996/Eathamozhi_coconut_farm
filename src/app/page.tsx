@@ -6,11 +6,11 @@ import HeroVideo from '@/components/HeroVideo';
 
 export const dynamic = 'force-dynamic';
 
-export default function Home() {
-  const batches = DataStore.getBatches();
-  const currentBatch = DataStore.getOldestAvailableBatch();
-  const motherPalms = DataStore.getParentPalms();
-  const reviews = DataStore.getReviews();
+export default async function Home() {
+  const batches = await DataStore.getBatchesAsync();
+  const currentBatch = await DataStore.getOldestAvailableBatchAsync();
+  const motherPalms = await DataStore.getParentPalmsAsync();
+  const reviews = await DataStore.getReviewsAsync();
 
   return (
     <>

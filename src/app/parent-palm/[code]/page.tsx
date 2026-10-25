@@ -11,12 +11,12 @@ export default async function ParentPalmDetailPage({
   params: Promise<{ code: string }>;
 }) {
   const { code } = await params;
-  const palm = DataStore.getParentPalmByCode(code);
+  const palm = await DataStore.getParentPalmByCodeAsync(code);
   if (!palm) {
     notFound();
   }
 
-  const allBatches = DataStore.getBatches();
+  const allBatches = await DataStore.getBatchesAsync();
   const relatedBatches = allBatches.filter(b => {
     const codes = (b.parentPalmCodes && b.parentPalmCodes.length > 0) ? b.parentPalmCodes : [b.parentPalmCode];
     return codes.some(c => c.toLowerCase() === palm.code.toLowerCase());

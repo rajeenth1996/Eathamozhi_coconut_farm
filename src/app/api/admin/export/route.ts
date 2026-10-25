@@ -9,12 +9,12 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const type = (searchParams.get('type') || 'all').toLowerCase();
 
-    const batches = DataStore.getBatches();
-    const bookings = DataStore.getBookings();
-    const palms = DataStore.getParentPalms();
-    const enquiries = DataStore.getEnquiries();
-    const adjustments = DataStore.getAdjustments();
-    const reviews = DataStore.getReviews();
+    const batches = await DataStore.getBatchesAsync();
+    const bookings = await DataStore.getBookingsAsync();
+    const palms = await DataStore.getParentPalmsAsync();
+    const enquiries = await DataStore.getEnquiriesAsync();
+    const adjustments = await DataStore.getAdjustmentsAsync();
+    const reviews = await DataStore.getReviewsAsync();
 
     const wb = XLSX.utils.book_new();
 

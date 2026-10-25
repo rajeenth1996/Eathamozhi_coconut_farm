@@ -4,6 +4,8 @@ import { BookingCreateSchema, validateRequest } from '@/lib/validations';
 import { checkRateLimit, rateLimitResponse } from '@/lib/rateLimit';
 import { uploadToCloudinary } from '@/lib/cloudinary';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: Request) {
   // 1. Rate Limiting: Max 10 bookings per 10 minutes per IP
   const rateLimit = checkRateLimit(request, 'booking');
@@ -40,7 +42,7 @@ export async function POST(request: Request) {
       }
     }
 
-    const newBooking = DataStore.createBooking(bookingPayload);
+    const newBooking = await DataStore.createBookingAsync(bookingPayload);
     return NextResponse.json(newBooking, { status: 201 });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Failed to create booking' }, { status: 400 });
@@ -51,9 +53,11 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const mobile = searchParams.get('mobile');
   if (mobile) {
-    return NextResponse.json(DataStore.getBookingsByMobile(mobile));
+    const bookings = await DataStore.getBookingsByMobileAsync(mobile);
+    return NextResponse.json(bookings);
   }
-  return NextResponse.json(DataStore.getBookings());
+  const bookings = await DataStore.getBookingsAsync();
+  return NextResponse.json(bookings);
 }
 
 export async function PUT(request: Request) {
@@ -63,7 +67,12 @@ export async function PUT(request: Request) {
     if (!bookingId || !status) {
       return NextResponse.json({ error: 'bookingId and status are required' }, { status: 400 });
     }
-    const updated = DataStore.updateBookingStatus(bookingId, status, courierName, trackingId);
+    const changes: any = { bookingStatus: status };
+    if (courierName) changes.courierName = courierName;
+    if (trackingId) changes.trackingId = trackingId;
+    if (status === 'Dispatched') changes.dispatchDate = new Date().toISOString().split('T')[0];
+
+    const updated = await DataStore.updateOrderAsync(bookingId, changes);
     if (!updated) {
       return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
     }

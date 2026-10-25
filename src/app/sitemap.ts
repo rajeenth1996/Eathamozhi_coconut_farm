@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { DataStore } from '@/lib/dataStore';
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 
     (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : 'https://eathamozhi-coconut-farm.vercel.app');
 
@@ -63,7 +63,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   ];
 
   try {
-    const batches = DataStore.getBatches();
+    const batches = await DataStore.getBatchesAsync();
     const batchRoutes: MetadataRoute.Sitemap = batches.map(b => ({
       url: `${siteUrl}/batches/${b.batchCode}`,
       lastModified: new Date(),
@@ -71,7 +71,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.85,
     }));
 
-    const motherPalms = DataStore.getParentPalms();
+    const motherPalms = await DataStore.getParentPalmsAsync();
     const palmRoutes: MetadataRoute.Sitemap = motherPalms.map(p => ({
       url: `${siteUrl}/parent-palm/${p.code}`,
       lastModified: new Date(),

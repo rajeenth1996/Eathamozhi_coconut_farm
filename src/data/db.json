@@ -1,5 +1,158 @@
 {
-  "parentPalms": [],
+  "parentPalms": [
+    {
+      "id": "mp-1",
+      "code": "EM-MP-001",
+      "name": "Ancestral Grand Mother Tree #1",
+      "age": 88,
+      "location": "Plot A - Heritage Grove North",
+      "healthStatus": "Vigorous & Pest-Free",
+      "yieldHistory": "Consistently 160–180 high-weight seed nuts per year over 25 monitored years.",
+      "description": "Our flagship mother palm planted in 1938. Exceptional trunk girth, dense canopy, and superior copra content.",
+      "nutCharacteristics": "Large spherical nuts with 180g dry copra content and sweet water volume > 350ml.",
+      "whySelected": "Unmatched germination rate (>94%) and strong wind tolerance during coastal storms.",
+      "images": [
+        "/images/parent-palms/EM-MP-001/1791893869628_WhatsApp_Image_2026-10-13_at_5.31.07_PM__1_.jpeg"
+      ]
+    },
+    {
+      "id": "mp-2",
+      "code": "EM-MP-002",
+      "name": "East River Tall Palm #2",
+      "age": 75,
+      "location": "Plot B - River Bank Section",
+      "healthStatus": "Excellent (Monitored Monthly)",
+      "yieldHistory": "145–165 seed nuts/year average with early spadix emergence.",
+      "description": "Located in fertile alluvial riverbank soil. Famous for fast germination and thick root collars.",
+      "nutCharacteristics": "Medium-large green seed nuts with thick fibrous husk providing natural drought shield.",
+      "whySelected": "High sapling survival rate in farm seedbed and rapid initial growth phase.",
+      "images": [
+        "/images/parent-palms/EM-MP-002/1791893855443_WhatsApp_Image_2026-10-13_at_5.31.07_PM.jpeg"
+      ]
+    },
+    {
+      "id": "mp-3",
+      "code": "EM-MP-003",
+      "name": "Coastal Shield Mother Tree #3",
+      "age": 82,
+      "location": "Plot A - Seaward Ridge",
+      "healthStatus": "Robust & High Immunity",
+      "yieldHistory": "150–170 seed nuts/year documented consistently.",
+      "description": "Seaward facing tall palm proven resistant to high saline breezes and soil salinity fluctuations.",
+      "nutCharacteristics": "Thick husk with heavy endosperm and oil yield > 68%.",
+      "whySelected": "Ideal parent palm for coastal region coconut plantation expansion.",
+      "images": [
+        "/images/parent-palms/EM-MP-003/1792690409695_WhatsApp_Image_2026-10-13_at_5.31.08_PM.jpeg"
+      ]
+    },
+    {
+      "id": "mp-4",
+      "code": "EM-MP-004",
+      "name": "Central Grove Prime Palm #4",
+      "age": 68,
+      "location": "Plot C - Central Farm",
+      "healthStatus": "Peak Productivity",
+      "yieldHistory": "155–175 nuts/year with uniform round shape.",
+      "description": "Prime mother palm selected for high seednut weight and uniform seedling collar circumference.",
+      "nutCharacteristics": "Heavy spherical seednuts with high water sugar content.",
+      "whySelected": "Selected for quick 4-month germination and robust initial root anchorage.",
+      "images": [
+        "/images/parent-palms/EM-MP-004/1792690453090_WhatsApp_Image_2026-10-13_at_5.31.08_PM.jpeg"
+      ]
+    },
+    {
+      "id": "mp-5",
+      "code": "EM-MP-005",
+      "name": "Golden Husk Mother Tree #5",
+      "age": 79,
+      "location": "Plot B - South Field",
+      "healthStatus": "Excellent Health",
+      "yieldHistory": "140–160 nuts/year with high copra recovery.",
+      "description": "Golden-tinged husk variant with high husk fiber tensile strength and dense meat.",
+      "nutCharacteristics": "Golden brown ripe nuts, 175g copra per nut.",
+      "whySelected": "Proven drought tolerance and high pest immunity.",
+      "images": [
+        "/images/parent-palms/EM-MP-005/tree_1.jpeg"
+      ]
+    },
+    {
+      "id": "mp-6",
+      "code": "EM-MP-006",
+      "name": "High Copra Mother Palm #6",
+      "age": 71,
+      "location": "Plot D - West Boundary",
+      "healthStatus": "Vigorous",
+      "yieldHistory": "150–165 nuts/year with top-tier oil percentage.",
+      "description": "Monitored for oil extraction yield; yields superior Grade-A copra.",
+      "nutCharacteristics": "Compact round nut with dense solid kernel.",
+      "whySelected": "Top candidate for commercial oil-yielding coconut orchards.",
+      "images": [
+        "/images/parent-palms/EM-MP-006/1792690516069_WhatsApp_Image_2026-10-13_at_5.31.07_PM.jpeg"
+      ]
+    },
+    {
+      "id": "mp-7",
+      "code": "EM-MP-007",
+      "name": "Heritage Giant Palm #7",
+      "age": 91,
+      "location": "Plot A - Old Grove Center",
+      "healthStatus": "Prime Heritage Condition",
+      "yieldHistory": "165–185 nuts/year over 30 years.",
+      "description": "One of our oldest registered mother trees with massive canopy spread.",
+      "nutCharacteristics": "Extra-large seednuts yielding heavy sturdy saplings.",
+      "whySelected": "Unbeatable genetic stability and longevity.",
+      "images": [
+        "/images/parent-palms/EM-MP-007/1792690544082_WhatsApp_Image_2026-10-13_at_5.31.07_PM__2_.jpeg"
+      ]
+    },
+    {
+      "id": "mp-8",
+      "code": "EM-MP-008",
+      "name": "Fast Germinator Palm #8",
+      "age": 64,
+      "location": "Plot C - East Section",
+      "healthStatus": "Vigorous",
+      "yieldHistory": "135–155 nuts/year with 96% germination speed.",
+      "description": "Sprouts 2 weeks earlier than average in seedbeds.",
+      "nutCharacteristics": "Thin husk, thick shell, large water cavity.",
+      "whySelected": "Fastest farm sprout emergence rate on record.",
+      "images": [
+        "/images/parent-palms/EM-MP-008/1792690566612_WhatsApp_Image_2026-10-13_at_5.31.07_PM.jpeg"
+      ]
+    },
+    {
+      "id": "mp-9",
+      "code": "EM-MP-009",
+      "name": "Deep Root Mother Palm #9",
+      "age": 77,
+      "location": "Plot E - Highland Block",
+      "healthStatus": "Extremely Resilient",
+      "yieldHistory": "140–160 nuts/year under rain-fed conditions.",
+      "description": "Thrives in lower water tables with deep taproot architecture.",
+      "nutCharacteristics": "Medium seednuts with resilient outer husk.",
+      "whySelected": "Ideal for rain-fed agricultural fields.",
+      "images": [
+        "/images/parent-palms/EM-MP-009/tree_1.jpeg",
+        "/images/parent-palms/EM-MP-009/tree_2.jpeg"
+      ]
+    },
+    {
+      "id": "mp-10",
+      "code": "EM-MP-010",
+      "name": "Sweet Water Mother Tree #10",
+      "age": 69,
+      "location": "Plot B - Canal Side",
+      "healthStatus": "Excellent",
+      "yieldHistory": "150–170 nuts/year with high brix sweetness index.",
+      "description": "Dual-purpose mother tree producing sweet tender water and rich mature copra.",
+      "nutCharacteristics": "Large green-yellow nuts, 400ml sweet water capacity.",
+      "whySelected": "Popular dual-purpose tender/mature coconut seedling lineage.",
+      "images": [
+        "/images/parent-palms/EM-MP-010/1792643079606_WhatsApp_Image_2026-10-13_at_5.31.07_PM__1_.jpeg",
+        "/images/parent-palms/EM-MP-010/1792643079608_WhatsApp_Image_2026-10-13_at_5.31.10_PM__1_.jpeg"
+      ]
+    }
+  ],
   "batches": [
     {
       "id": "b-1792893910177",
@@ -21,6 +174,236 @@
       "viewsCount": 15,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792893909/eathamozhy-farm/batches/74cbbdcb-f064-459c-9267-d045737e799c-1792893907395.jpg"
+      ]
+    },
+    {
+      "id": "b-1",
+      "batchCode": "EM-0126-A",
+      "parentPalmId": "mp-1",
+      "parentPalmCode": "EM-MP-001",
+      "name": "January 2026 Ready Batch (EM-0126-A)",
+      "harvestDate": "2025-09-10",
+      "seededDate": "2025-09-25",
+      "totalQuantity": 500,
+      "bookedQuantity": 0,
+      "inventoryAdjustments": 0,
+      "price": 150,
+      "status": "AVAILABLE",
+      "description": "Fully matured 12-month saplings ready for immediate orchard planting. Strong root systems and thick collars.",
+      "viewsCount": 120,
+      "images": [
+        "/images/batches/EM-0126-A/1791893438300_WhatsApp_Image_2026-10-13_at_5.32.58_PM__1_.jpeg"
+      ],
+      "parentPalmCodes": [
+        "EM-MP-001"
+      ]
+    },
+    {
+      "id": "b-2",
+      "batchCode": "EM-0226-B",
+      "parentPalmId": "mp-2",
+      "parentPalmCode": "EM-MP-002",
+      "name": "February 2026 Prime Batch (EM-0226-B)",
+      "harvestDate": "2025-10-05",
+      "seededDate": "2025-10-20",
+      "totalQuantity": 450,
+      "bookedQuantity": 0,
+      "inventoryAdjustments": 0,
+      "price": 150,
+      "status": "AVAILABLE",
+      "description": "Vigorous 11-month saplings from River Bank parent tree. High leaf frond count and dark green color.",
+      "viewsCount": 120,
+      "images": [
+        "/images/batches/EM-0226-B/1791893468990_WhatsApp_Image_2026-10-13_at_5.32.58_PM__1_.jpeg",
+        "/images/batches/EM-0226-B/1791893468994_WhatsApp_Image_2026-10-13_at_5.33.28_PM.jpeg",
+        "/images/batches/EM-0226-B/1791893468997_WhatsApp_Image_2026-10-13_at_5.33.29_PM__1_.jpeg"
+      ],
+      "parentPalmCodes": [
+        "EM-MP-002"
+      ]
+    },
+    {
+      "id": "b-3",
+      "batchCode": "EM-0326-C",
+      "parentPalmId": "mp-3",
+      "parentPalmCode": "EM-MP-003",
+      "name": "March 2026 Coastal Batch (EM-0326-C)",
+      "harvestDate": "2025-11-01",
+      "seededDate": "2025-11-15",
+      "totalQuantity": 600,
+      "bookedQuantity": 0,
+      "inventoryAdjustments": 0,
+      "price": 160,
+      "status": "AVAILABLE",
+      "description": "Coastal shield cultivar batch. Engineered for wind resistance and saline soil adaptability.",
+      "viewsCount": 120,
+      "images": [
+        "/images/batches/EM-0326-C/1791893490267_WhatsApp_Image_2026-10-13_at_5.35.08_PM.jpeg",
+        "/images/batches/EM-0326-C/1791893490273_WhatsApp_Image_2026-10-13_at_5.35.09_PM__1_.jpeg"
+      ],
+      "parentPalmCodes": [
+        "EM-MP-003"
+      ]
+    },
+    {
+      "id": "b-4",
+      "batchCode": "EM-0426-D",
+      "parentPalmId": "mp-4",
+      "parentPalmCode": "EM-MP-004",
+      "name": "April 2026 Central Batch (EM-0426-D)",
+      "harvestDate": "2025-12-01",
+      "seededDate": "2025-12-15",
+      "totalQuantity": 400,
+      "bookedQuantity": 0,
+      "inventoryAdjustments": 0,
+      "price": 155,
+      "status": "AVAILABLE",
+      "description": "Heavy collar saplings raised under drip irrigation with balanced organic compost nutrition.",
+      "viewsCount": 120,
+      "images": [
+        "/images/batches/EM-0426-D/1791893523072_WhatsApp_Image_2026-10-13_at_5.32.07_PM.jpeg",
+        "/images/batches/EM-0426-D/1791893523076_WhatsApp_Image_2026-10-13_at_5.32.08_PM.jpeg"
+      ],
+      "parentPalmCodes": [
+        "EM-MP-004"
+      ]
+    },
+    {
+      "id": "b-5",
+      "batchCode": "EM-0526-E",
+      "parentPalmId": "mp-5",
+      "parentPalmCode": "EM-MP-005",
+      "name": "May 2026 Summer Batch (EM-0526-E)",
+      "harvestDate": "2026-01-05",
+      "seededDate": "2026-01-20",
+      "totalQuantity": 350,
+      "bookedQuantity": 0,
+      "inventoryAdjustments": 0,
+      "price": 150,
+      "status": "AVAILABLE",
+      "description": "Hardened saplings with high heat tolerance. Excellent candidate for dry zone planting.",
+      "viewsCount": 120,
+      "images": [
+        "/images/batches/EM-0526-E/1791893552971_WhatsApp_Image_2026-10-13_at_5.33.31_PM.jpeg"
+      ],
+      "parentPalmCodes": [
+        "EM-MP-005"
+      ]
+    },
+    {
+      "id": "b-6",
+      "batchCode": "EM-0626-F",
+      "parentPalmId": "mp-6",
+      "parentPalmCode": "EM-MP-006",
+      "name": "June 2026 Monsoon Pre-Booking (EM-0626-F)",
+      "harvestDate": "2026-02-01",
+      "seededDate": "2026-02-15",
+      "totalQuantity": 550,
+      "bookedQuantity": 0,
+      "inventoryAdjustments": 0,
+      "price": 165,
+      "status": "AVAILABLE",
+      "description": "Special monsoon edition batch. Prepared for planting at the start of South-West monsoon.",
+      "viewsCount": 120,
+      "images": [
+        "/images/batches/EM-0626-F/1791893569761_WhatsApp_Image_2026-10-13_at_5.33.32_PM.jpeg"
+      ],
+      "parentPalmCodes": [
+        "EM-MP-006"
+      ]
+    },
+    {
+      "id": "b-7",
+      "batchCode": "EM-0726-G",
+      "parentPalmId": "mp-7",
+      "parentPalmCode": "EM-MP-007",
+      "name": "July 2026 Heritage Giant Batch (EM-0726-G)",
+      "harvestDate": "2026-03-01",
+      "seededDate": "2026-03-15",
+      "totalQuantity": 500,
+      "bookedQuantity": 0,
+      "inventoryAdjustments": 0,
+      "price": 170,
+      "status": "AVAILABLE",
+      "description": "Offspring of 91-year old Giant Mother Tree #7. High genetic purity and extra large nut potential.",
+      "viewsCount": 120,
+      "images": [
+        "/images/batches/EM-0726-G/1791893590270_WhatsApp_Image_2026-10-13_at_5.33.31_PM.jpeg"
+      ],
+      "parentPalmCodes": [
+        "EM-MP-007"
+      ]
+    },
+    {
+      "id": "b-8",
+      "batchCode": "EM-0826-H",
+      "parentPalmId": "mp-8",
+      "parentPalmCode": "EM-MP-008",
+      "name": "August 2026 Fast Growth Batch (EM-0826-H)",
+      "harvestDate": "2026-04-01",
+      "seededDate": "2026-04-15",
+      "totalQuantity": 400,
+      "bookedQuantity": 0,
+      "inventoryAdjustments": 0,
+      "price": 160,
+      "status": "AVAILABLE",
+      "description": "Rapid sprouting batch with quick root anchorage and dense frond emergence.",
+      "viewsCount": 120,
+      "images": [
+        "/images/batches/EM-0826-H/1791893653192_WhatsApp_Image_2026-10-13_at_5.31.10_PM__1_.jpeg"
+      ],
+      "parentPalmCodes": [
+        "EM-MP-008"
+      ]
+    },
+    {
+      "id": "b-9",
+      "batchCode": "EM-0926-I",
+      "parentPalmId": "mp-9",
+      "parentPalmCode": "EM-MP-009",
+      "name": "September 2026 Deep Root Batch (EM-0926-I)",
+      "harvestDate": "2026-05-01",
+      "seededDate": "2026-05-15",
+      "totalQuantity": 450,
+      "bookedQuantity": 0,
+      "inventoryAdjustments": 0,
+      "price": 155,
+      "status": "AVAILABLE",
+      "description": "Drought resilient sapling lineage from Highland Block parent palm.",
+      "viewsCount": 120,
+      "images": [
+        "/images/batches/EM-0926-I/1791893677048_WhatsApp_Image_2026-10-13_at_5.32.06_PM__1_.jpeg",
+        "/images/batches/EM-0926-I/1791893677053_WhatsApp_Image_2026-10-13_at_5.32.07_PM.jpeg",
+        "/images/batches/EM-0926-I/1791893677056_WhatsApp_Image_2026-10-13_at_5.32.08_PM.jpeg"
+      ],
+      "parentPalmCodes": [
+        "EM-MP-009"
+      ]
+    },
+    {
+      "id": "b-10",
+      "batchCode": "EM-1026-J",
+      "parentPalmId": "mp-10",
+      "parentPalmCode": "EM-MP-010",
+      "name": "October 2026 Sweet Water Batch (EM-1026-J)",
+      "harvestDate": "2026-06-01",
+      "seededDate": "2026-06-15",
+      "totalQuantity": 600,
+      "bookedQuantity": 0,
+      "inventoryAdjustments": 0,
+      "price": 160,
+      "status": "AVAILABLE",
+      "description": "Dual-purpose saplings. Ideal for both tender coconut harvesting and copra production.",
+      "viewsCount": 120,
+      "images": [
+        "/images/batches/EM-1026-J/1791893696732_WhatsApp_Image_2026-10-13_at_5.32.06_PM.jpeg",
+        "/images/batches/EM-1026-J/1791893712664_WhatsApp_Image_2026-10-13_at_5.31.10_PM__1_.jpeg",
+        "/images/batches/EM-1026-J/1791893712667_WhatsApp_Image_2026-10-13_at_5.33.31_PM.jpeg",
+        "/images/batches/EM-1026-J/1791893712714_WhatsApp_Image_2026-10-13_at_5.33.32_PM.jpeg",
+        "/images/batches/EM-1026-J/1791893712717_WhatsApp_Image_2026-10-13_at_5.33.27_PM.jpeg"
+      ],
+      "parentPalmCodes": [
+        "EM-MP-010"
       ]
     }
   ],
