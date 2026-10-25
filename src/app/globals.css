@@ -289,3 +289,130 @@ h1, h2, h3, h4, h5, h6 {
 .extra-small {
   font-size: 0.75rem;
 }
+
+/* ─── Premium Footer Social Media Badges ──────────────────────────── */
+.footer-social-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.45rem 1rem 0.45rem 0.55rem;
+  border-radius: 9999px;
+  font-size: 0.815rem;
+  font-weight: 600;
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #e2e8f0;
+  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.footer-social-link:hover {
+  transform: translateY(-2px);
+  color: #ffffff;
+}
+
+.footer-social-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  color: #ffffff;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.footer-social-link:hover .footer-social-icon {
+  transform: scale(1.12);
+}
+
+/* ─── Compact Side-by-Side Footer Social Buttons ──────────────────── */
+.footer-social-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  color: #ffffff;
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+.footer-social-btn:hover {
+  transform: translateY(-3px) scale(1.08);
+  color: #ffffff;
+}
+
+.footer-social-btn.facebook {
+  background: #1877f2;
+  border-color: rgba(24, 119, 242, 0.5);
+}
+.footer-social-btn.facebook:hover {
+  background: #166fe5;
+  box-shadow: 0 5px 16px rgba(24, 119, 242, 0.5);
+}
+
+.footer-social-btn.instagram {
+  background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+  border-color: rgba(225, 48, 108, 0.5);
+}
+.footer-social-btn.instagram:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 5px 16px rgba(225, 48, 108, 0.5);
+}
+
+.footer-social-btn.youtube {
+  background: #ff0000;
+  border-color: rgba(255, 0, 0, 0.5);
+}
+.footer-social-btn.youtube:hover {
+  background: #e60000;
+  box-shadow: 0 5px 16px rgba(255, 0, 0, 0.5);
+}
+
+/* Light variant for contact page */
+.contact-social-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.45rem 0.9rem 0.45rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #334155;
+  transition: all 0.25s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.contact-social-link:hover {
+  transform: translateY(-2px);
+}
+
+.contact-social-link.facebook:hover {
+  background: #eff6ff;
+  border-color: #1877f2;
+  color: #1877f2;
+}
+
+.contact-social-link.instagram:hover {
+  background: #fdf2f8;
+  border-color: #e1306c;
+  color: #e1306c;
+}
+
+.contact-social-link.youtube:hover {
+  background: #fef2f2;
+  border-color: #ff0000;
+  color: #ff0000;
+}
+

@@ -187,7 +187,7 @@ I would like an update on my order status. Thank you!`;
 
                         <div className="col-md-4">
                           <span className="text-muted d-block">Preferred Courier:</span>
-                          <strong className="text-success">{booking.deliveryService || 'ST Couriers'}</strong>
+                          <strong className="text-success">{booking.deliveryService || 'MSS Parcel Service'}</strong>
                         </div>
 
                         <div className="col-md-4">

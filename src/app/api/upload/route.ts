@@ -130,17 +130,19 @@ export async function POST(request: Request) {
           finalUrl = cloudResult.url;
           storageProvider = 'cloudinary';
         } else {
-          console.warn('Cloudinary upload fallback to local storage:', cloudResult.error);
+          console.error('Cloudinary upload error:', cloudResult.error);
+          return NextResponse.json(
+            { error: `Cloud storage upload failed: ${cloudResult.error || 'Please check your cloud configuration'}` },
+            { status: 500 }
+          );
         }
-      }
-
-      // 5. Local Storage Fallback
-      if (!finalUrl) {
-        const baseFolder = join(process.cwd(), 'public', 'images', folder);
+      } else {
+        // Local Storage Fallback only if Cloudinary is completely unconfigured
+        const baseFolder = join(process.cwd(), 'public', 'images', 'uploads');
         await ensureDir(baseFolder);
         const filePath = join(baseFolder, filename);
         await fs.writeFile(filePath, buffer);
-        finalUrl = `/images/${folder}/${filename}`;
+        finalUrl = `/images/uploads/${filename}`;
         storageProvider = 'local';
       }
 

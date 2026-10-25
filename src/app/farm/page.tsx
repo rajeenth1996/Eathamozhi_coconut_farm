@@ -1,27 +1,12 @@
-'use client';
-
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { DataStore } from '@/lib/dataStore';
 import ImageCarousel from '@/components/ImageCarousel';
 
-export default function MotherTreesPage() {
-  const [palms, setPalms] = useState<any[]>([]);
-  const [batches, setBatches] = useState<any[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+export const dynamic = 'force-dynamic';
 
-  useEffect(() => {
-    Promise.all([
-      fetch('/api/parent-palms').then(r => r.json()),
-      fetch('/api/batches').then(r => r.json())
-    ]).then(([palmsData, batchesData]) => {
-      if (Array.isArray(palmsData)) setPalms(palmsData);
-      if (Array.isArray(batchesData)) setBatches(batchesData);
-      setLoading(false);
-    }).catch(err => {
-      console.error('Failed to load mother trees', err);
-      setLoading(false);
-    });
-  }, []);
+export default function MotherTreesPage() {
+  const palms = DataStore.getParentPalms();
+  const batches = DataStore.getBatches();
 
   const getActiveBatchesForPalm = (palmCode: string) => {
     return batches.filter(b => {
@@ -73,8 +58,8 @@ export default function MotherTreesPage() {
               <div className="glass-card-dark px-4 py-2 d-inline-flex align-items-center gap-2">
                 <i className="bi bi-patch-check-fill text-info fs-4"></i>
                 <div>
-                  <span className="fw-bold text-white d-block">94%+ Rate</span>
-                  <small className="text-light opacity-75">Farm Germination</small>
+                  <span className="fw-bold text-white d-block">100%</span>
+                  <small className="text-light opacity-75">Farm Grown Seedlings</small>
                 </div>
               </div>
             </div>
@@ -94,7 +79,7 @@ export default function MotherTreesPage() {
             <div className="col-md-8">
               <h5 className="fw-bold text-dark mb-1">What Makes a Tree a &ldquo;Mother Tree&rdquo;?</h5>
               <p className="text-secondary mb-0 small">
-                A Mother Tree is a decades-old coconut palm selected and registered based on exceptional yield history (140&ndash;185+ nuts/year),
+                A Mother Tree is a decades-old coconut palm selected and registered based on exceptional yield history,
                 superior nut quality (high copra content, sweet water), pest resistance, and genetic stability. Only seednuts from these registered trees are used
                 to raise our certified sapling batches &mdash; ensuring every sapling you receive carries proven, traceable genetics.
               </p>
@@ -119,22 +104,21 @@ export default function MotherTreesPage() {
             </p>
           </div>
 
-          {loading ? (
-            <div className="text-center py-5">
-              <div className="spinner-border text-success mb-2" role="status">
-                <span className="visually-hidden">Loading mother trees...</span>
+          <div className="row g-4">
+            {palms.length === 0 ? (
+              <div className="col-12 text-center py-5">
+                <i className="bi bi-tree text-muted fs-1 mb-2 d-block"></i>
+                <h5 className="text-muted fw-bold">No Mother Trees Registered Yet</h5>
+                <p className="text-secondary small mb-0">Ancestral mother palms will appear here once added by the farm administrator.</p>
               </div>
-              <p className="text-muted small">Loading live mother tree registry...</p>
-            </div>
-          ) : (
-            <div className="row g-4">
-              {palms.map((palm) => {
+            ) : (
+              palms.map((palm) => {
                 const activeBatches = getActiveBatchesForPalm(palm.code);
                 const totalAvailable = activeBatches.reduce((s, b) => s + (b.availableQuantity || 0), 0);
                 const healthColor = getHealthBadgeColor(palm.healthStatus);
 
                 return (
-                  <div key={palm.id || palm.code} className="col-md-6 col-lg-4">
+                  <div key={palm.id} className="col-md-6 col-lg-4">
                     <div className="card h-100 border-0 shadow-sm rounded-4 overflow-hidden hover-lift bg-white">
 
                       {/* Image */}
@@ -163,7 +147,7 @@ export default function MotherTreesPage() {
                         </div>
                         <div className="position-absolute top-0 end-0 m-2">
                           <span className={`badge bg-${healthColor}`}>
-                            <i className="bi bi-heart-pulse-fill me-1"></i>{(palm.healthStatus || 'Good').split(' ')[0]}
+                            <i className="bi bi-heart-pulse-fill me-1"></i>{palm.healthStatus.split(' ')[0]}
                           </span>
                         </div>
                         {totalAvailable > 0 && (
@@ -205,7 +189,7 @@ export default function MotherTreesPage() {
                           <small className="fw-bold text-success d-block mb-1">
                             <i className="bi bi-graph-up-arrow me-1"></i>Yield History
                           </small>
-                          <p className="text-secondary extra-small mb-0" style={{ overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{palm.yieldHistory}</p>
+                          <p className="text-secondary extra-small mb-0" style={{ lineClamp: 2, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{palm.yieldHistory}</p>
                         </div>
 
                         {/* Nut Characteristics */}
@@ -243,9 +227,9 @@ export default function MotherTreesPage() {
                     </div>
                   </div>
                 );
-              })}
-            </div>
-          )}
+              })
+            )}
+          </div>
         </div>
       </section>
 
@@ -301,13 +285,13 @@ export default function MotherTreesPage() {
             <Link href="/batches" className="btn-gold px-4 py-3 fs-6 text-decoration-none">
               <i className="bi bi-grid-fill me-1"></i> View All Available Batches
             </Link>
-            <a 
-              href="https://wa.me/919486880641?text=Hello%20Eathamozhy%20Farm,%20I%20want%20to%20know%20more%20about%20your%20Mother%20Trees" 
-              target="_blank" 
+            <a
+              href={`https://wa.me/${process.env.NEXT_PUBLIC_FARM_WHATSAPP || '919486880641'}?text=Hello%20Eathamozhy%20Farm,%20I%20want%20to%20know%20more%20about%20your%20Mother%20Trees`}
+              target="_blank"
               rel="noreferrer"
               className="btn btn-outline-light px-4 py-3 fs-6 rounded-3 fw-bold"
             >
-              <i className="bi bi-whatsapp me-1 text-success"></i> Chat on WhatsApp
+              <i className="bi bi-whatsapp me-1 text-success"></i> Ask About Trees
             </a>
           </div>
         </div>

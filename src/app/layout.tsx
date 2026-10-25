@@ -6,8 +6,50 @@ import AnalyticsTracker from '@/components/AnalyticsTracker';
 import ExternalAnalytics from '@/components/ExternalAnalytics';
 
 export const metadata: Metadata = {
-  title: 'Eathamozhy Coconut Farm | Authentic GI-Tagged Saplings & Traceability',
-  description: 'Mainland India’s only GI-Tagged coconut cultivar. Directly raised in our ancestral grove in Kanyakumari. 100% transparent live batch inventory and mother palm traceability.',
+  title: 'Eathamozhy Coconut Farm | Buy Coconut Seedlings & Saplings Online',
+  description: 'Mainland India’s only GI-Tagged coconut cultivar. Buy authentic, high-yielding coconut seedlings and saplings directly from our ancestral grove in Kanyakumari. 100% farm-grown with mother tree traceability and pan-India express freight delivery.',
+  keywords: [
+    'coconut',
+    'coconut seedlings',
+    'coconut saplings',
+    'coconut plants',
+    'buy coconut seedlings online',
+    'buy coconut saplings',
+    'eathamozhy tall coconut',
+    'GI tagged coconut seedlings',
+    'high yield coconut seedlings',
+    'kanyakumari coconut farm',
+    'coconut nursery',
+    'best coconut seedlings in india',
+    'tender coconut saplings'
+  ],
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    title: 'Eathamozhy Coconut Farm | Buy Certified Coconut Seedlings & Saplings',
+    description: 'Direct from our ancestral farm in Kanyakumari. 100% farm-grown GI-Tagged Eathamozhy Tall coconut seedlings with mother tree traceability.',
+    url: 'https://eathamozhycoconutfarm.com',
+    siteName: 'Eathamozhy Coconut Farm',
+    locale: 'en_IN',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Eathamozhy Coconut Farm | Certified Coconut Seedlings & Saplings',
+    description: 'Mainland India’s only GI-Tagged coconut cultivar. Buy authentic coconut seedlings online directly from the farmer.',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
 };
 
 export default function RootLayout({
@@ -15,6 +57,12 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const farmPhone = process.env.NEXT_PUBLIC_FARM_PHONE || '+91 94868 80641';
+  const farmWhatsApp = process.env.NEXT_PUBLIC_FARM_WHATSAPP || '919486880641';
+  const facebookUrl = process.env.NEXT_PUBLIC_FACEBOOK_URL || 'https://www.facebook.com/share/1Fg7jUCXNM/';
+  const youtubeUrl = process.env.NEXT_PUBLIC_YOUTUBE_URL || 'https://youtube.com/@eathamozhicoconutfarm?si=DerFz4Uxlf_eW8LD';
+  const instagramUrl = process.env.NEXT_PUBLIC_INSTAGRAM_URL || 'https://www.instagram.com/eathamozhi_coconut_farm?xtok=MTFhaHJwdXk5Nzhleg==';
+
   return (
     <html lang="en">
       <head>
@@ -28,6 +76,50 @@ export default function RootLayout({
           href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" 
         />
         <ExternalAnalytics />
+
+        {/* Structured Data (JSON-LD) for Search Engines */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': ['LocalBusiness', 'AgriculturalBusiness'],
+              name: 'Eathamozhy Coconut Farm',
+              description: 'Authentic GI-Tagged Eathamozhy Tall coconut seedlings and saplings nursery in Kanyakumari, Tamil Nadu.',
+              telephone: farmPhone,
+              address: {
+                '@type': 'PostalAddress',
+                streetAddress: 'Eathamozhy Village, Agastheeswaram Taluk',
+                addressLocality: 'Kanyakumari District',
+                addressRegion: 'Tamil Nadu',
+                postalCode: '629501',
+                addressCountry: 'IN',
+              },
+              geo: {
+                '@type': 'GeoCoordinates',
+                latitude: '8.1367',
+                longitude: '77.4278',
+              },
+              url: 'https://eathamozhycoconutfarm.com',
+              sameAs: [facebookUrl, youtubeUrl, instagramUrl],
+              hasOfferCatalog: {
+                '@type': 'OfferCatalog',
+                name: 'Coconut Seedlings and Saplings',
+                itemListElement: [
+                  {
+                    '@type': 'Offer',
+                    itemOffered: {
+                      '@type': 'Product',
+                      name: 'Authentic GI-Tagged Eathamozhy Tall Coconut Seedlings',
+                      description: 'Genetically verified first-generation coconut seedlings raised from registered mother palms.',
+                      category: 'Agricultural Produce > Coconut Seedlings',
+                    },
+                  },
+                ],
+              },
+            }),
+          }}
+        />
       </head>
       <body className="bg-light">
         <AnalyticsTracker />
@@ -42,7 +134,7 @@ export default function RootLayout({
 
         {/* Desktop Floating WhatsApp Assistant Button */}
         <a 
-          href="https://wa.me/919486880641?text=Hello%20Eathamozhy%20Farm,%20I%20have%20a%20question%20about%20your%20coconut%20saplings."
+          href={`https://wa.me/${farmWhatsApp}?text=Hello%20Eathamozhy%20Farm,%20I%20have%20a%20question%20about%20your%20coconut%20seedlings%20and%20saplings.`}
           target="_blank"
           rel="noreferrer"
           className="d-none d-md-flex position-fixed bottom-0 end-0 m-4 z-3 btn btn-success rounded-pill shadow-lg align-items-center gap-2 px-3 py-2 border border-white border-opacity-25 hover-lift"
@@ -71,7 +163,7 @@ export default function RootLayout({
                 </div>
 
                 <p className="text-light opacity-75 small mb-3">
-                  Traditional Eathamozhy coconut saplings, nurtured directly on our coastal family farm in Kanyakumari. 
+                  Traditional Eathamozhy coconut seedlings and saplings, nurtured directly on our coastal family farm in Kanyakumari. 
                   Every order includes transparent mother tree origin and protective crate transit.
                 </p>
 
@@ -81,8 +173,8 @@ export default function RootLayout({
                 </div>
 
                 <div className="d-flex gap-2">
-                  <a href="https://wa.me/919486880641" target="_blank" rel="noreferrer" className="btn btn-sm btn-outline-success text-success">
-                    <i className="bi bi-whatsapp me-1"></i> WhatsApp: +91 94868 80641
+                  <a href={`https://wa.me/${farmWhatsApp}`} target="_blank" rel="noreferrer" className="btn btn-sm btn-outline-success text-success">
+                    <i className="bi bi-whatsapp me-1"></i> WhatsApp: {farmPhone}
                   </a>
                 </div>
               </div>
@@ -110,20 +202,53 @@ export default function RootLayout({
                 </ul>
               </div>
 
-              {/* Farm Address */}
+              {/* Farm Address & Social Links */}
               <div className="col-lg-3 col-md-6">
                 <h6 className="text-uppercase fw-bold text-success extra-small tracking-wider mb-3">Farm Location</h6>
                 <p className="text-light opacity-75 small mb-2">
                   <i className="bi bi-geo-alt-fill text-danger me-1"></i> Eathamozhy Village, Agastheeswaram Taluk, Kanyakumari District, Tamil Nadu &ndash; 629501
                 </p>
-                <p className="text-light opacity-75 small mb-1">
-                  <i className="bi bi-envelope me-1 text-info"></i> contact@eathamozhycoconut.com
-                </p>
                 <p className="text-light opacity-75 small mb-3">
-                  <i className="bi bi-telephone-fill me-1 text-success"></i> +91 94868 80641
+                  <i className="bi bi-telephone-fill me-1 text-success"></i> {farmPhone}
                 </p>
-                <div className="bg-dark bg-opacity-50 p-2 rounded-3 border border-secondary border-opacity-25 small text-light opacity-80">
-                  <i className="bi bi-clock-history me-1 text-warning"></i> Farm visits welcomed by appointment (Mon&ndash;Sat 8:00 AM &ndash; 6:00 PM)
+
+                {/* Social Links from .env */}
+                <div className="mt-3 pt-2 border-top border-secondary border-opacity-25">
+                  <span className="text-uppercase fw-bold text-success extra-small tracking-wider d-block mb-2">
+                    <i className="bi bi-patch-check-fill text-warning me-1"></i> Connect On Socials
+                  </span>
+                  <div className="d-flex align-items-center gap-2">
+                    <a 
+                      href={facebookUrl} 
+                      target="_blank" 
+                      rel="noreferrer" 
+                      className="footer-social-btn facebook"
+                      title="Follow Eathamozhy Coconut Farm on Facebook"
+                      aria-label="Facebook"
+                    >
+                      <i className="bi bi-facebook"></i>
+                    </a>
+                    <a 
+                      href={instagramUrl} 
+                      target="_blank" 
+                      rel="noreferrer" 
+                      className="footer-social-btn instagram"
+                      title="Follow Eathamozhy Coconut Farm on Instagram"
+                      aria-label="Instagram"
+                    >
+                      <i className="bi bi-instagram"></i>
+                    </a>
+                    <a 
+                      href={youtubeUrl} 
+                      target="_blank" 
+                      rel="noreferrer" 
+                      className="footer-social-btn youtube"
+                      title="Watch Eathamozhy Coconut Farm on YouTube"
+                      aria-label="YouTube"
+                    >
+                      <i className="bi bi-youtube"></i>
+                    </a>
+                  </div>
                 </div>
               </div>
 

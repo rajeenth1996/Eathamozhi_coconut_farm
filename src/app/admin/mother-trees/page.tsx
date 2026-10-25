@@ -14,7 +14,7 @@ export default function AdminMotherTreesPage() {
     age: 45,
     location: 'Coastal Plot C, Eathamozhy Farm',
     healthStatus: 'Excellent (100% Disease Resistant)',
-    yieldHistory: '180–210 nuts per palm per year',
+    yieldHistory: 'Consistently high year-round seed nut yield',
     description: 'Selected for heavy canopy, disease immunity, and large copra content.',
     nutCharacteristics: 'Large spherical nuts with high coconut water volume and thick kernel.',
     whySelected: 'Consistently high yield for over 40 years without dropping premature buttons.',
@@ -104,7 +104,7 @@ export default function AdminMotherTreesPage() {
         })
       });
       if (res.ok) {
-        alert(`Mother Tree ${newTree.code} added successfully! Dedicated folder /public/images/parent-palms/${newTree.code}/ created.`);
+        alert(`Mother Tree ${newTree.code} added successfully!`);
         fetchPalms();
         setTreeFiles([]);
         const nextNum = Math.floor(25 + Math.random() * 50);
@@ -114,11 +114,11 @@ export default function AdminMotherTreesPage() {
           age: 40,
           location: 'Eathamozhy Main Grove',
           healthStatus: 'Excellent (Vigorous Nut Producer)',
-          yieldHistory: '160–180 nuts per palm per year',
+          yieldHistory: 'Consistently high year-round seed nut yield',
           description: 'High-yielding mother tree selected for mother seed nut production.',
           nutCharacteristics: 'Large spherical nuts with high coconut water volume and thick kernel.',
           whySelected: 'Consistently high yield with exceptional seedling germination rate.',
-          images: [`/images/parent-palms/EM-MP-0${nextNum}/tree_1.jpg`]
+          images: []
         });
       } else {
         const errData = await res.json();

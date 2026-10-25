@@ -168,7 +168,7 @@ export default function AdminOrdersPage() {
       'District': b.district,
       'State': b.state,
       'PIN Code': b.pinCode,
-      'Delivery Service / Courier': b.deliveryService || b.courierName || 'ST Couriers',
+      'Delivery Service / Courier': b.deliveryService || b.courierName || 'MSS Parcel Service',
       'Nearest Delivery Hub': b.nearestHub || 'District Main Hub',
       'Tracking ID': b.trackingId || 'Pending',
       'Dispatch Date': b.dispatchDate || 'N/A',
@@ -474,7 +474,7 @@ export default function AdminOrdersPage() {
                           <strong className="d-block">{ord.customerName}</strong>
                           <small className="text-muted d-block"><i className="bi bi-phone me-1"></i>{ord.mobile} | {ord.district}</small>
                           <small className="badge bg-light text-dark border extra-small mt-1">
-                            <i className="bi bi-truck me-1 text-success"></i>{ord.deliveryService || 'ST Couriers'} ({ord.nearestHub || 'Main Hub'})
+                            <i className="bi bi-truck me-1 text-success"></i>{ord.deliveryService || 'MSS Parcel Service'} ({ord.nearestHub || 'Main Hub'})
                           </small>
                         </td>
                         <td>
@@ -492,7 +492,7 @@ export default function AdminOrdersPage() {
                         <td><strong className="text-success">₹{ord.totalAmount.toLocaleString()}</strong></td>
                         <td>
                           <span className="badge bg-success-subtle text-success border border-success d-block mb-1">
-                            rajeenth1@ybl
+                            {process.env.NEXT_PUBLIC_UPI_ID || 'rajeenth1@ybl'}
                           </span>
                           {ord.paymentScreenshotUrl ? (
                             <div className="text-center">
@@ -539,7 +539,7 @@ export default function AdminOrdersPage() {
                               `🌿 *Batch:* ${ord.batchCode}\n` +
                               `🪴 *Saplings:* ${ord.quantity}\n` +
                               `💰 *Amount:* ₹${ord.totalAmount?.toLocaleString()}\n` +
-                              `🚚 *Courier:* ${ord.deliveryService || 'ST Couriers'} (${ord.nearestHub || 'Main Hub'})\n` +
+                              `🚚 *Courier:* ${ord.deliveryService || 'MSS Parcel Service'} (${ord.nearestHub || 'Main Hub'})\n` +
                               `📅 *Expected Delivery:* ${ord.expectedDeliveryDate || 'TBD'}\n` +
                               `📦 *Status:* ${ord.bookingStatus}\n\n` +
                               `Please feel free to reach out for any queries.`

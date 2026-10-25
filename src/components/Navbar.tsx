@@ -73,7 +73,7 @@ export default function Navbar() {
             {/* Action Buttons: WhatsApp & Book Now */}
             <div className="d-flex align-items-center gap-2">
               <a 
-                href="https://wa.me/919486880641?text=Hello%20Eathamozhy%20Farm,%20I%20am%20interested%20in%20coconut%20saplings"
+                href={`https://wa.me/${process.env.NEXT_PUBLIC_FARM_WHATSAPP || '919486880641'}?text=Hello%20Eathamozhy%20Farm,%20I%20am%20interested%20in%20coconut%20seedlings%20and%20saplings`}
                 target="_blank"
                 rel="noreferrer"
                 className="btn btn-sm btn-outline-success border-success text-success fw-semibold d-none d-sm-inline-flex align-items-center gap-1 px-3 py-2 rounded-3"
@@ -131,15 +131,46 @@ export default function Navbar() {
                   );
                 })}
 
-                <div className="d-flex gap-2 pt-2 mt-2 border-top border-secondary border-opacity-25">
+                <div className="pt-2 mt-2 border-top border-secondary border-opacity-25">
                   <a 
-                    href="https://wa.me/919486880641" 
+                    href={`https://wa.me/${process.env.NEXT_PUBLIC_FARM_WHATSAPP || '919486880641'}`}
                     target="_blank" 
                     rel="noreferrer"
-                    className="btn btn-sm btn-success w-100 py-2 fw-semibold"
+                    className="btn btn-sm btn-success w-100 py-2 fw-semibold mb-2"
                   >
                     <i className="bi bi-whatsapp me-1"></i> WhatsApp Helpline
                   </a>
+                  
+                  {/* Social Media Links */}
+                  <div className="d-flex justify-content-center gap-2 pt-1">
+                    <a 
+                      href={process.env.NEXT_PUBLIC_FACEBOOK_URL || "https://www.facebook.com/share/1Fg7jUCXNM/"}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="btn btn-sm btn-outline-light rounded-pill px-3 py-1 extra-small"
+                      title="Facebook"
+                    >
+                      <i className="bi bi-facebook text-primary me-1"></i> Facebook
+                    </a>
+                    <a 
+                      href={process.env.NEXT_PUBLIC_INSTAGRAM_URL || "https://www.instagram.com/eathamozhi_coconut_farm?xtok=MTFhaHJwdXk5Nzhleg=="}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="btn btn-sm btn-outline-light rounded-pill px-3 py-1 extra-small"
+                      title="Instagram"
+                    >
+                      <i className="bi bi-instagram text-danger me-1"></i> Instagram
+                    </a>
+                    <a 
+                      href={process.env.NEXT_PUBLIC_YOUTUBE_URL || "https://youtube.com/@eathamozhicoconutfarm?si=DerFz4Uxlf_eW8LD"}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="btn btn-sm btn-outline-light rounded-pill px-3 py-1 extra-small"
+                      title="YouTube"
+                    >
+                      <i className="bi bi-youtube text-danger me-1"></i> YouTube
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>

@@ -60,20 +60,69 @@ export default function ContactPage() {
 
                 <div className="mb-4">
                   <h6 className="fw-bold text-dark mb-1">Phone & WhatsApp</h6>
-                  <p className="text-secondary small mb-1"><i className="bi bi-telephone me-1 text-success"></i> +91 94868 80641</p>
-                  <p className="text-secondary small"><i className="bi bi-whatsapp me-1 text-success"></i> +91 94868 80641</p>
+                  <p className="text-secondary small mb-1">
+                    <i className="bi bi-telephone me-1 text-success"></i> {process.env.NEXT_PUBLIC_FARM_PHONE || '+91 94868 80641'}
+                  </p>
+                  <p className="text-secondary small">
+                    <i className="bi bi-whatsapp me-1 text-success"></i> {process.env.NEXT_PUBLIC_FARM_PHONE || '+91 94868 80641'}
+                  </p>
                 </div>
 
                 <div className="mb-4">
-                  <h6 className="fw-bold text-dark mb-1">Email</h6>
-                  <p className="text-secondary small">support@eathamozhycoconut.com</p>
+                  <h6 className="fw-bold text-dark mb-2">Connect With Us</h6>
+                  <div className="d-flex flex-wrap gap-2">
+                    <a 
+                      href={process.env.NEXT_PUBLIC_FACEBOOK_URL || "https://www.facebook.com/share/1Fg7jUCXNM/"} 
+                      target="_blank" 
+                      rel="noreferrer" 
+                      className="contact-social-link facebook"
+                      title="Follow us on Facebook"
+                    >
+                      <span className="footer-social-icon" style={{ width: '24px', height: '24px', fontSize: '0.75rem' }}>
+                        <i className="bi bi-facebook"></i>
+                      </span>
+                      <span>Facebook</span>
+                    </a>
+                    <a 
+                      href={process.env.NEXT_PUBLIC_INSTAGRAM_URL || "https://www.instagram.com/eathamozhi_coconut_farm?xtok=MTFhaHJwdXk5Nzhleg=="} 
+                      target="_blank" 
+                      rel="noreferrer" 
+                      className="contact-social-link instagram"
+                      title="Follow us on Instagram"
+                    >
+                      <span className="footer-social-icon" style={{ width: '24px', height: '24px', fontSize: '0.75rem' }}>
+                        <i className="bi bi-instagram"></i>
+                      </span>
+                      <span>Instagram</span>
+                    </a>
+                    <a 
+                      href={process.env.NEXT_PUBLIC_YOUTUBE_URL || "https://youtube.com/@eathamozhicoconutfarm?si=DerFz4Uxlf_eW8LD"} 
+                      target="_blank" 
+                      rel="noreferrer" 
+                      className="contact-social-link youtube"
+                      title="Watch us on YouTube"
+                    >
+                      <span className="footer-social-icon" style={{ width: '24px', height: '24px', fontSize: '0.75rem' }}>
+                        <i className="bi bi-youtube"></i>
+                      </span>
+                      <span>YouTube</span>
+                    </a>
+                  </div>
                 </div>
 
                 <div className="d-flex flex-column gap-2 mt-auto">
-                  <a href="https://wa.me/919486880641" target="_blank" rel="noreferrer" className="btn btn-success fw-bold py-2">
+                  <a 
+                    href={`https://wa.me/${process.env.NEXT_PUBLIC_FARM_WHATSAPP || '919486880641'}`} 
+                    target="_blank" 
+                    rel="noreferrer" 
+                    className="btn btn-success fw-bold py-2"
+                  >
                     <i className="bi bi-whatsapp me-1"></i> WhatsApp Us Directly
                   </a>
-                  <a href="tel:+919486880641" className="btn btn-outline-dark fw-bold py-2">
+                  <a 
+                    href={`tel:${(process.env.NEXT_PUBLIC_FARM_PHONE || '+91 94868 80641').replace(/\s+/g, '')}`} 
+                    className="btn btn-outline-dark fw-bold py-2"
+                  >
                     <i className="bi bi-telephone-fill me-1"></i> Call Us Now
                   </a>
                 </div>

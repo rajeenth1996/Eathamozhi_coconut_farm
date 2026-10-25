@@ -196,7 +196,7 @@ export default function AdminBatchesPage() {
       });
 
       if (res.ok) {
-        alert(`Batch ${newBatch.batchCode} added! Dedicated folder /public/images/batches/${newBatch.batchCode}/ created.`);
+        alert(`Batch ${newBatch.batchCode} added successfully!`);
         fetchBatchesData();
         setUploadedUrls([]);
         setBatchFiles([]);

@@ -107,7 +107,12 @@ export default async function ParentPalmDetailPage({
                   <div className="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
                     <div className="d-flex justify-content-between align-items-center mb-2">
                       <span className="badge bg-dark">{b.batchCode}</span>
-                      <span className={`badge ${b.status === 'AVAILABLE' ? 'bg-success' : 'bg-warning text-dark'}`}>{b.status}</span>
+                      <div className="d-flex gap-1 align-items-center">
+                        <span className="badge bg-success-subtle text-success border border-success extra-small">
+                          {b.availableQuantity} available
+                        </span>
+                        <span className={`badge ${b.status === 'AVAILABLE' ? 'bg-success' : 'bg-warning text-dark'}`}>{b.status}</span>
+                      </div>
                     </div>
                     <h5 className="fw-bold text-dark mb-1">{b.name}</h5>
                     <p className="text-muted small mb-2">Age: {b.age} | Height: {b.height}</p>

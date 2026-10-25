@@ -49,10 +49,18 @@ export default function BookingConfirmationPage({
   const displayBatch = booking?.batchCode || batchParam;
   const displayAmount = booking?.totalAmount || Number(amountParam);
   const displayDate = booking?.expectedDeliveryDate || dateParam;
-  const displayCourier = booking?.deliveryService || courierParam;
-  const displayHub = booking?.nearestHub || hubParam;
-  const displayAddr = booking ? `${booking.address}, ${booking.district}, ${booking.state} - ${booking.pinCode}` : addrParam;
+  const displayCourier = booking?.deliveryService || courierParam || 'MSS Parcel Service';
+  const displayHub = booking?.nearestHub || hubParam || 'Main Hub';
+  const displayAddr = booking 
+    ? (booking.address && !booking.address.includes(booking.district)
+        ? `${booking.address}, ${booking.district}, ${booking.state} - ${booking.pinCode}`
+        : (booking.address || `${booking.district}, ${booking.state} - ${booking.pinCode}`))
+    : (addrParam || 'District Main Hub');
   const displayScreenshot = booking?.paymentScreenshotUrl;
+
+  const upiId = process.env.NEXT_PUBLIC_UPI_ID || 'rajeenth1@ybl';
+  const upiDisplayName = process.env.NEXT_PUBLIC_UPI_DISPLAY_NAME || 'eathamozhy coconut farm';
+  const billNotePrefix = process.env.NEXT_PUBLIC_UPI_BILL_NOTE_PREFIX || 'Coconut order';
 
   // WhatsApp Pre-filled text
   const whatsappMsg = 
@@ -67,10 +75,10 @@ export default function BookingConfirmationPage({
 *Expected Delivery Date:* ${displayDate}
 *Preferred Courier / Delivery Service:* ${displayCourier}
 *Nearest Delivery Hub / Town Hub:* ${displayHub}
-*UPI ID Paid to:* rajeenth1@ybl (eathamozhy coconut farm)
-*Bill Note:* Coconut order - ${displayQty} saplings
+*UPI ID Paid to:* ${upiId} (${upiDisplayName})
+*Bill Note:* ${billNotePrefix} - ${displayQty} saplings
 
-*Delivery Address:*
+*Delivery Location:*
 ${displayAddr}
 
 Please confirm our order and dispatch details. Thank you!`;

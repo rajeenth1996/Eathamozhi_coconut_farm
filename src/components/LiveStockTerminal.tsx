@@ -64,6 +64,28 @@ export default function LiveStockTerminal({ initialBatch, initialBatches = [] }:
   const availQty = currentBatch?.availableQuantity || 0;
   const bookedPct = netProduced > 0 ? Number(((bookedQty / netProduced) * 100).toFixed(1)) : 0;
 
+  if (!currentBatch) {
+    return (
+      <section className="py-5 bg-light position-relative">
+        <div className="container">
+          <div 
+            className="card border-0 shadow-lg rounded-4 overflow-hidden position-relative mt-n5 p-5 text-center bg-white"
+            style={{ marginTop: '-4.5rem', zIndex: 10 }}
+          >
+            <i className="bi bi-box-seam text-success fs-1 mb-2"></i>
+            <h4 className="fw-bold text-dark">Live Stock Terminal</h4>
+            <p className="text-muted mb-3">No active sapling batches listed at this moment. New seednut batches will be updated directly by farm admin.</p>
+            <div>
+              <a href="https://wa.me/919486880641?text=Hello%20Eathamozhy%20Farm,%20when%20will%20the%20next%20sapling%20batch%20be%20available?" target="_blank" rel="noreferrer" className="btn btn-success fw-bold">
+                <i className="bi bi-whatsapp me-1"></i> Inquire via WhatsApp
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="py-5 bg-light position-relative">
       <div className="container">

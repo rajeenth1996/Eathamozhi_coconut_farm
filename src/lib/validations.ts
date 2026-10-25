@@ -21,14 +21,17 @@ export const BookingCreateSchema = z.object({
   whatsapp: z
     .string()
     .trim()
-    .refine((val) => /^\d{10}$/.test(val.replace(/\D/g, '')), {
+    .refine((val) => !val || /^\d{10}$/.test(val.replace(/\D/g, '')), {
       message: 'WhatsApp number must be a valid 10-digit number',
-    }),
+    })
+    .optional()
+    .default(''),
   address: z
     .string()
     .trim()
-    .min(5, 'Delivery address is too short (min 5 characters)')
-    .max(250, 'Delivery address is too long (max 250 characters)'),
+    .max(250, 'Delivery address is too long (max 250 characters)')
+    .optional()
+    .default(''),
   district: z.string().trim().min(2, 'District is required').max(60),
   state: z.string().trim().min(2, 'State is required').max(60),
   pinCode: z

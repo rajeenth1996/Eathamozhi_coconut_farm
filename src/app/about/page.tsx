@@ -36,7 +36,7 @@ export default function AboutEathamozhyPage() {
                     <strong>Bearing Time:</strong> Begins initial flowering within 5 to 6 years of field planting.
                   </li>
                   <li className="mb-3">
-                    <strong>Copra & Oil:</strong> High copra weight (avg 165g–175g per nut) with oil content around 66–68%.
+                    <strong>Copra & Oil:</strong> High copra weight with superior oil content around 66–68%.
                   </li>
                   <li className="mb-3">
                     <strong>Nut Color:</strong> Distinct green to yellowish-brown husk with thick fibrous outer layer protecting seednuts during storage.
@@ -50,7 +50,7 @@ export default function AboutEathamozhyPage() {
                 <h4 className="fw-bold text-dark mb-3"><i className="bi bi-eye-fill me-2 text-warning"></i> Based On Our Farm Experience</h4>
                 <ul className="list-unstyled text-secondary">
                   <li className="mb-3">
-                    <em>"In our farm soil, mother palms given organic neem-cake & wood-ash compost consistently yield 140+ nuts annually."</em>
+                    <em>"In our farm soil, mother palms given organic neem-cake & wood-ash compost consistently deliver exceptional year-round yields."</em>
                   </li>
                   <li className="mb-3">
                     <em>"We observe seednuts harvested between December and March achieve over 92% farm germination rate within 120 days."</em>
@@ -91,7 +91,7 @@ export default function AboutEathamozhyPage() {
               <div className="col-md-3 col-6">
                 <div className="bg-white text-dark p-3 rounded-3 text-center h-100">
                   <h6 className="fw-bold text-success">4. Health Check</h6>
-                  <small className="text-muted">Roots & fronds inspected for pest resistance before batch listing.</small>
+                  <small className="text-muted">Roots & fronds inspected for pest resistance before batch delivery.</small>
                 </div>
               </div>
             </div>

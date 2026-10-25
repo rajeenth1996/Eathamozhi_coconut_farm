@@ -22,6 +22,8 @@ export default function BookingFlowPage({
 
   // Form State
   const [quantity, setQuantity] = useState<number>(10);
+  const [courierOption, setCourierOption] = useState<'MSS Parcel Service' | 'Other'>('MSS Parcel Service');
+  const [customCourier, setCustomCourier] = useState<string>('');
   const [formData, setFormData] = useState({
     customerName: '',
     mobile: '',
@@ -34,7 +36,7 @@ export default function BookingFlowPage({
     farmLocation: '',
     specialInstructions: '',
     expectedDeliveryDate: defaultDeliveryDate,
-    deliveryService: 'ST Couriers',
+    deliveryService: 'MSS Parcel Service',
     nearestHub: '',
     agreeTerms: true
   });
@@ -78,10 +80,11 @@ export default function BookingFlowPage({
   const deliveryCharge = quantity >= 50 ? 0 : 250;
   const totalAmount = subtotal + deliveryCharge;
 
-  // UPI Details requested by user
-  const upiId = 'rajeenth1@ybl';
-  const displayName = 'eathamozhy coconut farm';
-  const billNote = `Coconut order - ${quantity} saplings`;
+  // UPI Details requested by user (configurable via .env / .env.local)
+  const upiId = process.env.NEXT_PUBLIC_UPI_ID || 'rajeenth1@ybl';
+  const displayName = process.env.NEXT_PUBLIC_UPI_DISPLAY_NAME || 'eathamozhy coconut farm';
+  const billNotePrefix = process.env.NEXT_PUBLIC_UPI_BILL_NOTE_PREFIX || 'Coconut order';
+  const billNote = `${billNotePrefix} - ${quantity} saplings`;
   
   const upiUri = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(displayName)}&am=${totalAmount}&tn=${encodeURIComponent(billNote)}&cu=INR`;
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiUri)}`;
@@ -139,6 +142,9 @@ export default function BookingFlowPage({
     e.preventDefault();
     setSubmitting(true);
 
+    const finalCourier = courierOption === 'Other' ? (customCourier.trim() || 'Other') : 'MSS Parcel Service';
+    const finalLocation = `${formData.district}, ${formData.state} - ${formData.pinCode}`;
+
     try {
       const res = await fetch('/api/bookings', {
         method: 'POST',
@@ -150,7 +156,11 @@ export default function BookingFlowPage({
           deliveryCharge,
           totalAmount,
           paymentScreenshotUrl: screenshotUrl,
-          ...formData
+          ...formData,
+          mobile: formData.mobile,
+          whatsapp: formData.mobile,
+          address: finalLocation,
+          deliveryService: finalCourier
         })
       });
 
@@ -162,23 +172,24 @@ export default function BookingFlowPage({
 
 *Booking ID:* ${data.bookingId}
 *Customer Name:* ${formData.customerName}
-*Phone / WhatsApp:* ${formData.whatsapp}
+*Phone / WhatsApp:* ${formData.mobile}
 *Sapling Count:* ${quantity} Saplings
 *Batch Code:* ${batch.batchCode}
 *Total Paid Amount:* ₹${totalAmount.toLocaleString()}
 *Expected Delivery Date:* ${formData.expectedDeliveryDate}
-*Preferred Courier / Delivery Service:* ${formData.deliveryService}
-*Nearest Delivery Hub / Town Hub:* ${formData.nearestHub || 'District Main Hub'}
+*Preferred Courier / Delivery Service:* ${finalCourier}
+*Nearest Delivery Hub / Town Hub:* ${formData.nearestHub || 'Main Hub'}
 *UPI ID Paid to:* ${upiId} (${displayName})
 *Bill Note:* ${billNote}
 
-*Delivery Address:*
-${formData.address}, ${formData.district}, ${formData.state} - ${formData.pinCode}
+*Delivery Location:*
+${finalLocation}
 
 Please confirm our order and dispatch details. Thank you!`;
 
         const encodedWa = encodeURIComponent(whatsappMsg);
-        const waUrl = `https://wa.me/919486880641?text=${encodedWa}`;
+        const farmWhatsApp = process.env.NEXT_PUBLIC_FARM_WHATSAPP || '919486880641';
+        const waUrl = `https://wa.me/${farmWhatsApp}?text=${encodedWa}`;
 
         // Trigger WhatsApp directly in new window / app
         try {
@@ -193,11 +204,11 @@ Please confirm our order and dispatch details. Thank you!`;
           qty: quantity.toString(),
           batch: batch.batchCode,
           amount: totalAmount.toString(),
-          mobile: formData.whatsapp,
+          mobile: formData.mobile,
           date: formData.expectedDeliveryDate,
-          courier: formData.deliveryService,
-          hub: formData.nearestHub || 'District Main Hub',
-          addr: `${formData.address}, ${formData.district}, ${formData.state} - ${formData.pinCode}`
+          courier: finalCourier,
+          hub: formData.nearestHub || 'Main Hub',
+          addr: finalLocation
         });
 
         router.push(`/confirmation/${data.bookingId}?${queryParams.toString()}`);
@@ -409,7 +420,7 @@ Please confirm our order and dispatch details. Thank you!`;
                     </div>
 
                     <div className="col-md-6">
-                      <label className="form-label small fw-bold">Mobile Number *</label>
+                      <label className="form-label small fw-bold">Phone / WhatsApp Number *</label>
                       <input 
                         type="tel" 
                         name="mobile" 
@@ -417,21 +428,16 @@ Please confirm our order and dispatch details. Thank you!`;
                         required 
                         placeholder="10-digit mobile number"
                         value={formData.mobile}
-                        onChange={handleInputChange}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setFormData(prev => ({
+                            ...prev,
+                            mobile: val,
+                            whatsapp: val
+                          }));
+                        }}
                       />
-                    </div>
-
-                    <div className="col-md-6">
-                      <label className="form-label small fw-bold">WhatsApp Number *</label>
-                      <input 
-                        type="tel" 
-                        name="whatsapp" 
-                        className="form-control" 
-                        required 
-                        placeholder="For booking & dispatch updates"
-                        value={formData.whatsapp}
-                        onChange={handleInputChange}
-                      />
+                      <small className="text-muted extra-small">Used for order confirmation & dispatch updates.</small>
                     </div>
 
                     <div className="col-md-6">
@@ -447,44 +453,7 @@ Please confirm our order and dispatch details. Thank you!`;
                       <small className="text-muted extra-small">Select your preferred farm delivery date.</small>
                     </div>
 
-                    <div className="col-12">
-                      <label className="form-label small fw-bold">Delivery Address *</label>
-                      <textarea 
-                        name="address" 
-                        className="form-control" 
-                        rows={2} 
-                        required 
-                        placeholder="House/Farm No., Street Name, Village/Town"
-                        value={formData.address}
-                        onChange={handleInputChange}
-                      ></textarea>
-                    </div>
-
-                    <div className="col-md-4">
-                      <label className="form-label small fw-bold">District *</label>
-                      <input 
-                        type="text" 
-                        name="district" 
-                        className="form-control" 
-                        required 
-                        value={formData.district}
-                        onChange={handleInputChange}
-                      />
-                    </div>
-
-                    <div className="col-md-4">
-                      <label className="form-label small fw-bold">State *</label>
-                      <input 
-                        type="text" 
-                        name="state" 
-                        className="form-control" 
-                        required 
-                        value={formData.state}
-                        onChange={handleInputChange}
-                      />
-                    </div>
-
-                    <div className="col-md-4">
+                    <div className="col-md-6">
                       <label className="form-label small fw-bold">PIN Code *</label>
                       <input 
                         type="text" 
@@ -498,22 +467,69 @@ Please confirm our order and dispatch details. Thank you!`;
                     </div>
 
                     <div className="col-md-6">
+                      <label className="form-label small fw-bold">District *</label>
+                      <input 
+                        type="text" 
+                        name="district" 
+                        className="form-control" 
+                        required 
+                        value={formData.district}
+                        onChange={handleInputChange}
+                      />
+                    </div>
+
+                    <div className="col-md-6">
+                      <label className="form-label small fw-bold">State *</label>
+                      <input 
+                        type="text" 
+                        name="state" 
+                        className="form-control" 
+                        required 
+                        value={formData.state}
+                        onChange={handleInputChange}
+                      />
+                    </div>
+
+                    <div className="col-md-6">
                       <label className="form-label small fw-bold">Preferred Courier / Delivery Service *</label>
                       <select 
-                        name="deliveryService" 
+                        name="courierOption" 
                         className="form-select"
                         required
-                        value={formData.deliveryService}
-                        onChange={handleInputChange}
+                        value={courierOption}
+                        onChange={(e) => {
+                          const selected = e.target.value as 'MSS Parcel Service' | 'Other';
+                          setCourierOption(selected);
+                          setFormData(prev => ({
+                            ...prev,
+                            deliveryService: selected === 'Other' ? (customCourier.trim() || 'Other') : 'MSS Parcel Service'
+                          }));
+                        }}
                       >
-                        <option value="ST Couriers">ST Couriers</option>
-                        <option value="The Professional Couriers">The Professional Couriers</option>
-                        <option value="India Post (Speed Post)">India Post (Speed Post)</option>
-                        <option value="VRL Logistics / Parcel Service">VRL Logistics / Parcel Service</option>
-                        <option value="Direct Farm Vehicle Transport">Direct Farm Vehicle Transport (Bulk)</option>
-                        <option value="Self Pickup at Farm">Self Pickup at Eathamozhy Farm</option>
+                        <option value="MSS Parcel Service">MSS Parcel Service</option>
+                        <option value="Other">Other</option>
                       </select>
-                      <small className="text-muted extra-small">Choose your preferred logistics partner.</small>
+                      <small className="text-muted extra-small">Choose MSS Parcel Service or select Other to specify.</small>
+
+                      {courierOption === 'Other' && (
+                        <div className="mt-2">
+                          <input 
+                            type="text" 
+                            className="form-control" 
+                            required 
+                            placeholder="Enter courier / delivery service name"
+                            value={customCourier}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setCustomCourier(val);
+                              setFormData(prev => ({
+                                ...prev,
+                                deliveryService: val.trim() || 'Other'
+                              }));
+                            }}
+                          />
+                        </div>
+                      )}
                     </div>
 
                     <div className="col-md-6">
@@ -523,7 +539,6 @@ Please confirm our order and dispatch details. Thank you!`;
                         name="nearestHub" 
                         className="form-control" 
                         required
-                        placeholder="e.g. Nagercoil Main Branch / Valliyur Hub"
                         value={formData.nearestHub}
                         onChange={handleInputChange}
                       />
@@ -620,10 +635,10 @@ Please confirm our order and dispatch details. Thank you!`;
                           />
                           <div>
                             <span className="badge bg-success mb-1">
-                              <i className="bi bi-cloud-check-fill me-1"></i> Uploaded to Cloud
+                              <i className="bi bi-check-circle-fill me-1"></i> Screenshot Attached
                             </span>
-                            <small className="text-secondary d-block extra-small text-truncate" style={{ maxWidth: '280px' }}>
-                              {screenshotUrl}
+                            <small className="text-success d-block extra-small fw-semibold">
+                              Payment receipt successfully attached
                             </small>
                           </div>
                         </div>

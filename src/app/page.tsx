@@ -37,12 +37,12 @@ export default function Home() {
                 </span>
                 <span className="text-white">Authentic </span>
                 <span className="text-gradient-emerald">Eathamozhy Tall</span>
-                <span className="text-white"> Coconut Saplings</span>
+                <span className="text-white"> Coconut Seedlings & Saplings</span>
               </h1>
 
-              <p className="lead text-light opacity-90 mb-4 mx-auto" style={{ maxWidth: '780px', fontSize: '1.2rem' }}>
-                Raised with generational care in our ancestral coastal grove in Kanyakumari. 
-                Inspect transparent batch stock, trace verified mother trees, and book directly online.
+              <p className="lead text-light opacity-90 mb-4 mx-auto" style={{ maxWidth: '820px', fontSize: '1.2rem' }}>
+                Buy authentic GI-Tagged coconut seedlings and saplings directly from our family farm in Kanyakumari. 
+                100% farm-grown with certified mother tree traceability, transparent live nursery batches, and secure pan-India delivery.
               </p>
 
               {/* Action Buttons */}
@@ -54,7 +54,7 @@ export default function Home() {
                   <i className="bi bi-tree"></i> Trace Our Mother Trees
                 </Link>
                 <a 
-                  href="https://wa.me/919486880641?text=Hello%20Eathamozhy%20Farm,%20I%20want%20to%20inquire%20about%20saplings"
+                  href={`https://wa.me/${process.env.NEXT_PUBLIC_FARM_WHATSAPP || '919486880641'}?text=Hello%20Eathamozhy%20Farm,%20I%20want%20to%20inquire%20about%20coconut%20seedlings%20and%20saplings`}
                   target="_blank"
                   rel="noreferrer"
                   className="btn btn-outline-success border-success text-success fw-semibold px-4 py-3 d-inline-flex align-items-center gap-2 rounded-3"
@@ -73,8 +73,8 @@ export default function Home() {
                 </div>
                 <div className="col-6 col-md-3">
                   <div className="glass-card-dark p-3 text-center hover-lift-subtle">
-                    <span className="display-6 fw-bold text-gradient-emerald d-block">94%</span>
-                    <small className="text-light opacity-80 extra-small text-uppercase fw-semibold">Farm Germination</small>
+                    <span className="display-6 fw-bold text-gradient-emerald d-block">100%</span>
+                    <small className="text-light opacity-80 extra-small text-uppercase fw-semibold">Farm Grown Seedlings</small>
                   </div>
                 </div>
                 <div className="col-6 col-md-3">
@@ -131,57 +131,66 @@ export default function Home() {
           </div>
 
           <div className="row g-4">
-            {motherPalms.slice(0, 4).map(palm => (
-              <div key={palm.id} className="col-md-6 col-lg-3">
-                <div className="card h-100 border-0 shadow-sm rounded-4 overflow-hidden hover-lift bg-white">
-                  <div className="position-relative" style={{ height: '200px' }}>
-                    <img 
-                      src={palm.images && palm.images.length > 0 ? palm.images[0] : '/images/placeholder.png'} 
-                      alt={palm.name} 
-                      className="w-100 h-100 object-fit-cover"
-                    />
-                    <div className="position-absolute top-0 start-0 m-2">
-                      <span className="badge bg-dark bg-opacity-75">{palm.code}</span>
-                    </div>
-                    <div className="position-absolute top-0 end-0 m-2">
-                      <span className="badge bg-warning text-dark fw-bold">{palm.age} Yrs</span>
-                    </div>
-                  </div>
-
-                  <div className="card-body p-3 d-flex flex-column justify-content-between">
-                    <div>
-                      <h6 className="fw-bold text-dark mb-1">{palm.name}</h6>
-                      <small className="text-muted d-block mb-2">
-                        <i className="bi bi-geo-alt-fill text-danger me-1"></i> {palm.location}
-                      </small>
-                      <div className="d-flex gap-1 mb-2 flex-wrap">
-                        <span className="badge bg-success-subtle text-success border border-success extra-small">{palm.healthStatus.split(' ')[0]}</span>
+            {motherPalms.length === 0 ? (
+              <div className="col-12 text-center py-5">
+                <i className="bi bi-tree text-muted fs-1 mb-2 d-block"></i>
+                <p className="text-muted mb-0">Mother Trees are being documented in the farm registry.</p>
+              </div>
+            ) : (
+              motherPalms.slice(0, 4).map(palm => (
+                <div key={palm.id} className="col-md-6 col-lg-3">
+                  <div className="card h-100 border-0 shadow-sm rounded-4 overflow-hidden hover-lift bg-white">
+                    <div className="position-relative" style={{ height: '200px' }}>
+                      <img 
+                        src={palm.images && palm.images.length > 0 ? palm.images[0] : '/images/placeholder.png'} 
+                        alt={palm.name} 
+                        className="w-100 h-100 object-fit-cover"
+                      />
+                      <div className="position-absolute top-0 start-0 m-2">
+                        <span className="badge bg-dark bg-opacity-75">{palm.code}</span>
                       </div>
-                      <p className="extra-small text-secondary mb-1" style={{ overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-                        {palm.yieldHistory}
-                      </p>
-                      <p className="extra-small text-primary mb-2" style={{ overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-                        <i className="bi bi-droplet-half me-1"></i>{palm.nutCharacteristics}
-                      </p>
+                      <div className="position-absolute top-0 end-0 m-2">
+                        <span className="badge bg-warning text-dark fw-bold">{palm.age} Yrs</span>
+                      </div>
                     </div>
 
-                    <Link 
-                      href={`/parent-palm/${palm.code}`} 
-                      className="btn btn-outline-success btn-sm w-100 fw-semibold rounded-3"
-                    >
-                      Inspect Full Profile <i className="bi bi-arrow-right ms-1"></i>
-                    </Link>
+                    <div className="card-body p-3 d-flex flex-column justify-content-between">
+                      <div>
+                        <h6 className="fw-bold text-dark mb-1">{palm.name}</h6>
+                        <small className="text-muted d-block mb-2">
+                          <i className="bi bi-geo-alt-fill text-danger me-1"></i> {palm.location}
+                        </small>
+                        <div className="d-flex gap-1 mb-2 flex-wrap">
+                          <span className="badge bg-success-subtle text-success border border-success extra-small">{palm.healthStatus.split(' ')[0]}</span>
+                        </div>
+                        <p className="extra-small text-secondary mb-1" style={{ overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                          {palm.yieldHistory}
+                        </p>
+                        <p className="extra-small text-primary mb-2" style={{ overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                          <i className="bi bi-droplet-half me-1"></i>{palm.nutCharacteristics}
+                        </p>
+                      </div>
+
+                      <Link 
+                        href={`/parent-palm/${palm.code}`} 
+                        className="btn btn-outline-success btn-sm w-100 fw-semibold rounded-3"
+                      >
+                        Inspect Full Profile <i className="bi bi-arrow-right ms-1"></i>
+                      </Link>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
 
-          <div className="text-center mt-4">
-            <Link href="/farm" className="btn btn-outline-dark px-4 py-2 rounded-3 fw-semibold">
-              Explore All {motherPalms.length} Verified Mother Trees <i className="bi bi-arrow-right ms-1"></i>
-            </Link>
-          </div>
+          {motherPalms.length > 0 && (
+            <div className="text-center mt-4">
+              <Link href="/farm" className="btn btn-outline-dark px-4 py-2 rounded-3 fw-semibold">
+                Explore All {motherPalms.length} Verified Mother Trees <i className="bi bi-arrow-right ms-1"></i>
+              </Link>
+            </div>
+          )}
         </div>
       </section>
 
@@ -248,36 +257,43 @@ export default function Home() {
           </div>
 
           <div className="row g-4">
-            {reviews.map(rev => (
-              <div key={rev.id} className="col-md-6">
-                <div className="card border-0 shadow-sm rounded-4 p-4 h-100 bg-white hover-lift">
-                  <div className="d-flex justify-content-between align-items-start mb-3">
-                    <div>
-                      <h5 className="fw-bold text-dark mb-0">{rev.customerName}</h5>
-                      <small className="text-muted"><i className="bi bi-geo-alt me-1"></i> {rev.location}</small>
+            {reviews.length === 0 ? (
+              <div className="col-12 text-center py-4 text-muted">
+                <i className="bi bi-chat-heart text-muted fs-2 mb-2 d-block"></i>
+                <p className="mb-0">Verified farmer reviews will be posted as plantation consignments are harvested.</p>
+              </div>
+            ) : (
+              reviews.map(rev => (
+                <div key={rev.id} className="col-md-6">
+                  <div className="card border-0 shadow-sm rounded-4 p-4 h-100 bg-white hover-lift">
+                    <div className="d-flex justify-content-between align-items-start mb-3">
+                      <div>
+                        <h5 className="fw-bold text-dark mb-0">{rev.customerName}</h5>
+                        <small className="text-muted"><i className="bi bi-geo-alt me-1"></i> {rev.location}</small>
+                      </div>
+                      <span className="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1">
+                        <i className="bi bi-check-circle-fill me-1"></i> Verified Buyer ({rev.quantity} Saplings)
+                      </span>
                     </div>
-                    <span className="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1">
-                      <i className="bi bi-check-circle-fill me-1"></i> Verified Buyer ({rev.quantity} Saplings)
-                    </span>
-                  </div>
 
-                  <div className="text-warning mb-3">
-                    {Array.from({ length: rev.rating }).map((_, i) => (
-                      <i key={i} className="bi bi-star-fill me-1"></i>
-                    ))}
-                  </div>
+                    <div className="text-warning mb-3">
+                      {Array.from({ length: rev.rating }).map((_, i) => (
+                        <i key={i} className="bi bi-star-fill me-1"></i>
+                      ))}
+                    </div>
 
-                  <p className="text-secondary small fst-italic mb-3">
-                    "{rev.comment}"
-                  </p>
+                    <p className="text-secondary small fst-italic mb-3">
+                      "{rev.comment}"
+                    </p>
 
-                  <div className="d-flex justify-content-between align-items-center border-top pt-2 text-muted extra-small">
-                    <span>Batch: <strong className="text-dark">{rev.batchCode}</strong></span>
-                    <span>Planted: {rev.date}</span>
+                    <div className="d-flex justify-content-between align-items-center border-top pt-2 text-muted extra-small">
+                      <span>Batch: <strong className="text-dark">{rev.batchCode}</strong></span>
+                      <span>Planted: {rev.date}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </section>
@@ -295,7 +311,7 @@ export default function Home() {
               <i className="bi bi-bag-check-fill"></i> View Available Batches Now
             </Link>
             <a 
-              href="https://wa.me/919486880641?text=Hello,%20I%20want%20to%20place%20a%20bulk%20order%20for%20Eathamozhy%20coconut%20saplings" 
+              href={`https://wa.me/${process.env.NEXT_PUBLIC_FARM_WHATSAPP || '919486880641'}?text=Hello,%20I%20want%20to%20place%20an%20order%20for%20Eathamozhy%20coconut%20seedlings%20and%20saplings`}
               target="_blank" 
               rel="noreferrer"
               className="btn btn-outline-light px-4 py-3 fs-6 rounded-3 fw-bold"

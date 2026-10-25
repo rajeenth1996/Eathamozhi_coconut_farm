@@ -1,9 +1,6 @@
 import { NextResponse } from 'next/server';
 import { DataStore } from '@/lib/dataStore';
 
-import { mkdir } from 'fs/promises';
-import path from 'path';
-
 export async function GET() {
   return NextResponse.json(DataStore.getParentPalms());
 }
@@ -13,15 +10,6 @@ export async function POST(request: Request) {
     const body = await request.json();
     if (!body.code || !body.name) {
       return NextResponse.json({ error: 'Mother tree code and name required' }, { status: 400 });
-    }
-
-    // In local environments, attempt creating dedicated folder on disk; ignore in read-only serverless environments
-    try {
-      const safeCode = body.code.replace(/[^a-zA-Z0-9_-]/g, '');
-      const folderPath = path.join(process.cwd(), 'public', 'images', 'parent-palms', safeCode);
-      await mkdir(folderPath, { recursive: true });
-    } catch {
-      // In serverless / read-only production environments (e.g. Vercel), disk folder creation is non-fatal
     }
 
     const created = DataStore.addParentPalm(body);
