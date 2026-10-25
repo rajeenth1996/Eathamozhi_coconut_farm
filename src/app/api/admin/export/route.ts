@@ -26,7 +26,7 @@ export async function GET(request: Request) {
 
     const summaryData = [
       { 'Metric': 'Export Generated At', 'Value': new Date().toLocaleString('en-IN') },
-      { 'Metric': 'Farm Name', 'Value': 'Eathamozhy Coconut Farm (GI-Tagged Cultivar)' },
+      { 'Metric': 'Farm Name', 'Value': 'Eathamozhi Coconut Farm (GI-Tagged Cultivar)' },
       { 'Metric': 'Total Batches Managed', 'Value': batches.length },
       { 'Metric': 'Total Mother Trees Registered', 'Value': palms.length },
       { 'Metric': 'Total Saplings Produced (Net)', 'Value': totalProduced },
@@ -211,7 +211,7 @@ export async function GET(request: Request) {
     const today = new Date().toISOString().split('T')[0];
     const isFiltered = Boolean(search || (status && status !== 'ALL') || orderStartDate || orderEndDate || deliveryStartDate || deliveryEndDate);
     const filterTag = isFiltered ? '_Filtered' : '';
-    const filename = `Eathamozhy_${type === 'all' ? 'Complete_Farm_Data' : type}${filterTag}_${today}.xlsx`;
+    const filename = `Eathamozhi_${type === 'all' ? 'Complete_Farm_Data' : type}${filterTag}_${today}.xlsx`;
 
     return new NextResponse(buf, {
       status: 200,

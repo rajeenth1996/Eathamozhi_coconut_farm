@@ -25,7 +25,7 @@ export default function ReviewsPage() {
             Real Experiences from <span className="text-gradient-gold">South Indian Farmers</span>
           </h1>
           <p className="lead mx-auto text-light opacity-90 mb-4" style={{ maxWidth: '700px' }}>
-            Verified feedback from plantation growers, agro-forestry developers, and family farmers who cultivate authentic Eathamozhy GI-tagged coconut palms.
+            Verified feedback from plantation growers, agro-forestry developers, and family farmers who cultivate authentic Eathamozhi GI-tagged coconut palms.
           </p>
 
           {/* Social Proof Stats Pills */}
@@ -148,7 +148,7 @@ export default function ReviewsPage() {
 
           {/* CTA Box */}
           <div className="card border-0 shadow-sm rounded-4 p-4 text-center mt-5 bg-white border-top border-success border-4">
-            <h4 className="fw-bold text-dark mb-2">Want to Experience Authentic Eathamozhy Genetics?</h4>
+            <h4 className="fw-bold text-dark mb-2">Want to Experience Authentic Eathamozhi Genetics?</h4>
             <p className="text-secondary small mx-auto mb-4" style={{ maxWidth: '600px' }}>
               Select a batch directly from our coastal grove in Kanyakumari. Every seedling is 100% farm-raised with verified ancestral lineage.
             </p>
@@ -157,7 +157,7 @@ export default function ReviewsPage() {
                 <i className="bi bi-grid-fill me-2"></i> Inspect Available Batches
               </Link>
               <a
-                href="https://wa.me/919486880641?text=Hello%20Eathamozhy%20Farm,%20I%20read%20farmer%20reviews%20and%20want%20to%20order%20saplings"
+                href="https://wa.me/919486880641?text=Hello%20Eathamozhi%20Farm,%20I%20read%20farmer%20reviews%20and%20want%20to%20order%20saplings"
                 target="_blank"
                 rel="noreferrer"
                 className="btn btn-outline-success px-4 py-3 fw-bold rounded-3"

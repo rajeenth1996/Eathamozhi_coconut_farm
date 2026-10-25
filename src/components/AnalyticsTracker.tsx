@@ -5,10 +5,10 @@ import { usePathname, useSearchParams } from 'next/navigation';
 
 function getOrCreateSessionId(): string {
   if (typeof window === 'undefined') return '';
-  let sid = sessionStorage.getItem('eathamozhy_session_id');
+  let sid = sessionStorage.getItem('eathamozhi_session_id');
   if (!sid) {
     sid = `sess_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-    sessionStorage.setItem('eathamozhy_session_id', sid);
+    sessionStorage.setItem('eathamozhi_session_id', sid);
   }
   return sid;
 }
@@ -62,10 +62,10 @@ function TrackerContent() {
     const sessionId = getOrCreateSessionId();
 
     // Cache initial referrer across the session
-    let initialReferrer = sessionStorage.getItem('eathamozhy_initial_referrer');
+    let initialReferrer = sessionStorage.getItem('eathamozhi_initial_referrer');
     if (!initialReferrer && document.referrer) {
       initialReferrer = document.referrer;
-      sessionStorage.setItem('eathamozhy_initial_referrer', initialReferrer);
+      sessionStorage.setItem('eathamozhi_initial_referrer', initialReferrer);
     }
 
     const rawRef = document.referrer || initialReferrer || '';

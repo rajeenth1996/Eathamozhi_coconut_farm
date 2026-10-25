@@ -185,7 +185,7 @@ let faqs: FAQ[] = [
   {
     id: 'faq-1',
     question: 'Where are your saplings grown?',
-    answer: 'All our coconut saplings are raised directly on our own ancestral farm in Eathamozhy, Kanyakumari district, Tamil Nadu.',
+    answer: 'All our coconut saplings are raised directly on our own ancestral farm in Eathamozhi, Kanyakumari district, Tamil Nadu.',
     category: 'General'
   },
   {

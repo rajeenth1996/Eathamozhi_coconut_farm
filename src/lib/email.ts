@@ -66,13 +66,13 @@ export async function sendAdminOtpEmail(toEmail: string, otp: string): Promise<{
     <body>
       <div class="container">
         <div class="header">
-          <h1>🌴 Eathamozhy Coconut Farm</h1>
+          <h1>🌴 Eathamozhi Coconut Farm</h1>
           <p>Two-Factor Admin Authentication</p>
         </div>
         <div class="body">
           <div class="greeting">Hello Administrator,</div>
           <p class="instructions">
-            We received a request to access the Eathamozhy Farm Admin Portal with your email:
+            We received a request to access the Eathamozhi Farm Admin Portal with your email:
             <br><strong>${toEmail}</strong>
           </p>
           <div class="otp-box">
@@ -87,7 +87,7 @@ export async function sendAdminOtpEmail(toEmail: string, otp: string): Promise<{
           </div>
         </div>
         <div class="footer">
-          &copy; ${new Date().getFullYear()} Eathamozhy Coconut Farm. All rights reserved.
+          &copy; ${new Date().getFullYear()} Eathamozhi Coconut Farm. All rights reserved.
         </div>
       </div>
     </body>
@@ -96,10 +96,10 @@ export async function sendAdminOtpEmail(toEmail: string, otp: string): Promise<{
 
   try {
     await transporter.sendMail({
-      from: `"Eathamozhy Farm Security" <${SMTP_USER}>`,
+      from: `"Eathamozhi Farm Security" <${SMTP_USER}>`,
       to: toEmail,
       subject: `🔑 Your Admin Verification Code: ${otp}`,
-      text: `Your Eathamozhy Farm admin login verification code is: ${otp}. It expires in 10 minutes.`,
+      text: `Your Eathamozhi Farm admin login verification code is: ${otp}. It expires in 10 minutes.`,
       html: htmlContent,
     });
     return { success: true };

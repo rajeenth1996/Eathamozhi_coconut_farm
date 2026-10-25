@@ -154,7 +154,7 @@ export default function PlantingCalculator() {
               ) : spacingDistance === 25 ? (
                 <span className="text-success">
                   <i className="bi bi-check-circle-fill text-success me-1"></i>
-                  <strong>25 ft (Scientifically Recommended):</strong> Optimal sunlight capture and lifelong crown expansion for GI Eathamozhy Tall.
+                  <strong>25 ft (Scientifically Recommended):</strong> Optimal sunlight capture and lifelong crown expansion for GI Eathamozhi Tall.
                 </span>
               ) : (
                 <span>
@@ -270,7 +270,7 @@ export default function PlantingCalculator() {
                 </small>
               </div>
               <span className="badge bg-success-subtle text-success border border-success">
-                GI Eathamozhy Tall
+                GI Eathamozhi Tall
               </span>
             </div>
 
@@ -317,7 +317,7 @@ export default function PlantingCalculator() {
                 <i className="bi bi-cart-check-fill me-1"></i> Book {totalTrees} Saplings Now
               </Link>
               <a 
-                href={`https://wa.me/919486880641?text=Hello%20Eathamozhy%20Farm,%20I%20am%20planning%20a%20${acres}%20acre%20coconut%20plantation%20using%20the%20${spacingType}%20pattern%20with%20${spacingDistance}%20ft%20spacing%20(${totalTrees}%20saplings).%20Please%20guide%20me.`}
+                href={`https://wa.me/919486880641?text=Hello%20Eathamozhi%20Farm,%20I%20am%20planning%20a%20${acres}%20acre%20coconut%20plantation%20using%20the%20${spacingType}%20pattern%20with%20${spacingDistance}%20ft%20spacing%20(${totalTrees}%20saplings).%20Please%20guide%20me.`}
                 target="_blank"
                 rel="noreferrer"
                 className="btn btn-outline-light border-opacity-50 py-2 px-3 text-nowrap"

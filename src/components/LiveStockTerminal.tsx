@@ -76,7 +76,7 @@ export default function LiveStockTerminal({ initialBatch, initialBatches = [] }:
             <h4 className="fw-bold text-dark">Live Stock Terminal</h4>
             <p className="text-muted mb-3">No active sapling batches listed at this moment. New seednut batches will be updated directly by farm admin.</p>
             <div>
-              <a href="https://wa.me/919486880641?text=Hello%20Eathamozhy%20Farm,%20when%20will%20the%20next%20sapling%20batch%20be%20available?" target="_blank" rel="noreferrer" className="btn btn-success fw-bold">
+              <a href="https://wa.me/919486880641?text=Hello%20Eathamozhi%20Farm,%20when%20will%20the%20next%20sapling%20batch%20be%20available?" target="_blank" rel="noreferrer" className="btn btn-success fw-bold">
                 <i className="bi bi-whatsapp me-1"></i> Inquire via WhatsApp
               </a>
             </div>

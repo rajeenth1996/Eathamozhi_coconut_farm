@@ -40,7 +40,7 @@ export default function Navbar() {
                 <i className="bi bi-tree-fill fs-5"></i>
               </div>
               <div>
-                <span className="fw-bold fs-5 text-light d-block lh-1">Eathamozhy</span>
+                <span className="fw-bold fs-5 text-light d-block lh-1">Eathamozhi</span>
                 <span className="text-secondary extra-small text-uppercase tracking-wider">Coconut Farm &bull; GI Tagged</span>
               </div>
             </Link>
@@ -73,7 +73,7 @@ export default function Navbar() {
             {/* Action Buttons: WhatsApp & Book Now */}
             <div className="d-flex align-items-center gap-2">
               <a 
-                href={`https://wa.me/${process.env.NEXT_PUBLIC_FARM_WHATSAPP || '919486880641'}?text=Hello%20Eathamozhy%20Farm,%20I%20am%20interested%20in%20coconut%20seedlings%20and%20saplings`}
+                href={`https://wa.me/${process.env.NEXT_PUBLIC_FARM_WHATSAPP || '919486880641'}?text=Hello%20Eathamozhi%20Farm,%20I%20am%20interested%20in%20coconut%20seedlings%20and%20saplings`}
                 target="_blank"
                 rel="noreferrer"
                 className="btn btn-sm btn-outline-success border-success text-success fw-semibold d-none d-sm-inline-flex align-items-center gap-1 px-3 py-2 rounded-3"

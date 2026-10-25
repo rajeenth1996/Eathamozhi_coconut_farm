@@ -238,7 +238,7 @@ export default function MotherTreesPage() {
         <div className="container" style={{ maxWidth: '900px' }}>
           <div className="text-center mb-5">
             <span className="badge-gi-pill mb-2">OUR HERITAGE</span>
-            <h2 className="fw-bold text-dark">The Eathamozhy Farm Journey</h2>
+            <h2 className="fw-bold text-dark">The Eathamozhi Farm Journey</h2>
             <p className="text-muted">Over 80 years of generational coconut cultivation on Kanyakumari&apos;s coastal soil</p>
           </div>
           <div className="row g-4">
@@ -248,7 +248,7 @@ export default function MotherTreesPage() {
                   <i className="bi bi-calendar3 fs-3"></i>
                 </div>
                 <h5 className="fw-bold text-dark">Est. 1940s</h5>
-                <p className="text-secondary small mb-0">Our ancestral grove was planted in Eathamozhy village &mdash; a coastal microclimate naturally suited to tall coconut cultivars.</p>
+                <p className="text-secondary small mb-0">Our ancestral grove was planted in Eathamozhi village &mdash; a coastal microclimate naturally suited to tall coconut cultivars.</p>
               </div>
             </div>
             <div className="col-md-4">
@@ -286,7 +286,7 @@ export default function MotherTreesPage() {
               <i className="bi bi-grid-fill me-1"></i> View All Available Batches
             </Link>
             <a
-              href={`https://wa.me/${process.env.NEXT_PUBLIC_FARM_WHATSAPP || '919486880641'}?text=Hello%20Eathamozhy%20Farm,%20I%20want%20to%20know%20more%20about%20your%20Mother%20Trees`}
+              href={`https://wa.me/${process.env.NEXT_PUBLIC_FARM_WHATSAPP || '919486880641'}?text=Hello%20Eathamozhi%20Farm,%20I%20want%20to%20know%20more%20about%20your%20Mother%20Trees`}
               target="_blank"
               rel="noreferrer"
               className="btn btn-outline-light px-4 py-3 fs-6 rounded-3 fw-bold"

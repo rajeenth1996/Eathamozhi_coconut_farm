@@ -59,12 +59,12 @@ export default function BookingConfirmationPage({
   const displayScreenshot = booking?.paymentScreenshotUrl;
 
   const upiId = process.env.NEXT_PUBLIC_UPI_ID || 'rajeenth1@ybl';
-  const upiDisplayName = process.env.NEXT_PUBLIC_UPI_DISPLAY_NAME || 'eathamozhy coconut farm';
+  const upiDisplayName = process.env.NEXT_PUBLIC_UPI_DISPLAY_NAME || 'eathamozhi coconut farm';
   const billNotePrefix = process.env.NEXT_PUBLIC_UPI_BILL_NOTE_PREFIX || 'Coconut order';
 
   // WhatsApp Pre-filled text
   const whatsappMsg = 
-`🌴 *NEW SAPLING ORDER - EATHAMOZHY COCONUT FARM*
+`🌴 *NEW SAPLING ORDER - EATHAMOZHI COCONUT FARM*
 
 *Booking ID:* ${displayId}
 *Customer Name:* ${displayName}
@@ -93,7 +93,7 @@ Please confirm our order and dispatch details. Thank you!`;
           <div className="display-1 mb-2">🎉</div>
           <span className="badge bg-warning text-dark px-3 py-2 rounded-pill mb-2 fw-bold">PAYMENT SUBMITTED</span>
           <h1 className="display-4 fw-bold">Booking Details Recorded!</h1>
-          <p className="lead mb-0">Thank you for supporting Eathamozhy Coconut Farm.</p>
+          <p className="lead mb-0">Thank you for supporting Eathamozhi Coconut Farm.</p>
         </div>
       </section>
 

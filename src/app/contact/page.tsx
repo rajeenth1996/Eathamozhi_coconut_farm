@@ -39,7 +39,7 @@ export default function ContactPage() {
       <section className="hero-ambient-mesh text-white py-5 position-relative overflow-hidden border-bottom border-success border-opacity-25">
         <div className="container position-relative py-3">
           <span className="badge bg-warning text-dark px-3 py-2 rounded-pill mb-2 fw-bold">DIRECT FARM SUPPORT</span>
-          <h1 className="display-4 fw-bold">Contact Eathamozhy Farm</h1>
+          <h1 className="display-4 fw-bold">Contact Eathamozhi Farm</h1>
           <p className="lead mb-0">We are here to answer your questions about coconut varieties, soil preparation, and bulk sapling orders.</p>
         </div>
       </section>
@@ -53,7 +53,7 @@ export default function ContactPage() {
                 <div>
                   <h4 className="fw-bold text-dark mb-3"><i className="bi bi-geo-alt-fill me-2 text-success"></i> Farm Location</h4>
                   <p className="text-secondary small mb-4">
-                    Eathamozhy Village, Kanyakumari District,<br />
+                    Eathamozhi Village, Kanyakumari District,<br />
                     Tamil Nadu, India - 629501
                   </p>
                 </div>

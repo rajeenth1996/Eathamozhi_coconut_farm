@@ -82,7 +82,7 @@ export default function BookingFlowPage({
 
   // UPI Details requested by user (configurable via .env / .env.local)
   const upiId = process.env.NEXT_PUBLIC_UPI_ID || 'rajeenth1@ybl';
-  const displayName = process.env.NEXT_PUBLIC_UPI_DISPLAY_NAME || 'eathamozhy coconut farm';
+  const displayName = process.env.NEXT_PUBLIC_UPI_DISPLAY_NAME || 'eathamozhi coconut farm';
   const billNotePrefix = process.env.NEXT_PUBLIC_UPI_BILL_NOTE_PREFIX || 'Coconut order';
   const billNote = `${billNotePrefix} - ${quantity} saplings`;
   
@@ -168,7 +168,7 @@ export default function BookingFlowPage({
       if (res.ok) {
         // Compose Pre-filled WhatsApp Message with Delivery Service & Nearest Hub
         const whatsappMsg = 
-`🌴 *NEW SAPLING ORDER - EATHAMOZHY COCONUT FARM*
+`🌴 *NEW SAPLING ORDER - EATHAMOZHI COCONUT FARM*
 
 *Booking ID:* ${data.bookingId}
 *Customer Name:* ${formData.customerName}

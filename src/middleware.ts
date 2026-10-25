@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { jwtVerify } from 'jose';
 
-const JWT_SECRET_STRING = process.env.JWT_SECRET || 'eathamozhy-coconut-farm-secure-jwt-secret-key-min-32-chars';
+const JWT_SECRET_STRING = process.env.JWT_SECRET || 'eathamozhi-coconut-farm-secure-jwt-secret-key-min-32-chars';
 const JWT_KEY = new TextEncoder().encode(JWT_SECRET_STRING);
 const ADMIN_WHITELISTED_EMAIL = (process.env.ADMIN_EMAIL || '').trim().toLowerCase();
 

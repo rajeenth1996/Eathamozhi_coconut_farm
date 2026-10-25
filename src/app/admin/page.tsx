@@ -44,7 +44,7 @@ export default function AdminDashboardPage() {
           <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
             <div>
               <span className="badge bg-danger mb-1">SECURE ADMIN PORTAL</span>
-              <h1 className="fw-bold mb-0 text-light">Eathamozhy Farm Admin Dashboard</h1>
+              <h1 className="fw-bold mb-0 text-light">Eathamozhi Farm Admin Dashboard</h1>
             </div>
             <div className="d-flex align-items-center gap-2 flex-wrap">
               <span className="badge bg-dark border border-secondary text-light px-2 py-1 small d-none d-md-inline-flex align-items-center gap-1">

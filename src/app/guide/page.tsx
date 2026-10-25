@@ -14,7 +14,7 @@ const articles = [
     content: [
       {
         heading: '📍 Step 1 – Choosing the Right Location',
-        body: 'Select a well-drained, open plot with full sunlight (minimum 8 hours/day). Avoid low-lying waterlogged areas. Eathamozhy coconuts grow best in coastal sandy loam or laterite soils. Ensure no large trees or structures block the eastern morning sun.'
+        body: 'Select a well-drained, open plot with full sunlight (minimum 8 hours/day). Avoid low-lying waterlogged areas. Eathamozhi coconuts grow best in coastal sandy loam or laterite soils. Ensure no large trees or structures block the eastern morning sun.'
       },
       {
         heading: '📐 Step 2 – Spacing & Layout',
@@ -101,14 +101,14 @@ const articles = [
   {
     title: 'Managing Salinity & Coastal Soil Environment',
     category: 'Environment',
-    summary: 'Why Eathamozhy coconut palms thrive in coastal sandy loam and how to manage irrigation water salinity in coastal regions.',
+    summary: 'Why Eathamozhi coconut palms thrive in coastal sandy loam and how to manage irrigation water salinity in coastal regions.',
     date: 'Jun 2026',
     readTime: '4 min read',
     icon: 'bi-geo-alt',
     content: [
       {
-        heading: '🌊 Why Coastal Soils Suit Eathamozhy Cultivar',
-        body: 'Eathamozhy tall coconuts evolved in the Kanyakumari coastal belt — they carry a natural genetic tolerance to moderate soil salinity (up to 4 dS/m ECe). Their deep taproot system efficiently extracts freshwater pockets even in saline soil profiles. This makes them uniquely suited for coastal Karnataka, Kerala, and coastal Andhra Pradesh farms.'
+        heading: '🌊 Why Coastal Soils Suit Eathamozhi Cultivar',
+        body: 'Eathamozhi tall coconuts evolved in the Kanyakumari coastal belt — they carry a natural genetic tolerance to moderate soil salinity (up to 4 dS/m ECe). Their deep taproot system efficiently extracts freshwater pockets even in saline soil profiles. This makes them uniquely suited for coastal Karnataka, Kerala, and coastal Andhra Pradesh farms.'
       },
       {
         heading: '🧂 Testing & Understanding Salinity',
@@ -193,7 +193,7 @@ export default function FarmingGuidePage() {
                     <p className="text-secondary small mb-3">{art.summary}</p>
                   </div>
                   <div className="pt-3 border-top d-flex justify-content-between align-items-center">
-                    <span className="text-muted extra-small">By Eathamozhy Farm Team</span>
+                    <span className="text-muted extra-small">By Eathamozhi Farm Team</span>
                     <button
                       className="btn btn-sm btn-success fw-bold"
                       onClick={() => setSelectedArticle(art)}
@@ -224,7 +224,7 @@ export default function FarmingGuidePage() {
           <div className="card border-0 shadow-sm rounded-4 p-4 mt-4 bg-white text-center">
             <h4 className="fw-bold text-dark mb-2">Have a specific soil, layout, or planting question?</h4>
             <p className="text-secondary mb-3">Our farm experts are available to guide you on pit digging, manure mixing, and grove orientation.</p>
-            <a href="https://wa.me/919486880641?text=Hello%20Eathamozhy%20Farm,%20I%20have%20a%20question%20regarding%20plantation%20spacing%20patterns" target="_blank" rel="noreferrer" className="btn btn-success fw-bold d-inline-flex align-items-center gap-2 mx-auto">
+            <a href="https://wa.me/919486880641?text=Hello%20Eathamozhi%20Farm,%20I%20have%20a%20question%20regarding%20plantation%20spacing%20patterns" target="_blank" rel="noreferrer" className="btn btn-success fw-bold d-inline-flex align-items-center gap-2 mx-auto">
               <i className="bi bi-whatsapp fs-5"></i> Ask Farm Expert on WhatsApp
             </a>
           </div>
@@ -248,7 +248,7 @@ export default function FarmingGuidePage() {
                   <small className="opacity-75">
                     <i className="bi bi-clock me-1"></i>{selectedArticle.readTime} &nbsp;|&nbsp;
                     <i className="bi bi-calendar3 me-1"></i>{selectedArticle.date} &nbsp;|&nbsp;
-                    By Eathamozhy Farm Team
+                    By Eathamozhi Farm Team
                   </small>
                 </div>
                 <button
@@ -283,7 +283,7 @@ export default function FarmingGuidePage() {
                   Have a question about this topic?
                 </p>
                 <a
-                  href={`https://wa.me/919486880641?text=Hello%20Eathamozhy%20Farm%20Team,%20I%20have%20a%20question%20about%20%22${encodeURIComponent(selectedArticle.title)}%22`}
+                  href={`https://wa.me/919486880641?text=Hello%20Eathamozhi%20Farm%20Team,%20I%20have%20a%20question%20about%20%22${encodeURIComponent(selectedArticle.title)}%22`}
                   target="_blank"
                   rel="noreferrer"
                   className="btn btn-success fw-bold"
@@ -296,7 +296,7 @@ export default function FarmingGuidePage() {
             <div className="card-footer bg-light rounded-bottom-4 border-0 p-3 d-flex justify-content-between align-items-center">
               <small className="text-muted">
                 <i className="bi bi-shield-check text-success me-1"></i>
-                Field-verified by Eathamozhy Farm, Kanyakumari
+                Field-verified by Eathamozhi Farm, Kanyakumari
               </small>
               <button className="btn btn-outline-secondary btn-sm" onClick={() => setSelectedArticle(null)}>
                 Close

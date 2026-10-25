@@ -44,7 +44,7 @@ export async function uploadToCloudinary(
   }
 
   const uploadOptions: any = {
-    folder: `eathamozhy-farm/${folder}`,
+    folder: `eathamozhi-farm/${folder}`,
     resource_type: 'image',
     transformation: [
       { quality: 'auto', fetch_format: 'auto' }, // Cloudinary auto-compression & WebP conversion

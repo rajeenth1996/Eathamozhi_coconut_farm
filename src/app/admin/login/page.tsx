@@ -211,7 +211,7 @@ function AdminLoginContent() {
           </div>
           <h2 className="fw-bold text-white mb-1">Admin Security Portal</h2>
           <p className="text-light opacity-75 small mb-0">
-            Eathamozhy Coconut Farm & Nursery Management
+            Eathamozhi Coconut Farm & Nursery Management
           </p>
         </div>
 

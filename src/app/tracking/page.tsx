@@ -118,7 +118,7 @@ function TrackingContent() {
                     : 0;
 
                   const whatsappMsg = 
-`🌴 *ORDER INQUIRY - EATHAMOZHY COCONUT FARM*
+`🌴 *ORDER INQUIRY - EATHAMOZHI COCONUT FARM*
 
 *Booking ID:* ${booking.bookingId}
 *Customer:* ${booking.customerName}

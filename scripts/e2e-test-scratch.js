@@ -36,7 +36,7 @@ if (fs.existsSync(envLocalPath)) {
 
 async function getAdminCookie() {
   const adminEmail = (process.env.ADMIN_EMAIL || 'svrajeenth22@gmail.com').trim().toLowerCase();
-  const secret = process.env.JWT_SECRET || 'eathamozhy-coconut-farm-secure-jwt-secret-key-min-32-chars';
+  const secret = process.env.JWT_SECRET || 'eathamozhi-coconut-farm-secure-jwt-secret-key-min-32-chars';
   const key = new TextEncoder().encode(secret);
   const token = await new SignJWT({ email: adminEmail, role: 'admin' })
     .setProtectedHeader({ alg: 'HS256' })
@@ -116,7 +116,7 @@ async function runE2ETest() {
     code: 'EM-MP-001',
     name: 'Ancestral GI Mother Palm #1',
     age: 85,
-    location: 'Plot A - Heritage Grove North, Eathamozhy',
+    location: 'Plot A - Heritage Grove North, Eathamozhi',
     healthStatus: 'Vigorous & Pest-Free',
     yieldHistory: 'Consistently high-weight seed nuts per year over 25 monitored years.',
     description: 'Our flagship mother palm planted on coastal saline-alluvial soil. Exceptional trunk girth and dense canopy.',
@@ -142,7 +142,7 @@ async function runE2ETest() {
   console.log('📦 Step 3: Registering Sapling Batch (EM-0126-A) tied to EM-MP-001...');
   const batchPayload = {
     batchCode: 'EM-0126-A',
-    name: 'Heritage Eathamozhy Prime Batch #1',
+    name: 'Heritage Eathamozhi Prime Batch #1',
     parentPalmCode: 'EM-MP-001',
     parentPalmCodes: ['EM-MP-001'],
     harvestDate: '2025-08-01',
@@ -284,7 +284,7 @@ async function runE2ETest() {
     batchCode: 'EM-0126-A',
     quantity: 20,
     rating: 5,
-    comment: 'Exceptional quality! Thick collar girth, healthy green fronds, and perfectly packed roots. 100% authentic Eathamozhy GI tall variety.'
+    comment: 'Exceptional quality! Thick collar girth, healthy green fronds, and perfectly packed roots. 100% authentic Eathamozhi GI tall variety.'
   };
   const revRes = await fetch(`${BASE_URL}/api/reviews`, {
     method: 'POST',
@@ -365,7 +365,7 @@ async function runE2ETest() {
   // STEP 12: Verify Admin Portal Pages Load with Authentication
   console.log('\n🛡️ Step 12: Verifying Admin Dashboard & Resource Pages with Session...');
   const adminPages = [
-    { url: `${BASE_URL}/admin`, name: 'Admin Dashboard', checks: ['Eathamozhy Farm Admin Dashboard', 'SECURE ADMIN PORTAL'] },
+    { url: `${BASE_URL}/admin`, name: 'Admin Dashboard', checks: ['Eathamozhi Farm Admin Dashboard', 'SECURE ADMIN PORTAL'] },
     { url: `${BASE_URL}/admin/orders`, name: 'Admin Orders', checks: ['Orders', 'Admin'] },
     { url: `${BASE_URL}/admin/batches`, name: 'Admin Batches', checks: ['Batches', 'Admin'] },
     { url: `${BASE_URL}/admin/mother-trees`, name: 'Admin Mother Trees', checks: ['Mother Tree', 'MOTHER TREE GENETICS'] },

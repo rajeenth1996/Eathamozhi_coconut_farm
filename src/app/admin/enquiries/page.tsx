@@ -111,7 +111,7 @@ export default function AdminEnquiriesPage() {
           ) : (
             <div className="d-flex flex-column gap-3">
               {filteredEnquiries.map((enq) => {
-                const waUrl = `https://wa.me/91${enq.mobile}?text=${encodeURIComponent(`Hello ${enq.name}, thank you for contacting Eathamozhy Coconut Farm! Regarding your enquiry: "${enq.message.slice(0, 50)}..."`)}`;
+                const waUrl = `https://wa.me/91${enq.mobile}?text=${encodeURIComponent(`Hello ${enq.name}, thank you for contacting Eathamozhi Coconut Farm! Regarding your enquiry: "${enq.message.slice(0, 50)}..."`)}`;
 
                 return (
                   <div key={enq.id} className="card border-0 shadow-sm rounded-4 p-4 bg-white">

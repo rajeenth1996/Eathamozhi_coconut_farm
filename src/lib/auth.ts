@@ -6,7 +6,7 @@ export const ADMIN_WHITELISTED_EMAIL = (process.env.ADMIN_EMAIL || '').trim().to
 
 // Configurable via .env.local
 export const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '';
-export const JWT_SECRET_STRING = process.env.JWT_SECRET || 'eathamozhy-coconut-farm-secure-jwt-secret-key-min-32-chars';
+export const JWT_SECRET_STRING = process.env.JWT_SECRET || 'eathamozhi-coconut-farm-secure-jwt-secret-key-min-32-chars';
 
 const JWT_KEY = new TextEncoder().encode(JWT_SECRET_STRING);
 

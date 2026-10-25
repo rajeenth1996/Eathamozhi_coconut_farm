@@ -180,7 +180,7 @@ export default function AdminOrdersPage() {
     const ws = XLSX.utils.json_to_sheet(exportRows);
     XLSX.utils.book_append_sheet(wb, ws, 'Filtered Orders');
 
-    const parts: string[] = ['Eathamozhy_Orders'];
+    const parts: string[] = ['Eathamozhi_Orders'];
     if (orderStartDate || orderEndDate) parts.push(`Placed_${orderStartDate || 'Start'}_to_${orderEndDate || 'End'}`);
     if (deliveryStartDate || deliveryEndDate) parts.push(`Deliv_${deliveryStartDate || 'Start'}_to_${deliveryEndDate || 'End'}`);
     if (filterStatus !== 'ALL') parts.push(filterStatus.replace(/\s+/g, '_'));
@@ -534,7 +534,7 @@ export default function AdminOrdersPage() {
                         <td>
                           <a
                             href={`https://wa.me/91${ord.whatsapp}?text=${encodeURIComponent(
-                              `Hello ${ord.customerName},\n\nThis is Eathamozhy Coconut Farm regarding your order:\n\n` +
+                              `Hello ${ord.customerName},\n\nThis is Eathamozhi Coconut Farm regarding your order:\n\n` +
                               `📋 *Booking ID:* ${ord.bookingId}\n` +
                               `🌿 *Batch:* ${ord.batchCode}\n` +
                               `🪴 *Saplings:* ${ord.quantity}\n` +

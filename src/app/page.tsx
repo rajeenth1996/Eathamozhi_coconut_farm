@@ -36,7 +36,7 @@ export default function Home() {
                   Mainland India’s Only GI-Tagged Coconut Variety
                 </span>
                 <span className="text-white">Authentic </span>
-                <span className="text-gradient-emerald">Eathamozhy Tall</span>
+                <span className="text-gradient-emerald">Eathamozhi Tall</span>
                 <span className="text-white"> Coconut Seedlings & Saplings</span>
               </h1>
 
@@ -54,7 +54,7 @@ export default function Home() {
                   <i className="bi bi-tree"></i> Trace Our Mother Trees
                 </Link>
                 <a 
-                  href={`https://wa.me/${process.env.NEXT_PUBLIC_FARM_WHATSAPP || '919486880641'}?text=Hello%20Eathamozhy%20Farm,%20I%20want%20to%20inquire%20about%20coconut%20seedlings%20and%20saplings`}
+                  href={`https://wa.me/${process.env.NEXT_PUBLIC_FARM_WHATSAPP || '919486880641'}?text=Hello%20Eathamozhi%20Farm,%20I%20want%20to%20inquire%20about%20coconut%20seedlings%20and%20saplings`}
                   target="_blank"
                   rel="noreferrer"
                   className="btn btn-outline-success border-success text-success fw-semibold px-4 py-3 d-inline-flex align-items-center gap-2 rounded-3"
@@ -194,12 +194,12 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 5. WHY EATHAMOZHY TALL? (GI BENEFITS) */}
+      {/* 5. WHY EATHAMOZHI TALL? (GI BENEFITS) */}
       <section className="py-5 bg-white border-top border-bottom">
         <div className="container py-3">
           <div className="text-center mb-5">
             <span className="badge-gi-pill mb-2">PROVEN PERFORMANCE</span>
-            <h2 className="fw-bold text-dark">Why Farmers Choose Eathamozhy Tall</h2>
+            <h2 className="fw-bold text-dark">Why Farmers Choose Eathamozhi Tall</h2>
             <p className="text-muted">Unique agronomic traits of mainland India's only GI-Tagged coconut</p>
           </div>
 
@@ -253,7 +253,7 @@ export default function Home() {
           <div className="text-center mb-5">
             <span className="badge-farm-pill mb-2">FARMER TESTIMONIALS</span>
             <h2 className="fw-bold text-dark">Trusted by Farmers Across South India</h2>
-            <p className="text-muted">Real feedback from plantation owners who planted our Eathamozhy batches</p>
+            <p className="text-muted">Real feedback from plantation owners who planted our Eathamozhi batches</p>
           </div>
 
           <div className="row g-4">
@@ -302,7 +302,7 @@ export default function Home() {
       <section className="py-5 bg-dark text-white text-center position-relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #022c22 0%, #064e3b 100%)' }}>
         <div className="container py-4 position-relative z-1">
           <span className="badge-gi-pill mb-3 d-inline-block">LIMITED SEASONAL HARVEST</span>
-          <h2 className="display-5 fw-bold mb-3">Ready to Plant an Authentic Eathamozhy Grove?</h2>
+          <h2 className="display-5 fw-bold mb-3">Ready to Plant an Authentic Eathamozhi Grove?</h2>
           <p className="lead opacity-90 mx-auto mb-4" style={{ maxWidth: '650px' }}>
             Pre-book your required saplings directly from upcoming verified batches or request custom crate logistics.
           </p>
@@ -311,7 +311,7 @@ export default function Home() {
               <i className="bi bi-bag-check-fill"></i> View Available Batches Now
             </Link>
             <a 
-              href={`https://wa.me/${process.env.NEXT_PUBLIC_FARM_WHATSAPP || '919486880641'}?text=Hello,%20I%20want%20to%20place%20an%20order%20for%20Eathamozhy%20coconut%20seedlings%20and%20saplings`}
+              href={`https://wa.me/${process.env.NEXT_PUBLIC_FARM_WHATSAPP || '919486880641'}?text=Hello,%20I%20want%20to%20place%20an%20order%20for%20Eathamozhi%20coconut%20seedlings%20and%20saplings`}
               target="_blank" 
               rel="noreferrer"
               className="btn btn-outline-light px-4 py-3 fs-6 rounded-3 fw-bold"

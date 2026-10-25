@@ -1,14 +1,14 @@
 import Link from 'next/link';
 
-export default function AboutEathamozhyPage() {
+export default function AboutEathamozhiPage() {
   return (
     <>
       <section className="hero-ambient-mesh text-white py-5 position-relative overflow-hidden border-bottom border-success border-opacity-25">
         <div className="container position-relative py-4">
           <span className="badge bg-warning text-dark px-3 py-2 rounded-pill mb-2 fw-bold">CULTIVAR HERITAGE</span>
-          <h1 className="display-4 fw-bold">What is Eathamozhy Coconut?</h1>
+          <h1 className="display-4 fw-bold">What is Eathamozhi Coconut?</h1>
           <p className="lead mx-auto" style={{ maxWidth: '750px' }}>
-            A comprehensive educational overview of the traditional Eathamozhy coconut cultivar, its nut characteristics, and cultivation practices.
+            A comprehensive educational overview of the traditional Eathamozhi coconut cultivar, its nut characteristics, and cultivation practices.
           </p>
         </div>
       </section>
@@ -99,7 +99,7 @@ export default function AboutEathamozhyPage() {
 
           <div className="text-center">
             <Link href="/batches" className="btn btn-success btn-lg fw-bold px-4">
-              Explore Live Eathamozhy Batches <i className="bi bi-arrow-right me-1"></i>
+              Explore Live Eathamozhi Batches <i className="bi bi-arrow-right me-1"></i>
             </Link>
           </div>
         </div>
