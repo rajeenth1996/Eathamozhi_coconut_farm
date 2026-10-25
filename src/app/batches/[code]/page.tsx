@@ -40,7 +40,7 @@ export default async function BatchDetailPage({
               
               {/* Social Proof Views Counter */}
               <span className="badge bg-danger bg-opacity-75 px-3 py-2 me-2">
-                <i className="bi bi-eye-fill me-1"></i> 🔥 {batch.viewsCount || 142} People Viewed This Batch
+                <i className="bi bi-eye-fill me-1"></i> 🔥 {batch.viewsCount ?? 0} farmers viewed
               </span>
 
               <h1 className="fw-bold mb-0 text-light d-inline-block align-middle fs-2 mt-2 mt-md-0">{batch.name}</h1>

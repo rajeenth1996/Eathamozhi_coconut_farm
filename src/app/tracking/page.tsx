@@ -6,7 +6,7 @@ import Link from 'next/link';
 
 function TrackingContent() {
   const searchParams = useSearchParams();
-  const initialMobile = searchParams.get('mobile') || searchParams.get('id') || '';
+  const initialMobile = searchParams.get('mobile') || searchParams.get('id') || searchParams.get('bookingId') || '';
 
   const [mobile, setMobile] = useState(initialMobile);
   const [bookings, setBookings] = useState<any[]>([]);
@@ -53,7 +53,7 @@ function TrackingContent() {
     fetchOrders(mobile);
   };
 
-  const steps = ['Payment review', 'Confirmed', 'Preparing', 'Packed', 'Dispatched', 'Delivered'];
+  const steps = ['Pre-order', 'Payment review', 'Confirmed', 'Preparing', 'Packed', 'Dispatched', 'Delivered'];
 
   return (
     <>
@@ -139,10 +139,23 @@ I would like an update on my order status. Thank you!`;
                           <small className="text-secondary">{new Date(booking.createdAt).toLocaleDateString()} at {new Date(booking.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</small>
                         </div>
                         <div className="text-end mt-2 mt-sm-0">
-                          <span className="badge bg-success fs-6 me-2 mb-1">PAID (₹{booking.totalAmount.toLocaleString()})</span>
-                          <span className={`badge fs-6 d-block d-sm-inline-block ${booking.bookingStatus === 'Payment review' ? 'bg-warning text-dark' : 'bg-dark'}`}>
-                            {booking.bookingStatus}
-                          </span>
+                          {booking.isPreOrder || booking.orderType === 'PRE_ORDER' || booking.bookingStatus === 'Pre-order' ? (
+                            <>
+                              <span className="badge bg-warning text-dark fs-6 me-2 mb-1">
+                                PRE-ORDER (Adv: ₹{(booking.paidAmount || booking.advancePaid || Math.round(booking.totalAmount / 2)).toLocaleString()})
+                              </span>
+                              <span className="badge bg-danger fs-6 d-block d-sm-inline-block">
+                                Balance: ₹{(booking.balanceAmount ?? Math.max(0, booking.totalAmount - (booking.paidAmount || Math.round(booking.totalAmount / 2)))).toLocaleString()}
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <span className="badge bg-success fs-6 me-2 mb-1">PAID (₹{booking.totalAmount.toLocaleString()})</span>
+                              <span className={`badge fs-6 d-block d-sm-inline-block ${booking.bookingStatus === 'Payment review' ? 'bg-warning text-dark' : 'bg-dark'}`}>
+                                {booking.bookingStatus}
+                              </span>
+                            </>
+                          )}
                         </div>
                       </div>
 
@@ -204,6 +217,16 @@ I would like an update on my order status. Thank you!`;
                           <span className="text-muted d-block">Delivery Address:</span>
                           <span className="text-dark fw-bold">{booking.address}, {booking.district}, {booking.state} - {booking.pinCode}</span>
                         </div>
+
+                        {(booking.isPreOrder || booking.orderType === 'PRE_ORDER' || booking.bookingStatus === 'Pre-order' || (booking.balanceAmount && booking.balanceAmount > 0)) && (
+                          <div className="col-12 mt-2">
+                            <div className="p-2 bg-warning bg-opacity-10 border border-warning rounded-3 d-flex flex-wrap justify-content-between align-items-center small">
+                              <span><strong><i className="bi bi-clock-history me-1 text-warning"></i> Order Type:</strong> Pre-Order (50% Advance)</span>
+                              <span><strong>Advance Paid:</strong> ₹{(booking.paidAmount || booking.advancePaid || Math.round(booking.totalAmount / 2)).toLocaleString()}</span>
+                              <span className="text-danger fw-bold"><strong>Remaining Balance to Pay:</strong> ₹{(booking.balanceAmount ?? Math.max(0, booking.totalAmount - (booking.paidAmount || Math.round(booking.totalAmount / 2)))).toLocaleString()}</span>
+                            </div>
+                          </div>
+                        )}
                       </div>
 
                       {/* Dispatch Courier Information */}

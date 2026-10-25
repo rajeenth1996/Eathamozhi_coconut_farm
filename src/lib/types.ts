@@ -65,8 +65,13 @@ export interface Booking {
   subtotal: number;
   deliveryCharge: number;
   totalAmount: number;
+  orderType?: 'COMPLETE' | 'PRE_ORDER';
+  isPreOrder?: boolean;
+  paidAmount?: number;
+  advancePaid?: number;
+  balanceAmount?: number;
   paymentStatus: 'PAID' | 'PENDING_VERIFICATION' | 'FAILED';
-  bookingStatus: 'Payment review' | 'Confirmed' | 'Preparing' | 'Packed' | 'Dispatched' | 'Delivered' | 'Cancelled';
+  bookingStatus: 'Pre-order' | 'Payment review' | 'Confirmed' | 'Preparing' | 'Packed' | 'Dispatched' | 'Delivered' | 'Cancelled';
   paymentScreenshotUrl?: string;
   receiptUrl?: string;
   courierName?: string;

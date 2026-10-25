@@ -153,7 +153,7 @@ export default function LiveStockTerminal({ initialBatch, initialBatches = [] }:
                     <i className="bi bi-camera-fill me-1"></i> Real Batch Photos
                   </span>
                   <span className="text-danger small fw-semibold">
-                    <i className="bi bi-eye-fill me-1"></i> 🔥 {currentBatch?.viewsCount || 140} farmers viewed today
+                    <i className="bi bi-eye-fill me-1"></i> 🔥 {currentBatch?.viewsCount ?? 0} farmers viewed
                   </span>
                 </div>
               </div>

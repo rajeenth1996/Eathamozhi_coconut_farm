@@ -39,7 +39,7 @@ export default function AdminOrdersPage() {
     const ord = orders.find(o => o.bookingId === orderId);
 
     // RESTRICTION: Only allow confirming if payment screenshot is available!
-    if (status !== 'Payment review' && status !== 'Cancelled' && (!ord?.paymentScreenshotUrl || ord.paymentScreenshotUrl.trim() === '')) {
+    if (status !== 'Payment review' && status !== 'Pre-order' && status !== 'Cancelled' && (!ord?.paymentScreenshotUrl || ord.paymentScreenshotUrl.trim() === '')) {
       alert('⚠️ CANNOT CONFIRM ORDER WITHOUT SCREENSHOT!\n\nNo payment screenshot has been uploaded/received for this order. You can only confirm orders after a valid payment screenshot is available.');
       fetchOrders(); // reset select element
       return;
@@ -162,6 +162,9 @@ export default function AdminOrdersPage() {
       'Subtotal (₹)': b.subtotal,
       'Delivery Charge (₹)': b.deliveryCharge,
       'Total Amount (₹)': b.totalAmount,
+      'Order Type': b.isPreOrder || b.orderType === 'PRE_ORDER' || b.bookingStatus === 'Pre-order' ? 'Pre-Order (50% Advance)' : 'Complete Order (100%)',
+      'Advance Paid (₹)': (b.paidAmount || b.advancePaid || (b.isPreOrder ? Math.round(b.totalAmount / 2) : b.totalAmount)),
+      'Balance Amount (₹)': (b.balanceAmount ?? (b.isPreOrder || b.bookingStatus === 'Pre-order' ? Math.max(0, b.totalAmount - (b.paidAmount || Math.round(b.totalAmount / 2))) : 0)),
       'Payment Status': b.paymentStatus,
       'Order Status': b.bookingStatus,
       'Delivery Address': b.address,
@@ -454,7 +457,8 @@ export default function AdminOrdersPage() {
                       <th>Expected Delivery</th>
                       <th>Batch</th>
                       <th>Qty</th>
-                      <th>Amount</th>
+                      <th>Order &amp; Total</th>
+                      <th>Balance Amount</th>
                       <th>UPI &amp; Screenshot</th>
                       <th>Fulfillment Status</th>
                       <th>Action</th>
@@ -489,7 +493,40 @@ export default function AdminOrdersPage() {
                         </td>
                         <td><span className="badge bg-secondary">{ord.batchCode}</span></td>
                         <td><strong className="fs-6">{ord.quantity} Saplings</strong></td>
-                        <td><strong className="text-success">₹{ord.totalAmount.toLocaleString()}</strong></td>
+                        {/* Order Type & Total */}
+                        <td>
+                          <strong className="text-dark d-block">₹{ord.totalAmount?.toLocaleString()}</strong>
+                          {ord.isPreOrder || ord.orderType === 'PRE_ORDER' || ord.bookingStatus === 'Pre-order' ? (
+                            <span className="badge bg-warning text-dark extra-small mt-1 d-inline-block">
+                              <i className="bi bi-clock-history me-1"></i> Pre-order (Adv: ₹{(ord.paidAmount || ord.advancePaid || Math.round(ord.totalAmount / 2)).toLocaleString()})
+                            </span>
+                          ) : (
+                            <span className="badge bg-success-subtle text-success border border-success extra-small mt-1 d-inline-block">
+                              <i className="bi bi-check-circle me-1"></i> Complete (100%)
+                            </span>
+                          )}
+                        </td>
+
+                        {/* Balance Amount Column */}
+                        <td>
+                          {ord.isPreOrder || ord.orderType === 'PRE_ORDER' || ord.bookingStatus === 'Pre-order' || (ord.balanceAmount && ord.balanceAmount > 0) ? (
+                            <div>
+                              <strong className="text-danger fs-6 d-block">
+                                ₹{(ord.balanceAmount ?? Math.max(0, ord.totalAmount - (ord.paidAmount || Math.round(ord.totalAmount / 2)))).toLocaleString()}
+                              </strong>
+                              <small className="text-danger fw-semibold extra-small">
+                                <i className="bi bi-exclamation-circle me-1"></i> Balance to be paid
+                              </small>
+                            </div>
+                          ) : (
+                            <div>
+                              <span className="text-success fw-bold small d-block">
+                                ₹0 <i className="bi bi-check-circle-fill text-success ms-1"></i>
+                              </span>
+                              <small className="text-muted extra-small">Paid in full</small>
+                            </div>
+                          )}
+                        </td>
                         <td>
                           <span className="badge bg-success-subtle text-success border border-success d-block mb-1">
                             {process.env.NEXT_PUBLIC_UPI_ID || 'rajeenth1@ybl'}
@@ -518,10 +555,11 @@ export default function AdminOrdersPage() {
                         </td>
                         <td>
                           <select 
-                            className={`form-select form-select-sm fw-bold ${ord.bookingStatus === 'Payment review' ? 'border-warning bg-warning-subtle text-dark' : 'border-success text-success'}`}
+                            className={`form-select form-select-sm fw-bold ${ord.bookingStatus === 'Pre-order' ? 'border-warning bg-warning bg-opacity-25 text-dark' : ord.bookingStatus === 'Payment review' ? 'border-warning bg-warning-subtle text-dark' : 'border-success text-success'}`}
                             value={ord.bookingStatus}
                             onChange={(e) => handleStatusChange(ord.bookingId, e.target.value)}
                           >
+                            <option value="Pre-order">Pre-order</option>
                             <option value="Payment review">Payment review</option>
                             <option value="Confirmed">Confirmed</option>
                             <option value="Preparing">Preparing</option>
@@ -532,25 +570,42 @@ export default function AdminOrdersPage() {
                           </select>
                         </td>
                         <td>
-                          <a
-                            href={`https://wa.me/91${ord.whatsapp}?text=${encodeURIComponent(
-                              `Hello ${ord.customerName},\n\nThis is Eathamozhi Coconut Farm regarding your order:\n\n` +
+                          {(() => {
+                            const isPreOrderOrder = ord.isPreOrder || ord.orderType === 'PRE_ORDER' || ord.bookingStatus === 'Pre-order';
+                            const balanceVal = ord.balanceAmount ?? (isPreOrderOrder ? Math.max(0, ord.totalAmount - (ord.paidAmount || Math.round(ord.totalAmount / 2))) : 0);
+                            const advanceVal = ord.paidAmount || ord.advancePaid || (isPreOrderOrder ? Math.round(ord.totalAmount / 2) : ord.totalAmount);
+                            const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://eathamozhi-coconut-farm.vercel.app';
+                            const trackingLink = `${siteUrl}/tracking?bookingId=${encodeURIComponent(ord.bookingId)}&mobile=${encodeURIComponent(ord.whatsapp || ord.mobile)}`;
+
+                            const chatMsg = 
+                              `Hello ${ord.customerName},\n\n` +
+                              `This is Eathamozhi Coconut Farm regarding your sapling order:\n\n` +
                               `📋 *Booking ID:* ${ord.bookingId}\n` +
                               `🌿 *Batch:* ${ord.batchCode}\n` +
-                              `🪴 *Saplings:* ${ord.quantity}\n` +
-                              `💰 *Amount:* ₹${ord.totalAmount?.toLocaleString()}\n` +
-                              `🚚 *Courier:* ${ord.deliveryService || 'MSS Parcel Service'} (${ord.nearestHub || 'Main Hub'})\n` +
+                              `🪴 *Saplings:* ${ord.quantity} Saplings\n` +
+                              `📦 *Order Type:* ${isPreOrderOrder ? 'Pre-Order (50% Advance Booking)' : 'Complete Order'}\n` +
+                              `💰 *Total Order Amount:* ₹${ord.totalAmount?.toLocaleString()}\n` +
+                              (isPreOrderOrder ? `💵 *Advance Paid:* ₹${advanceVal?.toLocaleString()}\n` : '') +
+                              (isPreOrderOrder ? `⚠️ *Balance to be Paid:* ₹${balanceVal?.toLocaleString()}\n` : `💵 *Payment Status:* Paid in Full\n`) +
+                              `🚚 *Courier / Delivery:* ${ord.deliveryService || 'MSS Parcel Service'} (${ord.nearestHub || 'Main Hub'})\n` +
                               `📅 *Expected Delivery:* ${ord.expectedDeliveryDate || 'TBD'}\n` +
-                              `📦 *Status:* ${ord.bookingStatus}\n\n` +
-                              `Please feel free to reach out for any queries.`
-                            )}`}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="btn btn-sm btn-success"
-                            title="Open WhatsApp with order details"
-                          >
-                            <i className="bi bi-whatsapp me-1"></i> Chat
-                          </a>
+                              `📦 *Fulfillment Status:* ${ord.bookingStatus}\n\n` +
+                              `🔍 *Track your order live here:*\n` +
+                              `${trackingLink}\n\n` +
+                              `Please feel free to reach out for any queries. Thank you!`;
+
+                            return (
+                              <a
+                                href={`https://wa.me/91${ord.whatsapp}?text=${encodeURIComponent(chatMsg)}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="btn btn-sm btn-success d-inline-flex align-items-center gap-1 shadow-sm"
+                                title="Open WhatsApp with order details, balance, and tracking link"
+                              >
+                                <i className="bi bi-whatsapp"></i> Chat
+                              </a>
+                            );
+                          })()}
                         </td>
                       </tr>
                     ))}

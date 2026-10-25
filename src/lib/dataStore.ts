@@ -76,8 +76,13 @@ export interface Booking {
   subtotal: number;
   deliveryCharge: number;
   totalAmount: number;
+  orderType?: 'COMPLETE' | 'PRE_ORDER';
+  isPreOrder?: boolean;
+  paidAmount?: number;
+  advancePaid?: number;
+  balanceAmount?: number;
   paymentStatus: 'PAID' | 'PENDING_VERIFICATION' | 'FAILED';
-  bookingStatus: 'Payment review' | 'Confirmed' | 'Preparing' | 'Packed' | 'Dispatched' | 'Delivered' | 'Cancelled';
+  bookingStatus: 'Pre-order' | 'Payment review' | 'Confirmed' | 'Preparing' | 'Packed' | 'Dispatched' | 'Delivered' | 'Cancelled';
   paymentScreenshotUrl?: string;
   receiptUrl?: string;
   courierName?: string;
@@ -521,7 +526,8 @@ export const DataStore = {
     if (!b) return null;
     const realBatch = batches.find(x => x.batchCode.toLowerCase() === code.toLowerCase());
     if (realBatch) {
-      realBatch.viewsCount = (realBatch.viewsCount || 100) + 1;
+      realBatch.viewsCount = (realBatch.viewsCount || 0) + 1;
+      saveToDb();
     }
     return b;
   },
@@ -730,7 +736,7 @@ export const DataStore = {
     }) || null;
   },
 
-  createBooking: (data: Omit<Booking, 'id' | 'bookingId' | 'createdAt' | 'paymentStatus' | 'bookingStatus'> & { paymentScreenshotUrl?: string }) => {
+  createBooking: (data: Omit<Booking, 'id' | 'bookingId' | 'createdAt' | 'paymentStatus' | 'bookingStatus'> & { paymentScreenshotUrl?: string; bookingStatus?: string }) => {
     loadFromDb();
     const batch = DataStore.getBatchByCode(data.batchCode);
     if (!batch || batch.availableQuantity < data.quantity) {
@@ -746,15 +752,27 @@ export const DataStore = {
     const resolvedWhatsapp = data.whatsapp?.trim() || data.mobile;
     const resolvedCourier = data.deliveryService?.trim() || 'MSS Parcel Service';
 
+    const isPreOrder = Boolean(data.isPreOrder || data.orderType === 'PRE_ORDER' || (data as any).bookingStatus === 'Pre-order');
+    const orderType = isPreOrder ? 'PRE_ORDER' : 'COMPLETE';
+    const totalAmount = Number(data.totalAmount) || 0;
+    const paidAmount = isPreOrder ? (Number(data.paidAmount) || Number(data.advancePaid) || Math.round(totalAmount / 2)) : totalAmount;
+    const balanceAmount = isPreOrder ? Math.max(0, totalAmount - paidAmount) : 0;
+    const initialStatus = isPreOrder ? 'Pre-order' : 'Payment review';
+
     const newBooking: Booking = {
       ...data,
       address: resolvedAddress,
       whatsapp: resolvedWhatsapp,
       deliveryService: resolvedCourier,
+      orderType,
+      isPreOrder,
+      paidAmount,
+      advancePaid: isPreOrder ? paidAmount : undefined,
+      balanceAmount,
       id: `bk-${Date.now()}`,
       bookingId,
       paymentStatus: 'PENDING_VERIFICATION',
-      bookingStatus: 'Payment review',
+      bookingStatus: (data.bookingStatus as any) || initialStatus,
       createdAt: new Date().toISOString()
     };
 
@@ -1074,7 +1092,17 @@ export const DataStore = {
   getBatchByCodeAsync: async (code: string): Promise<Batch | null> => {
     loadFromDb();
     await syncFromMongo();
-    return DataStore.getBatchByCode(code);
+    const batch = DataStore.getBatchByCode(code);
+    if (batch) {
+      try {
+        const conn = await connectToDatabase();
+        if (conn) {
+          const updateOp: any = { $inc: { viewsCount: 1 } };
+          await BatchModel.updateOne({ batchCode: new RegExp("^" + code + "$", "i") }, updateOp);
+        }
+      } catch (err) {}
+    }
+    return batch;
   },
 
   addBatchAsync: async (newBatchData: any): Promise<Batch | null> => {

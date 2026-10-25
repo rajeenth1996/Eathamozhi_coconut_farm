@@ -22,7 +22,8 @@ export default function BookingFlowPage({
 
   // Form State
   const [quantity, setQuantity] = useState<number>(10);
-  const [courierOption, setCourierOption] = useState<'MSS Parcel Service' | 'Other'>('MSS Parcel Service');
+  const [isPreOrder, setIsPreOrder] = useState<boolean>(false);
+  const [courierOption, setCourierOption] = useState<'MSS Parcel Service' | 'Self Pickup (Farm Direct - Eathamozhi)' | 'Other'>('MSS Parcel Service');
   const [customCourier, setCustomCourier] = useState<string>('');
   const [formData, setFormData] = useState({
     customerName: '',
@@ -77,16 +78,24 @@ export default function BookingFlowPage({
 
   const price = batch.price;
   const subtotal = price * quantity;
-  const deliveryCharge = quantity >= 50 ? 0 : 250;
+  const isSelfPickup = courierOption === 'Self Pickup (Farm Direct - Eathamozhi)';
+  const deliveryCharge = isSelfPickup ? 0 : (quantity >= 50 ? 0 : 250);
   const totalAmount = subtotal + deliveryCharge;
+
+  // Pre-order calculations: half (50%) of total amount
+  const advanceAmount = isPreOrder ? Math.round(totalAmount / 2) : totalAmount;
+  const balanceAmount = isPreOrder ? (totalAmount - advanceAmount) : 0;
+  const amountToPayNow = advanceAmount;
 
   // UPI Details requested by user (configurable via .env / .env.local)
   const upiId = process.env.NEXT_PUBLIC_UPI_ID || 'rajeenth1@ybl';
   const displayName = process.env.NEXT_PUBLIC_UPI_DISPLAY_NAME || 'eathamozhi coconut farm';
   const billNotePrefix = process.env.NEXT_PUBLIC_UPI_BILL_NOTE_PREFIX || 'Coconut order';
-  const billNote = `${billNotePrefix} - ${quantity} saplings`;
+  const billNote = isPreOrder 
+    ? `Coconut Pre-order (50% Advance) - ${quantity} saplings`
+    : `${billNotePrefix} - ${quantity} saplings`;
   
-  const upiUri = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(displayName)}&am=${totalAmount}&tn=${encodeURIComponent(billNote)}&cu=INR`;
+  const upiUri = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(displayName)}&am=${amountToPayNow}&tn=${encodeURIComponent(billNote)}&cu=INR`;
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiUri)}`;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -142,8 +151,13 @@ export default function BookingFlowPage({
     e.preventDefault();
     setSubmitting(true);
 
-    const finalCourier = courierOption === 'Other' ? (customCourier.trim() || 'Other') : 'MSS Parcel Service';
-    const finalLocation = `${formData.district}, ${formData.state} - ${formData.pinCode}`;
+    const finalCourier = courierOption === 'Self Pickup (Farm Direct - Eathamozhi)'
+      ? 'Self Pickup (Farm Direct - Eathamozhi)'
+      : (courierOption === 'Other' ? (customCourier.trim() || 'Other') : 'MSS Parcel Service');
+    const finalHub = isSelfPickup ? 'Farm Direct (Eathamozhi Grove)' : (formData.nearestHub.trim() || 'Main Hub');
+    const finalLocation = isSelfPickup 
+      ? 'Farm Direct Pickup (Eathamozhi Farm Grove, Kanyakumari)' 
+      : `${formData.district}, ${formData.state} - ${formData.pinCode}`;
 
     try {
       const res = await fetch('/api/bookings', {
@@ -155,18 +169,28 @@ export default function BookingFlowPage({
           subtotal,
           deliveryCharge,
           totalAmount,
+          orderType: isPreOrder ? 'PRE_ORDER' : 'COMPLETE',
+          isPreOrder,
+          paidAmount: amountToPayNow,
+          advancePaid: isPreOrder ? amountToPayNow : undefined,
+          balanceAmount,
+          bookingStatus: isPreOrder ? 'Pre-order' : 'Payment review',
           paymentScreenshotUrl: screenshotUrl,
           ...formData,
           mobile: formData.mobile,
           whatsapp: formData.mobile,
           address: finalLocation,
-          deliveryService: finalCourier
+          deliveryService: finalCourier,
+          nearestHub: finalHub
         })
       });
 
       const data = await res.json();
       if (res.ok) {
-        // Compose Pre-filled WhatsApp Message with Delivery Service & Nearest Hub
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://eathamozhi-coconut-farm.vercel.app';
+        const trackingLink = `${siteUrl}/tracking?bookingId=${encodeURIComponent(data.bookingId)}&mobile=${encodeURIComponent(formData.mobile)}`;
+
+        // Compose Pre-filled WhatsApp Message with Order Type, Balance Amount and Live Tracking Link
         const whatsappMsg = 
 `🌴 *NEW SAPLING ORDER - EATHAMOZHI COCONUT FARM*
 
@@ -175,15 +199,20 @@ export default function BookingFlowPage({
 *Phone / WhatsApp:* ${formData.mobile}
 *Sapling Count:* ${quantity} Saplings
 *Batch Code:* ${batch.batchCode}
-*Total Paid Amount:* ₹${totalAmount.toLocaleString()}
-*Expected Delivery Date:* ${formData.expectedDeliveryDate}
-*Preferred Courier / Delivery Service:* ${finalCourier}
-*Nearest Delivery Hub / Town Hub:* ${formData.nearestHub || 'Main Hub'}
+*Order Type:* ${isPreOrder ? 'Pre-Order (50% Advance Booking)' : 'Complete Order (100% Payment)'}
+*Total Order Value:* ₹${totalAmount.toLocaleString()}
+*Amount Paid Now (50% Advance):* ₹${amountToPayNow.toLocaleString()}
+${isPreOrder ? `*⚠️ Balance Amount Due (at dispatch):* ₹${balanceAmount.toLocaleString()}\n` : ''}*Expected Delivery Date:* ${formData.expectedDeliveryDate}
+*Preferred Courier / Delivery:* ${finalCourier}
+*Nearest Delivery Hub:* ${finalHub}
 *UPI ID Paid to:* ${upiId} (${displayName})
 *Bill Note:* ${billNote}
 
 *Delivery Location:*
 ${finalLocation}
+
+🔍 *Track Order Status Online:*
+${trackingLink}
 
 Please confirm our order and dispatch details. Thank you!`;
 
@@ -198,16 +227,19 @@ Please confirm our order and dispatch details. Thank you!`;
           window.location.href = waUrl;
         }
 
-        // Navigate to confirmation screen with fallback order parameters so page never returns 404
+        // Navigate to confirmation screen
         const queryParams = new URLSearchParams({
           name: formData.customerName,
           qty: quantity.toString(),
           batch: batch.batchCode,
           amount: totalAmount.toString(),
+          paid: amountToPayNow.toString(),
+          bal: balanceAmount.toString(),
+          isPreOrder: isPreOrder ? 'true' : 'false',
           mobile: formData.mobile,
           date: formData.expectedDeliveryDate,
           courier: finalCourier,
-          hub: formData.nearestHub || 'Main Hub',
+          hub: finalHub,
           addr: finalLocation
         });
 
@@ -238,7 +270,7 @@ Please confirm our order and dispatch details. Thank you!`;
           <div className="row text-center mb-4 g-2">
             <div className="col-4">
               <div className={`p-2 rounded-3 fw-bold small ${step >= 1 ? 'bg-success text-white' : 'bg-secondary-subtle text-muted'}`}>
-                1. Quantity
+                1. Quantity &amp; Payment Type
               </div>
             </div>
             <div className="col-4">
@@ -248,17 +280,17 @@ Please confirm our order and dispatch details. Thank you!`;
             </div>
             <div className="col-4">
               <div className={`p-2 rounded-3 fw-bold small ${step >= 3 ? 'bg-success text-white' : 'bg-secondary-subtle text-muted'}`}>
-                3. Scan UPI QR & Pay
+                3. Scan UPI QR &amp; Pay
               </div>
             </div>
           </div>
 
           <div className="card border-0 shadow-lg rounded-4 p-4 bg-white">
             
-            {/* STEP 1: QUANTITY SELECTOR */}
+            {/* STEP 1: QUANTITY SELECTOR & ORDER TYPE TOGGLE */}
             {step === 1 && (
               <div>
-                <h4 className="fw-bold text-dark mb-3">Step 1: How many saplings would you like?</h4>
+                <h4 className="fw-bold text-dark mb-3">Step 1: Select Quantity &amp; Payment Mode</h4>
 
                 <div className="bg-light p-4 rounded-4 mb-4 text-center border shadow-sm">
                   <label className="form-label small fw-bold text-dark d-block mb-2">
@@ -378,7 +410,85 @@ Please confirm our order and dispatch details. Thank you!`;
                   )}
                 </div>
 
-                <div className="bg-light p-3 rounded-3 mb-4">
+                {/* TOGGLE BUTTON: Complete Order vs Pre-Order */}
+                <div className="bg-light p-3 rounded-4 mb-4 border shadow-sm">
+                  <div className="d-flex justify-content-between align-items-center mb-2">
+                    <label className="fw-bold text-dark small mb-0">
+                      <i className="bi bi-sliders me-1 text-success"></i> Choose Order Payment Mode:
+                    </label>
+                    {isPreOrder ? (
+                      <span className="badge bg-warning text-dark fw-bold px-2 py-1">
+                        <i className="bi bi-clock-history me-1"></i> Pre-Order (Pay 50% Advance)
+                      </span>
+                    ) : (
+                      <span className="badge bg-success fw-bold px-2 py-1">
+                        <i className="bi bi-check-circle-fill me-1"></i> Complete Order (100% Full Payment)
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="row g-2">
+                    {/* Complete Order Option Card */}
+                    <div className="col-6">
+                      <div 
+                        className={`card h-100 p-3 rounded-3 text-center cursor-pointer ${!isPreOrder ? 'border-2 border-success bg-white shadow-sm' : 'border bg-light text-muted opacity-75'}`}
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => setIsPreOrder(false)}
+                      >
+                        <div className="d-flex align-items-center justify-content-center gap-2 mb-1">
+                          <input 
+                            type="radio" 
+                            name="orderType" 
+                            checked={!isPreOrder} 
+                            onChange={() => setIsPreOrder(false)} 
+                            className="form-check-input"
+                          />
+                          <strong className="text-dark">Complete Order</strong>
+                        </div>
+                        <small className="text-muted d-block extra-small">Pay full total amount now</small>
+                        <div className="mt-2 text-success fw-bold fs-5">
+                          ₹{totalAmount.toLocaleString()}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Pre-Order Option Card */}
+                    <div className="col-6">
+                      <div 
+                        className={`card h-100 p-3 rounded-3 text-center cursor-pointer ${isPreOrder ? 'border-2 border-warning bg-warning bg-opacity-10 shadow-sm' : 'border bg-light text-muted opacity-75'}`}
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => setIsPreOrder(true)}
+                      >
+                        <div className="d-flex align-items-center justify-content-center gap-2 mb-1">
+                          <input 
+                            type="radio" 
+                            name="orderType" 
+                            checked={isPreOrder} 
+                            onChange={() => setIsPreOrder(true)} 
+                            className="form-check-input"
+                          />
+                          <strong className="text-dark">Pre-Order (50% Advance)</strong>
+                        </div>
+                        <small className="text-muted d-block extra-small">Pay only half today to reserve saplings</small>
+                        <div className="mt-2 text-warning-emphasis fw-bold fs-5">
+                          ₹{Math.round(totalAmount / 2).toLocaleString()} <span className="extra-small text-muted fw-normal">today</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {isPreOrder && (
+                    <div className="alert alert-warning mb-0 mt-3 py-2 px-3 small rounded-3 d-flex align-items-start gap-2">
+                      <i className="bi bi-info-circle-fill text-warning fs-5 mt-1"></i>
+                      <div>
+                        <strong>Pre-Order Activated:</strong> Pay only <strong>₹{advanceAmount.toLocaleString()}</strong> (50% advance) now to lock in your ancestral saplings batch. The remaining balance of <strong>₹{balanceAmount.toLocaleString()}</strong> will be due before dispatch.
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Subtotal & Delivery Summary */}
+                <div className="bg-light p-3 rounded-3 mb-4 border">
                   <div className="d-flex justify-content-between mb-1">
                     <span>Price per Sapling:</span>
                     <strong>₹{price}</strong>
@@ -387,7 +497,34 @@ Please confirm our order and dispatch details. Thank you!`;
                     <span>Subtotal ({quantity} saplings):</span>
                     <strong className="text-success fs-5">₹{subtotal.toLocaleString()}</strong>
                   </div>
-                  <small className="text-muted d-block text-end">Delivery: {deliveryCharge === 0 ? <span className="text-success fw-bold">FREE (50+ Offer)</span> : `₹${deliveryCharge}`}</small>
+                  <div className="d-flex justify-content-between mb-1 small">
+                    <span>Delivery Charge:</span>
+                    {isSelfPickup ? (
+                      <span className="text-success fw-bold">FREE (Self Pickup from Farm)</span>
+                    ) : deliveryCharge === 0 ? (
+                      <span className="text-success fw-bold">FREE (50+ Saplings Offer)</span>
+                    ) : (
+                      <span>₹{deliveryCharge}</span>
+                    )}
+                  </div>
+                  <hr className="my-2" />
+                  <div className="d-flex justify-content-between align-items-center mb-1">
+                    <span className="fw-bold text-dark">Total Order Value:</span>
+                    <strong className="text-dark fs-5">₹{totalAmount.toLocaleString()}</strong>
+                  </div>
+
+                  {isPreOrder && (
+                    <>
+                      <div className="d-flex justify-content-between align-items-center text-success fw-bold">
+                        <span><i className="bi bi-check2-circle me-1"></i> 50% Advance Due Today:</span>
+                        <span className="fs-5">₹{advanceAmount.toLocaleString()}</span>
+                      </div>
+                      <div className="d-flex justify-content-between align-items-center text-danger extra-small fw-semibold mt-1">
+                        <span>Remaining Balance (Due at dispatch):</span>
+                        <span>₹{balanceAmount.toLocaleString()}</span>
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 <button 
@@ -402,7 +539,7 @@ Please confirm our order and dispatch details. Thank you!`;
             {/* STEP 2: CUSTOMER DETAILS */}
             {step === 2 && (
               <div>
-                <h4 className="fw-bold text-dark mb-3">Step 2: Enter Delivery & Contact Details</h4>
+                <h4 className="fw-bold text-dark mb-3">Step 2: Enter Delivery &amp; Contact Details</h4>
 
                 <form onSubmit={(e) => { e.preventDefault(); setStep(3); }}>
                   <div className="row g-3 mb-3">
@@ -437,11 +574,11 @@ Please confirm our order and dispatch details. Thank you!`;
                           }));
                         }}
                       />
-                      <small className="text-muted extra-small">Used for order confirmation & dispatch updates.</small>
+                      <small className="text-muted extra-small">Used for order confirmation &amp; dispatch updates.</small>
                     </div>
 
                     <div className="col-md-6">
-                      <label className="form-label small fw-bold">Expected Delivery Date *</label>
+                      <label className="form-label small fw-bold">Expected Delivery / Pickup Date *</label>
                       <input 
                         type="date" 
                         name="expectedDeliveryDate" 
@@ -450,7 +587,7 @@ Please confirm our order and dispatch details. Thank you!`;
                         value={formData.expectedDeliveryDate}
                         onChange={handleInputChange}
                       />
-                      <small className="text-muted extra-small">Select your preferred farm delivery date.</small>
+                      <small className="text-muted extra-small">Select your preferred farm delivery or collection date.</small>
                     </div>
 
                     <div className="col-md-6">
@@ -490,26 +627,45 @@ Please confirm our order and dispatch details. Thank you!`;
                       />
                     </div>
 
+                    {/* Preferred Courier / Parcel Service with Self Pickup */}
                     <div className="col-md-6">
                       <label className="form-label small fw-bold">Preferred Courier / Delivery Service *</label>
                       <select 
                         name="courierOption" 
-                        className="form-select"
+                        className="form-select fw-semibold"
                         required
                         value={courierOption}
                         onChange={(e) => {
-                          const selected = e.target.value as 'MSS Parcel Service' | 'Other';
+                          const selected = e.target.value as any;
                           setCourierOption(selected);
-                          setFormData(prev => ({
-                            ...prev,
-                            deliveryService: selected === 'Other' ? (customCourier.trim() || 'Other') : 'MSS Parcel Service'
-                          }));
+                          if (selected === 'Self Pickup (Farm Direct - Eathamozhi)') {
+                            setFormData(prev => ({
+                              ...prev,
+                              deliveryService: selected,
+                              nearestHub: 'Eathamozhi Farm Grove, Kanyakumari'
+                            }));
+                          } else if (selected === 'Other') {
+                            setFormData(prev => ({
+                              ...prev,
+                              deliveryService: customCourier.trim() || 'Other'
+                            }));
+                          } else {
+                            setFormData(prev => ({
+                              ...prev,
+                              deliveryService: 'MSS Parcel Service'
+                            }));
+                          }
                         }}
                       >
-                        <option value="MSS Parcel Service">MSS Parcel Service</option>
-                        <option value="Other">Other</option>
+                        <option value="MSS Parcel Service">MSS Parcel Service (Standard Freight)</option>
+                        <option value="Self Pickup (Farm Direct - Eathamozhi)">Self Pickup (Farm Direct - Exclude Delivery Charges / Free)</option>
+                        <option value="Other">Other Parcel / Courier Service</option>
                       </select>
-                      <small className="text-muted extra-small">Choose MSS Parcel Service or select Other to specify.</small>
+                      <small className="text-muted extra-small">
+                        {isSelfPickup 
+                          ? '🎉 Self Pickup Selected: Delivery charge is ₹0 (Free)!' 
+                          : 'Select MSS Parcel Service, Self Pickup, or specify Other.'}
+                      </small>
 
                       {courierOption === 'Other' && (
                         <div className="mt-2">
@@ -539,10 +695,15 @@ Please confirm our order and dispatch details. Thank you!`;
                         name="nearestHub" 
                         className="form-control" 
                         required
-                        value={formData.nearestHub}
+                        value={isSelfPickup ? 'Eathamozhi Farm Grove, Kanyakumari' : formData.nearestHub}
                         onChange={handleInputChange}
+                        disabled={isSelfPickup}
                       />
-                      <small className="text-muted extra-small">Hub location closest to your farm for parcel collection/dispatch.</small>
+                      <small className="text-muted extra-small">
+                        {isSelfPickup 
+                          ? 'Pickup location: Eathamozhi Farm Grove, Kanyakumari.' 
+                          : 'Hub location closest to your farm for parcel collection/dispatch.'}
+                      </small>
                     </div>
                   </div>
 
@@ -561,8 +722,12 @@ Please confirm our order and dispatch details. Thank you!`;
             {/* STEP 3: SCAN UPI QR & UPLOAD SCREENSHOT */}
             {step === 3 && (
               <div>
-                <h4 className="fw-bold text-dark mb-1">Step 3: Scan UPI QR & Pay</h4>
-                <p className="text-muted small mb-4">Pay directly via GPay, PhonePe, Paytm, or BHIM UPI.</p>
+                <h4 className="fw-bold text-dark mb-1">Step 3: Scan UPI QR &amp; Pay</h4>
+                <p className="text-muted small mb-4">
+                  {isPreOrder 
+                    ? 'Pay 50% advance now via GPay, PhonePe, Paytm, or BHIM UPI to confirm your pre-order.'
+                    : 'Pay directly via GPay, PhonePe, Paytm, or BHIM UPI.'}
+                </p>
 
                 <div className="row g-4 mb-4">
                   {/* Left Column: QR Code */}
@@ -584,7 +749,14 @@ Please confirm our order and dispatch details. Thank you!`;
                   {/* Right Column: Bill Details */}
                   <div className="col-md-7">
                     <div className="bg-light p-3 rounded-4 mb-3 border">
-                      <small className="text-muted d-block text-uppercase fw-bold">PAYMENT DETAILS</small>
+                      <div className="d-flex justify-content-between align-items-center mb-2">
+                        <small className="text-muted text-uppercase fw-bold">PAYMENT DETAILS</small>
+                        {isPreOrder ? (
+                          <span className="badge bg-warning text-dark fw-bold">Pre-Order (50% Advance)</span>
+                        ) : (
+                          <span className="badge bg-success fw-bold">Complete Order (100%)</span>
+                        )}
+                      </div>
                       <div className="d-flex justify-content-between align-items-center my-2">
                         <span className="text-muted">Display Name:</span>
                         <strong className="text-dark">{displayName}</strong>
@@ -598,13 +770,35 @@ Please confirm our order and dispatch details. Thank you!`;
                         <strong className="text-dark">{formData.expectedDeliveryDate}</strong>
                       </div>
                       <div className="d-flex justify-content-between align-items-center my-2">
+                        <span className="text-muted">Preferred Delivery:</span>
+                        <strong className="text-dark">{courierOption}</strong>
+                      </div>
+                      <div className="d-flex justify-content-between align-items-center my-2">
                         <span className="text-muted">Bill Note:</span>
                         <span className="badge bg-dark">{billNote}</span>
                       </div>
+                      
+                      {isPreOrder && (
+                        <div className="p-2 my-2 bg-white rounded-3 border small">
+                          <div className="d-flex justify-content-between text-muted mb-1">
+                            <span>Total Order Value:</span>
+                            <strong>₹{totalAmount.toLocaleString()}</strong>
+                          </div>
+                          <div className="d-flex justify-content-between text-success fw-bold mb-1">
+                            <span>50% Advance Payable Now:</span>
+                            <span>₹{advanceAmount.toLocaleString()}</span>
+                          </div>
+                          <div className="d-flex justify-content-between text-danger fw-semibold">
+                            <span>Remaining Balance at Dispatch:</span>
+                            <span>₹{balanceAmount.toLocaleString()}</span>
+                          </div>
+                        </div>
+                      )}
+
                       <hr className="my-2" />
                       <div className="d-flex justify-content-between align-items-center">
-                        <span className="fw-bold text-dark">AMOUNT TO PAY:</span>
-                        <span className="fw-bold fs-3 text-success">₹{totalAmount.toLocaleString()}</span>
+                        <span className="fw-bold text-dark">{isPreOrder ? 'ADVANCE AMOUNT TO PAY:' : 'AMOUNT TO PAY:'}</span>
+                        <span className="fw-bold fs-3 text-success">₹{amountToPayNow.toLocaleString()}</span>
                       </div>
                     </div>
 
@@ -622,30 +816,47 @@ Please confirm our order and dispatch details. Thank you!`;
                       {uploadingScreenshot && (
                         <div className="d-flex align-items-center gap-2 text-primary small py-1">
                           <span className="spinner-border spinner-border-sm" role="status"></span>
-                          <span>Uploading receipt to secure cloud storage...</span>
+                          <span>Uploading receipt to Cloudinary cloud storage...</span>
                         </div>
                       )}
+                      
                       {screenshotUrl && !uploadingScreenshot && (
-                        <div className="d-flex align-items-center gap-2 mt-2 bg-white p-2 rounded-3 border border-success">
-                          <img 
-                            src={previewUrl || screenshotUrl} 
-                            alt="Receipt preview" 
-                            className="rounded object-fit-cover" 
-                            style={{ width: '48px', height: '48px' }} 
-                          />
-                          <div>
-                            <span className="badge bg-success mb-1">
-                              <i className="bi bi-check-circle-fill me-1"></i> Screenshot Attached
-                            </span>
-                            <small className="text-success d-block extra-small fw-semibold">
-                              Payment receipt successfully attached
-                            </small>
+                        <div className="mt-2">
+                          <div className="d-flex align-items-center gap-2 bg-white p-2 rounded-3 border border-success">
+                            <img 
+                              src={previewUrl || screenshotUrl} 
+                              alt="Receipt preview" 
+                              className="rounded object-fit-cover" 
+                              style={{ width: '48px', height: '48px' }} 
+                            />
+                            <div>
+                              <span className="badge bg-success mb-1">
+                                <i className="bi bi-check-circle-fill me-1"></i> Screenshot Attached
+                              </span>
+                              <small className="text-success d-block extra-small fw-semibold">
+                                Payment receipt uploaded successfully
+                              </small>
+                            </div>
+                          </div>
+
+                          {/* Cloudinary Storage and Farm Admin Approval Notice */}
+                          <div className="alert alert-success border-success mt-2 mb-0 py-2 px-3 rounded-3 small">
+                            <div className="d-flex align-items-start gap-2">
+                              <i className="bi bi-cloud-check-fill text-success fs-5 mt-1"></i>
+                              <div>
+                                <strong className="d-block text-success">Uploaded receipts are saved directly to Cloudinary storage for admin approval.</strong>
+                                <span className="text-secondary extra-small">The receipts will be reviewed and approved by farm admin.</span>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       )}
-                      <small className="text-secondary extra-small d-block mt-2">
-                        <i className="bi bi-shield-check me-1 text-success"></i> <strong>Note:</strong> Uploaded receipts are saved directly to secure Cloudinary storage for Farm Admin verification.
-                      </small>
+
+                      {!screenshotUrl && !uploadingScreenshot && (
+                        <small className="text-secondary extra-small d-block mt-2">
+                          <i className="bi bi-shield-check me-1 text-success"></i> <strong>Note:</strong> Uploaded receipts are saved directly to Cloudinary storage for admin approval. The receipts will be reviewed and approved by farm admin.
+                        </small>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -663,7 +874,7 @@ Please confirm our order and dispatch details. Thank you!`;
                     {submitting ? (
                       <span><span className="spinner-border spinner-border-sm me-2"></span>Confirming Order...</span>
                     ) : (
-                      <span><i className="bi bi-whatsapp me-2"></i> Submit & Trigger WhatsApp</span>
+                      <span><i className="bi bi-whatsapp me-2"></i> Submit &amp; Trigger WhatsApp</span>
                     )}
                   </button>
                 </div>

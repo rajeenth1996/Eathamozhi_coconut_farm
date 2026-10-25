@@ -26,6 +26,9 @@ export default function BookingConfirmationPage({
   const courierParam = searchParams.get('courier') || 'ST Couriers';
   const hubParam = searchParams.get('hub') || 'District Main Hub';
   const addrParam = searchParams.get('addr') || 'Address registered with order';
+  const isPreOrderParam = searchParams.get('isPreOrder') === 'true';
+  const paidParam = searchParams.get('paid');
+  const balParam = searchParams.get('bal');
 
   useEffect(() => {
     fetch(`/api/bookings/${bookingId}`)
@@ -57,6 +60,9 @@ export default function BookingConfirmationPage({
         : (booking.address || `${booking.district}, ${booking.state} - ${booking.pinCode}`))
     : (addrParam || 'District Main Hub');
   const displayScreenshot = booking?.paymentScreenshotUrl;
+  const isPreOrder = Boolean(booking?.isPreOrder || booking?.orderType === 'PRE_ORDER' || booking?.bookingStatus === 'Pre-order' || isPreOrderParam);
+  const displayPaid = booking?.paidAmount || booking?.advancePaid || (paidParam ? Number(paidParam) : (isPreOrder ? Math.round(displayAmount / 2) : displayAmount));
+  const displayBal = booking?.balanceAmount ?? (balParam ? Number(balParam) : (isPreOrder ? Math.max(0, displayAmount - displayPaid) : 0));
 
   const upiId = process.env.NEXT_PUBLIC_UPI_ID || 'rajeenth1@ybl';
   const upiDisplayName = process.env.NEXT_PUBLIC_UPI_DISPLAY_NAME || 'eathamozhi coconut farm';
@@ -71,7 +77,7 @@ export default function BookingConfirmationPage({
 *Phone / WhatsApp:* ${displayMobile}
 *Sapling Count:* ${displayQty} Saplings
 *Batch Code:* ${displayBatch}
-*Total Paid Amount:* ₹${Number(displayAmount).toLocaleString()}
+*Order Type:* ${isPreOrder ? 'Pre-Order (50% Advance Booking)' : 'Complete Order (100% Payment)'}\n*Total Order Value:* ₹${Number(displayAmount).toLocaleString()}\n*Amount Paid (50% Advance):* ₹${Number(displayPaid).toLocaleString()}${isPreOrder ? `\n*⚠️ Balance to be Paid (at dispatch):* ₹${Number(displayBal).toLocaleString()}` : ''}
 *Expected Delivery Date:* ${displayDate}
 *Preferred Courier / Delivery Service:* ${displayCourier}
 *Nearest Delivery Hub / Town Hub:* ${displayHub}
@@ -81,7 +87,7 @@ export default function BookingConfirmationPage({
 *Delivery Location:*
 ${displayAddr}
 
-Please confirm our order and dispatch details. Thank you!`;
+🔍 *Track Order Status Online:*\n${process.env.NEXT_PUBLIC_SITE_URL || 'https://eathamozhi-coconut-farm.vercel.app'}/tracking?bookingId=${encodeURIComponent(displayId)}&mobile=${encodeURIComponent(displayMobile)}\n\nPlease confirm our order and dispatch details. Thank you!`;
 
   const encodedWa = encodeURIComponent(whatsappMsg);
   const waUrl = `https://wa.me/919486880641?text=${encodedWa}`;
@@ -122,9 +128,20 @@ Please confirm our order and dispatch details. Thank you!`;
             <div className="text-center border-bottom pb-4 mb-4">
               <small className="text-muted d-block text-uppercase">YOUR UNIQUE BOOKING REFERENCE</small>
               <h2 className="fw-bold text-success display-6 mb-1">{displayId}</h2>
-              <span className="badge bg-success-subtle text-success border border-success">
-                <i className="bi bi-check-circle-fill me-1"></i> SUBMITTED (₹{Number(displayAmount).toLocaleString()})
-              </span>
+              {isPreOrder ? (
+                <div className="d-flex flex-wrap gap-2 justify-content-center">
+                  <span className="badge bg-warning text-dark border border-warning px-3 py-2 fw-bold">
+                    <i className="bi bi-clock-history me-1"></i> PRE-ORDER (50% ADVANCE: ₹{Number(displayPaid).toLocaleString()})
+                  </span>
+                  <span className="badge bg-danger px-3 py-2 fw-bold">
+                    BALANCE DUE: ₹{Number(displayBal).toLocaleString()}
+                  </span>
+                </div>
+              ) : (
+                <span className="badge bg-success-subtle text-success border border-success px-3 py-2 fw-bold">
+                  <i className="bi bi-check-circle-fill me-1"></i> SUBMITTED (₹{Number(displayAmount).toLocaleString()})
+                </span>
+              )}
             </div>
 
             <div className="row g-4 mb-4">
@@ -134,7 +151,13 @@ Please confirm our order and dispatch details. Thank you!`;
                   <li className="mb-1">Batch Code: <strong className="text-dark">{displayBatch}</strong></li>
                   <li className="mb-1">Quantity: <strong className="text-dark">{displayQty} Saplings</strong></li>
                   <li className="mb-1">Expected Delivery: <strong className="text-success fw-bold">{displayDate}</strong></li>
-                  <li className="mb-1">Total Amount: <strong className="text-success fw-bold">₹{Number(displayAmount).toLocaleString()}</strong></li>
+                  <li className="mb-1">Total Order Value: <strong className="text-dark fw-bold">₹{Number(displayAmount).toLocaleString()}</strong></li>
+                  {isPreOrder && (
+                    <>
+                      <li className="mb-1 text-success">50% Advance Paid: <strong className="text-success fw-bold">₹{Number(displayPaid).toLocaleString()}</strong></li>
+                      <li className="mb-1 text-danger">Balance Due at Dispatch: <strong className="text-danger fw-bold">₹{Number(displayBal).toLocaleString()}</strong></li>
+                    </>
+                  )}
                 </ul>
               </div>
 
@@ -156,6 +179,9 @@ Please confirm our order and dispatch details. Thank you!`;
               <div className="p-3 bg-light rounded-4 border mb-4 text-center">
                 <small className="text-muted d-block fw-bold mb-2"><i className="bi bi-camera me-1 text-success"></i> Payment Screenshot Attached</small>
                 <img src={displayScreenshot} alt="Payment Receipt" className="img-fluid rounded border mb-2" style={{ maxHeight: '200px' }} />
+                <div className="alert alert-success border-success mt-2 mb-0 py-2 px-3 rounded-3 small">
+                  <i className="bi bi-cloud-check-fill text-success me-1"></i> Uploaded receipts are saved directly to Cloudinary storage for admin approval. The receipts will be reviewed and approved by farm admin.
+                </div>
               </div>
             )}
 

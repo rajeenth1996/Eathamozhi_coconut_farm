@@ -53,6 +53,12 @@ export const BookingCreateSchema = z.object({
   deliveryService: z.string().optional().or(z.literal('')),
   nearestHub: z.string().optional().or(z.literal('')),
   paymentScreenshotUrl: z.string().optional().or(z.literal('')),
+  orderType: z.enum(['COMPLETE', 'PRE_ORDER']).optional(),
+  isPreOrder: z.boolean().optional(),
+  paidAmount: z.coerce.number().optional(),
+  advancePaid: z.coerce.number().optional(),
+  balanceAmount: z.coerce.number().optional(),
+  bookingStatus: z.string().optional(),
 });
 
 // ─── Enquiry Validation ──────────────────────────────────────────────────────

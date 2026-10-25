@@ -149,6 +149,21 @@
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792908410/eathamozhi-farm/parent-palms/75097bcf-a3cf-4f02-95c6-3aa5b9b94923-1792908409986.jpg"
       ]
+    },
+    {
+      "id": "mp-1792918140787",
+      "code": "EM-MP-020",
+      "name": "Plot C Selected Mother Tree #20",
+      "age": 45,
+      "location": "Coastal Plot C, Eathamozhi Farm",
+      "healthStatus": "Excellent (100% Disease Resistant)",
+      "yieldHistory": "Consistently high year-round seed nut yield",
+      "description": "Selected for heavy canopy, disease immunity, and large copra content.",
+      "nutCharacteristics": "Large spherical nuts with high coconut water volume and thick kernel.",
+      "whySelected": "Consistently high yield for over 40 years without dropping premature buttons.",
+      "images": [
+        "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792918139/eathamozhi-farm/parent-palms/d5d287ac-6b3a-4f6b-a7ce-7e313ed56641-1792918139894.jpg"
+      ]
     }
   ],
   "batches": [
@@ -164,12 +179,12 @@
       "harvestDate": "2026-01-05",
       "seededDate": "2026-01-15",
       "totalQuantity": 500,
-      "bookedQuantity": 0,
+      "bookedQuantity": 500,
       "inventoryAdjustments": 0,
       "price": 150,
       "status": "AVAILABLE",
       "description": "",
-      "viewsCount": 15,
+      "viewsCount": 0,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792893909/eathamozhy-farm/batches/74cbbdcb-f064-459c-9267-d045737e799c-1792893907395.jpg"
       ]
@@ -186,12 +201,12 @@
       "harvestDate": "2025-09-10",
       "seededDate": "2025-09-25",
       "totalQuantity": 500,
-      "bookedQuantity": 0,
+      "bookedQuantity": 280,
       "inventoryAdjustments": 0,
       "price": 150,
       "status": "AVAILABLE",
       "description": "Fully matured 12-month saplings ready for immediate orchard planting. Strong root systems and thick collars.",
-      "viewsCount": 120,
+      "viewsCount": 8,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909327/eathamozhi-farm/batches/25b2b6ad-0a44-47b6-a4b4-a45d1e426cca-1792909327401.jpg"
       ]
@@ -213,7 +228,7 @@
       "price": 150,
       "status": "AVAILABLE",
       "description": "Vigorous 11-month saplings from River Bank parent tree. High leaf frond count and dark green color.",
-      "viewsCount": 120,
+      "viewsCount": 0,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909391/eathamozhi-farm/batches/5700477e-967d-4133-9a99-76560430a143-1792909391250.jpg"
       ]
@@ -235,7 +250,7 @@
       "price": 160,
       "status": "AVAILABLE",
       "description": "Coastal shield cultivar batch. Engineered for wind resistance and saline soil adaptability.",
-      "viewsCount": 120,
+      "viewsCount": 0,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792893909/eathamozhy-farm/batches/74cbbdcb-f064-459c-9267-d045737e799c-1792893907395.jpg"
       ]
@@ -257,7 +272,7 @@
       "price": 155,
       "status": "AVAILABLE",
       "description": "Heavy collar saplings raised under drip irrigation with balanced organic compost nutrition.",
-      "viewsCount": 120,
+      "viewsCount": 0,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909327/eathamozhi-farm/batches/25b2b6ad-0a44-47b6-a4b4-a45d1e426cca-1792909327401.jpg"
       ]
@@ -279,7 +294,7 @@
       "price": 150,
       "status": "AVAILABLE",
       "description": "Hardened saplings with high heat tolerance. Excellent candidate for dry zone planting.",
-      "viewsCount": 120,
+      "viewsCount": 0,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909391/eathamozhi-farm/batches/5700477e-967d-4133-9a99-76560430a143-1792909391250.jpg"
       ]
@@ -301,7 +316,7 @@
       "price": 165,
       "status": "AVAILABLE",
       "description": "Special monsoon edition batch. Prepared for planting at the start of South-West monsoon.",
-      "viewsCount": 120,
+      "viewsCount": 0,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792893909/eathamozhy-farm/batches/74cbbdcb-f064-459c-9267-d045737e799c-1792893907395.jpg"
       ]
@@ -323,7 +338,7 @@
       "price": 170,
       "status": "AVAILABLE",
       "description": "Offspring of 91-year old Giant Mother Tree #7. High genetic purity and extra large nut potential.",
-      "viewsCount": 120,
+      "viewsCount": 0,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909327/eathamozhi-farm/batches/25b2b6ad-0a44-47b6-a4b4-a45d1e426cca-1792909327401.jpg"
       ]
@@ -345,7 +360,7 @@
       "price": 160,
       "status": "AVAILABLE",
       "description": "Rapid sprouting batch with quick root anchorage and dense frond emergence.",
-      "viewsCount": 120,
+      "viewsCount": 0,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909391/eathamozhi-farm/batches/5700477e-967d-4133-9a99-76560430a143-1792909391250.jpg"
       ]
@@ -367,7 +382,7 @@
       "price": 155,
       "status": "AVAILABLE",
       "description": "Drought resilient sapling lineage from Highland Block parent palm.",
-      "viewsCount": 120,
+      "viewsCount": 0,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792893909/eathamozhy-farm/batches/74cbbdcb-f064-459c-9267-d045737e799c-1792893907395.jpg"
       ]
@@ -389,13 +404,182 @@
       "price": 160,
       "status": "AVAILABLE",
       "description": "Dual-purpose saplings. Ideal for both tender coconut harvesting and copra production.",
-      "viewsCount": 120,
+      "viewsCount": 0,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909327/eathamozhi-farm/batches/25b2b6ad-0a44-47b6-a4b4-a45d1e426cca-1792909327401.jpg"
       ]
     }
   ],
-  "bookings": [],
+  "bookings": [
+    {
+      "batchCode": "EM-0126-A",
+      "customerName": "Kannan Farmer",
+      "mobile": "9840123456",
+      "whatsapp": "9840123456",
+      "address": "Farm Direct Pickup (Eathamozhi, Kanyakumari)",
+      "district": "Kanyakumari",
+      "state": "Tamil Nadu",
+      "pinCode": "629501",
+      "quantity": 10,
+      "subtotal": 3500,
+      "deliveryCharge": 0,
+      "totalAmount": 3500,
+      "expectedDeliveryDate": "2026-11-05",
+      "deliveryService": "Self Pickup (Farm Direct - Eathamozhi)",
+      "nearestHub": "Eathamozhi Farm Grove, Kanyakumari",
+      "paymentScreenshotUrl": "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909391/test-receipt.jpg",
+      "orderType": "PRE_ORDER",
+      "isPreOrder": true,
+      "paidAmount": 1750,
+      "advancePaid": 1750,
+      "balanceAmount": 1750,
+      "id": "bk-1792926333116",
+      "bookingId": "EM-0126-A-2430",
+      "paymentStatus": "PENDING_VERIFICATION",
+      "bookingStatus": "Pre-order",
+      "createdAt": "2026-10-25T11:05:33.116Z"
+    },
+    {
+      "_id": "6addbcfeb8d60f4e7de992a1",
+      "bookingId": "EM-1026-A-5406",
+      "__v": 0,
+      "address": "Kanyakumari, Tamil Nadu - 629501",
+      "batchCode": "EM-1026-A",
+      "bookingStatus": "Confirmed",
+      "createdAt": "2026-10-25T08:25:33.833Z",
+      "customerName": "Rajeenth",
+      "deliveryCharge": 0,
+      "deliveryService": "MSS Parcel Service",
+      "district": "Kanyakumari",
+      "email": "",
+      "expectedDeliveryDate": "2026-11-01",
+      "farmLocation": "",
+      "id": "bk-1792916733833",
+      "mobile": "9486880641",
+      "nearestHub": "nagercoil",
+      "paymentScreenshotUrl": "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792916730/eathamozhi-farm/receipts/cbf50e42-e370-41b3-8281-320e348f4d5d-1792916728993.jpg",
+      "paymentStatus": "PAID",
+      "pinCode": "629501",
+      "quantity": 100,
+      "specialInstructions": "",
+      "state": "Tamil Nadu",
+      "subtotal": 15000,
+      "totalAmount": 15000,
+      "whatsapp": "9486880641"
+    },
+    {
+      "_id": "6addc400b8d60f4e7de99448",
+      "bookingId": "EM-1026-A-5107",
+      "__v": 0,
+      "address": "Kanyakumari, Tamil Nadu - 629501",
+      "batchCode": "EM-1026-A",
+      "bookingStatus": "Payment review",
+      "createdAt": "2026-10-25T08:55:27.952Z",
+      "customerName": "Rajeenth",
+      "deliveryCharge": 0,
+      "deliveryService": "A1",
+      "district": "Kanyakumari",
+      "email": "",
+      "expectedDeliveryDate": "2026-11-01",
+      "farmLocation": "",
+      "id": "bk-1792918527952",
+      "mobile": "9486880641",
+      "nearestHub": "nagercoil",
+      "paymentScreenshotUrl": "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792918525/eathamozhi-farm/receipts/45632cc2-032a-4cc3-9fc5-bc5bcfeb038b-1792918525330.jpg",
+      "paymentStatus": "PENDING_VERIFICATION",
+      "pinCode": "629501",
+      "quantity": 400,
+      "specialInstructions": "",
+      "state": "Tamil Nadu",
+      "subtotal": 60000,
+      "totalAmount": 60000,
+      "whatsapp": "9486880641"
+    },
+    {
+      "_id": "6addc527b8d60f4e7de9944e",
+      "bookingId": "EM-0126-A-8740",
+      "__v": 0,
+      "address": "Kanyakumari, Tamil Nadu - 600091",
+      "batchCode": "EM-0126-A",
+      "bookingStatus": "Payment review",
+      "createdAt": "2026-10-25T09:00:23.095Z",
+      "customerName": "Priya",
+      "deliveryCharge": 0,
+      "deliveryService": "MSS Parcel Service",
+      "district": "Kanyakumari",
+      "email": "",
+      "expectedDeliveryDate": "2026-11-01",
+      "farmLocation": "",
+      "id": "bk-1792918823095",
+      "mobile": "8903849908",
+      "nearestHub": "Chennai",
+      "paymentScreenshotUrl": "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792918819/eathamozhi-farm/receipts/3209a99e-70ac-4251-813c-3e5976139b13-1792918819171.png",
+      "paymentStatus": "PENDING_VERIFICATION",
+      "pinCode": "600091",
+      "quantity": 150,
+      "specialInstructions": "",
+      "state": "Tamil Nadu",
+      "subtotal": 22500,
+      "totalAmount": 22500,
+      "whatsapp": "8903849908"
+    },
+    {
+      "_id": "6addc792b8d60f4e7de99461",
+      "bookingId": "EM-0126-A-1769",
+      "__v": 0,
+      "address": "Kanyakumari, Tamil Nadu - 629561",
+      "batchCode": "EM-0126-A",
+      "bookingStatus": "Payment review",
+      "createdAt": "2026-10-25T09:10:42.166Z",
+      "customerName": "Beula",
+      "deliveryCharge": 0,
+      "deliveryService": "MSS Parcel Service",
+      "district": "Kanyakumari",
+      "email": "",
+      "expectedDeliveryDate": "2026-12-25",
+      "farmLocation": "",
+      "id": "bk-1792919442166",
+      "mobile": "9488020288",
+      "nearestHub": "Marthandam",
+      "paymentScreenshotUrl": "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792919435/eathamozhi-farm/receipts/352541c1-5d75-4945-8029-a2c6930afa34-1792919435168.jpg",
+      "paymentStatus": "PENDING_VERIFICATION",
+      "pinCode": "629561",
+      "quantity": 110,
+      "specialInstructions": "",
+      "state": "Tamil Nadu",
+      "subtotal": 16500,
+      "totalAmount": 16500,
+      "whatsapp": "9488020288"
+    },
+    {
+      "_id": "6addc94fb8d60f4e7de99475",
+      "bookingId": "EM-0126-A-6888",
+      "__v": 0,
+      "address": "Kanyakumari, Tamil Nadu - 629561",
+      "batchCode": "EM-0126-A",
+      "bookingStatus": "Payment review",
+      "createdAt": "2026-10-25T09:18:07.422Z",
+      "customerName": "Selva Priya",
+      "deliveryCharge": 250,
+      "deliveryService": "MSS Parcel Service",
+      "district": "Kanyakumari",
+      "email": "",
+      "expectedDeliveryDate": "2026-12-30",
+      "farmLocation": "",
+      "id": "bk-1792919887422",
+      "mobile": "8903849908",
+      "nearestHub": "Marthandam ",
+      "paymentScreenshotUrl": "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792919884/eathamozhi-farm/receipts/73dbf315-124f-4d2f-a066-e4f5cb6c954f-1792919884648.jpg",
+      "paymentStatus": "PENDING_VERIFICATION",
+      "pinCode": "629561",
+      "quantity": 10,
+      "specialInstructions": "",
+      "state": "Tamil Nadu",
+      "subtotal": 1500,
+      "totalAmount": 1750,
+      "whatsapp": "8903849908"
+    }
+  ],
   "adjustments": [],
   "enquiries": [],
   "reviews": [],
@@ -419,189 +603,50 @@
   ],
   "pageViews": [
     {
-      "id": "pv-1792914747275-718",
-      "sessionId": "sess_1792913091087_ndcxpjn",
-      "path": "/farm",
+      "id": "pv-1792926326035-4",
+      "sessionId": "sess_1792923401236_f53ulm6",
+      "path": "/book/EM-0126-A",
       "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
-      "referrer": "http://localhost:3000/farm",
+      "referrer": "http://localhost:3000/book/EM-0126-A",
       "referrerSource": "localhost",
       "device": "desktop",
       "screenSize": "1536x695",
-      "timestamp": "2026-10-25T07:52:27.275Z"
+      "timestamp": "2026-10-25T11:05:26.035Z"
     },
     {
-      "id": "pv-1792914691595-364",
-      "sessionId": "sess_1792913091087_ndcxpjn",
-      "path": "/farm",
+      "id": "pv-1792926277759-869",
+      "sessionId": "sess_1792923401236_f53ulm6",
+      "path": "/book/EM-0126-A",
       "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
-      "referrer": "http://localhost:3000/farm",
+      "referrer": "http://localhost:3000/",
       "referrerSource": "localhost",
       "device": "desktop",
       "screenSize": "1536x695",
-      "timestamp": "2026-10-25T07:51:31.595Z"
+      "timestamp": "2026-10-25T11:04:37.759Z"
     },
     {
-      "id": "pv-1792913284802-750",
-      "sessionId": "sess_1792913271876_lgasyu8",
+      "id": "pv-1792926256996-171",
+      "sessionId": "sess_1792923401236_f53ulm6",
       "path": "/",
-      "title": "",
-      "referrer": "",
-      "referrerSource": "Direct / Bookmark",
-      "device": "desktop",
-      "screenSize": "1528x732",
-      "timestamp": "2026-10-25T07:28:04.802Z"
-    },
-    {
-      "id": "pv-1792913271923-756",
-      "sessionId": "sess_1792913271876_lgasyu8",
-      "path": "/reviews",
       "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
-      "referrer": "",
-      "referrerSource": "Direct / Bookmark",
-      "device": "desktop",
-      "screenSize": "1528x732",
-      "timestamp": "2026-10-25T07:27:51.923Z"
-    },
-    {
-      "id": "pv-1792913091345-597",
-      "sessionId": "sess_1792913091087_ndcxpjn",
-      "path": "/farm",
-      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
-      "referrer": "http://localhost:3000/farm",
+      "referrer": "http://localhost:3000/",
       "referrerSource": "localhost",
       "device": "desktop",
       "screenSize": "1536x695",
-      "timestamp": "2026-10-25T07:24:51.345Z"
-    },
-    {
-      "id": "pv-1792893931370-863",
-      "sessionId": "sess_1792893761254_g4tenvo",
-      "path": "/book/EM-1026-A",
-      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
-      "referrer": "",
-      "referrerSource": "Direct / Bookmark",
-      "device": "desktop",
-      "screenSize": "1528x732",
-      "timestamp": "2026-10-25T02:05:31.370Z"
-    },
-    {
-      "id": "pv-1792893920811-168",
-      "sessionId": "sess_1792893761254_g4tenvo",
-      "path": "/batches",
-      "title": "",
-      "referrer": "",
-      "referrerSource": "Direct / Bookmark",
-      "device": "desktop",
-      "screenSize": "1528x732",
-      "timestamp": "2026-10-25T02:05:20.811Z"
-    },
-    {
-      "id": "pv-1792893839035-317",
-      "sessionId": "sess_1792893761254_g4tenvo",
-      "path": "/batches",
-      "title": "",
-      "referrer": "",
-      "referrerSource": "Direct / Bookmark",
-      "device": "desktop",
-      "screenSize": "1528x732",
-      "timestamp": "2026-10-25T02:03:59.035Z"
-    },
-    {
-      "id": "pv-1792893761294-842",
-      "sessionId": "sess_1792893761254_g4tenvo",
-      "path": "/",
-      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
-      "referrer": "",
-      "referrerSource": "Direct / Bookmark",
-      "device": "desktop",
-      "screenSize": "1528x732",
-      "timestamp": "2026-10-25T02:02:41.294Z"
-    },
-    {
-      "id": "pv-1792893358218-850",
-      "sessionId": "sess_1792893321549_gdpwte2",
-      "path": "/farm",
-      "title": "",
-      "referrer": "",
-      "referrerSource": "Direct / Bookmark",
-      "device": "desktop",
-      "screenSize": "1528x732",
-      "timestamp": "2026-10-25T01:55:58.218Z"
-    },
-    {
-      "id": "pv-1792893353527-513",
-      "sessionId": "sess_1792893321549_gdpwte2",
-      "path": "/batches",
-      "title": "",
-      "referrer": "",
-      "referrerSource": "Direct / Bookmark",
-      "device": "desktop",
-      "screenSize": "1528x732",
-      "timestamp": "2026-10-25T01:55:53.527Z"
-    },
-    {
-      "id": "pv-1792893323155-872",
-      "sessionId": "sess_1792893321549_gdpwte2",
-      "path": "/",
-      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
-      "referrer": "",
-      "referrerSource": "Direct / Bookmark",
-      "device": "desktop",
-      "screenSize": "1528x732",
-      "timestamp": "2026-10-25T01:55:23.155Z"
+      "timestamp": "2026-10-25T11:04:16.996Z"
     }
   ],
   "visitorJourneys": [
     {
-      "sessionId": "sess_1792913271876_lgasyu8",
-      "startedAt": "2026-10-25T07:27:51.923Z",
-      "lastActiveAt": "2026-10-25T07:28:04.802Z",
-      "device": "desktop",
-      "referrerSource": "Direct / Bookmark",
-      "pathCount": 2,
-      "steps": [
-        "/reviews",
-        "/"
-      ],
-      "convertedToOrder": false
-    },
-    {
-      "sessionId": "sess_1792913091087_ndcxpjn",
-      "startedAt": "2026-10-25T07:24:51.345Z",
-      "lastActiveAt": "2026-10-25T07:52:27.275Z",
+      "sessionId": "sess_1792923401236_f53ulm6",
+      "startedAt": "2026-10-25T11:04:16.996Z",
+      "lastActiveAt": "2026-10-25T11:05:26.035Z",
       "device": "desktop",
       "referrerSource": "localhost",
       "pathCount": 3,
       "steps": [
-        "/farm"
-      ],
-      "convertedToOrder": false
-    },
-    {
-      "sessionId": "sess_1792893761254_g4tenvo",
-      "startedAt": "2026-10-25T02:02:41.294Z",
-      "lastActiveAt": "2026-10-25T02:05:31.370Z",
-      "device": "desktop",
-      "referrerSource": "Direct / Bookmark",
-      "pathCount": 4,
-      "steps": [
         "/",
-        "/batches",
-        "/book/EM-1026-A"
-      ],
-      "convertedToOrder": false
-    },
-    {
-      "sessionId": "sess_1792893321549_gdpwte2",
-      "startedAt": "2026-10-25T01:55:23.155Z",
-      "lastActiveAt": "2026-10-25T01:55:58.218Z",
-      "device": "desktop",
-      "referrerSource": "Direct / Bookmark",
-      "pathCount": 3,
-      "steps": [
-        "/",
-        "/batches",
-        "/farm"
+        "/book/EM-0126-A"
       ],
       "convertedToOrder": false
     }
