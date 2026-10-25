@@ -10,7 +10,11 @@ export async function GET(
   if (!palm) {
     return NextResponse.json({ error: 'Mother tree not found' }, { status: 404 });
   }
-  return NextResponse.json(palm);
+  return NextResponse.json(palm, {
+    headers: {
+      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+    },
+  });
 }
 
 export async function PATCH(

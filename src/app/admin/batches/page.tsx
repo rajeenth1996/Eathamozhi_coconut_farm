@@ -135,7 +135,7 @@ export default function AdminBatchesPage() {
       const data = await res.json();
       if (res.ok) {
         setUploadedUrls(data.urls);
-        alert(`Uploaded ${data.urls.length} image(s) to folder /public/uploads/batches/${newBatch.batchCode}/!`);
+        alert(`Uploaded ${data.urls.length} image(s) to Cloudinary!`);
       } else {
         alert(data.error || 'Upload failed');
       }
@@ -176,7 +176,7 @@ export default function AdminBatchesPage() {
     }
 
     if (finalImages.length === 0) {
-      finalImages = [`/images/batches/${newBatch.batchCode}/batch_1.jpg`];
+      finalImages = ['/images/placeholder.png'];
     }
 
     if (!newBatch.parentPalmCodes || newBatch.parentPalmCodes.length === 0) {
@@ -639,7 +639,7 @@ export default function AdminBatchesPage() {
                       onClick={handleUploadFiles}
                       disabled={uploading || batchFiles.length === 0}
                     >
-                      {uploading ? 'Uploading to server...' : 'Upload Selected Images'}
+                      {uploading ? 'Uploading to Cloudinary...' : 'Upload Selected Images'}
                     </button>
                     {uploadedUrls.length > 0 && (
                       <span className="badge bg-success">

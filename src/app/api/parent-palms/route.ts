@@ -5,7 +5,11 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   const palms = await DataStore.getParentPalmsAsync();
-  return NextResponse.json(palms);
+  return NextResponse.json(palms, {
+    headers: {
+      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+    },
+  });
 }
 
 export async function POST(request: Request) {

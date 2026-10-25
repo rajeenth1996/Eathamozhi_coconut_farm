@@ -33,7 +33,7 @@ export default function AdminMotherTreesPage() {
 
   const fetchPalms = async () => {
     try {
-      const res = await fetch('/api/parent-palms');
+      const res = await fetch(`/api/parent-palms?_t=${Date.now()}`, { cache: 'no-store' });
       const data = await res.json();
       setPalms(Array.isArray(data) ? data : []);
     } catch (err) {
@@ -512,7 +512,7 @@ export default function AdminMotherTreesPage() {
                     <i className="bi bi-cloud-arrow-up-fill text-success me-1"></i> Upload Mother Tree Photographs
                   </label>
                   <span className="d-block extra-small text-muted mb-2 font-monospace">
-                    <i className="bi bi-folder-fill text-warning me-1"></i> Auto-creates dedicated folder: /public/images/parent-palms/{newTree.code}/
+                    <i className="bi bi-cloud-check-fill text-success me-1"></i> Uploads directly to Cloudinary Cloud Storage (CDN optimized)
                   </span>
                   <input 
                     type="file" 
@@ -530,7 +530,7 @@ export default function AdminMotherTreesPage() {
 
                 <div className="col-12">
                   <button type="submit" className="btn btn-success fw-bold px-4" disabled={uploading}>
-                    <i className="bi bi-plus-circle me-1"></i> {uploading ? 'Creating Folder & Uploading...' : 'Save Mother Tree Record'}
+                    <i className="bi bi-plus-circle me-1"></i> {uploading ? 'Uploading to Cloudinary & Saving...' : 'Save Mother Tree Record'}
                   </button>
                 </div>
               </div>
@@ -817,7 +817,7 @@ export default function AdminMotherTreesPage() {
                       <input
                         type="text"
                         className="form-control form-control-sm font-monospace"
-                        placeholder="Paste image URL: /images/parent-palms/EM-MP-001/tree_1.jpg or https://…"
+                        placeholder="Paste Cloudinary URL: https://res.cloudinary.com/... or web image URL"
                         value={newTreeImageUrl}
                         onChange={e => setNewTreeImageUrl(e.target.value)}
                         onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addTreeImageUrl(); } }}
@@ -860,7 +860,7 @@ export default function AdminMotherTreesPage() {
                         onChange={handleUploadTreeFiles}
                       />
                       <small className="text-muted extra-small d-block mt-1">
-                        {uploading ? '⏳ Uploading photo to server folder...' : 'Select JPEG/PNG/WebP. Image will be saved to server and added to gallery.'}
+                        {uploading ? '⏳ Uploading photo to Cloudinary CDN...' : 'Select JPEG/PNG/WebP. Image will be uploaded directly to Cloudinary cloud storage.'}
                       </small>
                     </div>
 
