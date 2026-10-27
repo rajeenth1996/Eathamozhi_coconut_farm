@@ -142,6 +142,7 @@ export default function LiveStockTerminal({ initialBatch, initialBatches = [] }:
                   <ImageCarousel 
                     images={currentBatch?.images || []} 
                     title={currentBatch?.name || 'Featured Batch'} 
+                    subtitle={currentBatch ? `Batch ${currentBatch.batchCode} • ₹${currentBatch.price} / sapling` : undefined}
                     carouselId={`home-featured-${currentBatch?.batchCode || 'batch'}`} 
                     height="360px"
                     showThumbnails={false}

@@ -49,6 +49,7 @@ export default async function ParentPalmDetailPage({
               <ImageCarousel 
                 images={palm.images} 
                 title={palm.name} 
+                subtitle={`${palm.code} • ${palm.location} • Age: ${palm.age} yrs`}
                 carouselId="palmCarousel" 
                 height="420px"
                 showThumbnails={true}

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { getSaplingMetrics } from '@/lib/metrics';
+import ImageCarousel from '@/components/ImageCarousel';
 
 export default function AdminBatchesPage() {
   const [batches, setBatches] = useState<any[]>([]);
@@ -16,6 +17,7 @@ export default function AdminBatchesPage() {
 
   // Edit Batch Modal State
   const [editingBatch, setEditingBatch] = useState<any | null>(null);
+  const [previewBatch, setPreviewBatch] = useState<any | null>(null);
   const [editPrice, setEditPrice] = useState<number>(150);
   const [editTotalQuantity, setEditTotalQuantity] = useState<number>(500);
   const [editDescription, setEditDescription] = useState<string>('');
@@ -704,6 +706,7 @@ export default function AdminBatchesPage() {
                 <table className="table table-hover align-middle">
                   <thead className="table-dark">
                     <tr>
+                      <th style={{ width: '60px' }}>Photo</th>
                       <th>Batch Code</th>
                       <th>Batch Name</th>
                       <th>Mother Tree(s)</th>
@@ -720,6 +723,30 @@ export default function AdminBatchesPage() {
                   <tbody>
                     {batches.map(b => (
                       <tr key={b.id}>
+                        <td>
+                          <div 
+                            className="position-relative rounded-3 overflow-hidden border shadow-sm cursor-pointer hover-lift"
+                            style={{ width: '48px', height: '48px', cursor: 'pointer' }}
+                            onClick={() => setPreviewBatch(b)}
+                            title="Click to view full batch photos"
+                          >
+                            <img 
+                              src={(b.images && b.images.length > 0) ? b.images[0] : '/images/placeholder.png'} 
+                              alt={b.name} 
+                              className="w-100 h-100"
+                              style={{ objectFit: 'cover' }}
+                              onError={(e) => { (e.target as HTMLImageElement).src = '/images/placeholder.png'; }}
+                            />
+                            {b.images && b.images.length > 1 && (
+                              <span 
+                                className="position-absolute bottom-0 end-0 badge bg-dark bg-opacity-75 rounded-pill"
+                                style={{ fontSize: '0.65rem', padding: '1px 4px' }}
+                              >
+                                {b.images.length}
+                              </span>
+                            )}
+                          </div>
+                        </td>
                         <td><strong className="text-success">{b.batchCode}</strong></td>
                         <td><small className="fw-bold">{b.name}</small></td>
                         <td>
@@ -775,6 +802,40 @@ export default function AdminBatchesPage() {
               </div>
             )}
           </div>
+
+          {/* Full Container Photo Preview Modal */}
+          {previewBatch && (
+            <div 
+              className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center p-3"
+              style={{ zIndex: 10500, backgroundColor: 'rgba(0, 0, 0, 0.85)', backdropFilter: 'blur(6px)' }}
+              onClick={() => setPreviewBatch(null)}
+            >
+              <div 
+                className="card bg-dark text-white border-secondary rounded-4 shadow-lg overflow-hidden w-100" 
+                style={{ maxWidth: '780px' }} 
+                onClick={e => e.stopPropagation()}
+              >
+                <div className="card-header bg-dark border-secondary d-flex justify-content-between align-items-center p-3">
+                  <div>
+                    <h5 className="fw-bold mb-0 text-white">{previewBatch.name}</h5>
+                    <small className="text-muted">Batch {previewBatch.batchCode} &bull; ₹{previewBatch.price} / sapling</small>
+                  </div>
+                  <button type="button" className="btn-close btn-close-white" onClick={() => setPreviewBatch(null)}></button>
+                </div>
+                <div className="card-body p-3 bg-black">
+                  <ImageCarousel 
+                    images={previewBatch.images || []} 
+                    title={previewBatch.name} 
+                    subtitle={`Batch ${previewBatch.batchCode} • ₹${previewBatch.price}`}
+                    carouselId={`admin-batch-preview-${previewBatch.batchCode}`}
+                    height="450px"
+                    showThumbnails={true}
+                    objectFit="contain"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* EDIT BATCH MODAL */}
           {editingBatch && (

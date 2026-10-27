@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import ImageCarousel from '@/components/ImageCarousel';
 
 export default function AdminMotherTreesPage() {
   const [palms, setPalms] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [previewTree, setPreviewTree] = useState<any | null>(null);
 
   // New Mother Tree Form State
   const [newTree, setNewTree] = useState({
@@ -571,7 +573,12 @@ export default function AdminMotherTreesPage() {
                         <tr key={p.id}>
                           {/* Visual Photo Thumbnail Column */}
                           <td>
-                            <div className="position-relative" style={{ width: '52px', height: '52px' }}>
+                            <div 
+                              className="position-relative cursor-pointer hover-lift rounded-3 overflow-hidden" 
+                              style={{ width: '52px', height: '52px', cursor: 'pointer' }}
+                              onClick={() => setPreviewTree(p)}
+                              title="Click to view full photo gallery"
+                            >
                               <img 
                                 src={primaryPhoto} 
                                 alt={p.name} 
@@ -623,6 +630,40 @@ export default function AdminMotherTreesPage() {
               </div>
             )}
           </div>
+
+          {/* Full Container Photo Preview Modal */}
+          {previewTree && (
+            <div 
+              className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center p-3"
+              style={{ zIndex: 10500, backgroundColor: 'rgba(0, 0, 0, 0.85)', backdropFilter: 'blur(6px)' }}
+              onClick={() => setPreviewTree(null)}
+            >
+              <div 
+                className="card bg-dark text-white border-secondary rounded-4 shadow-lg overflow-hidden w-100" 
+                style={{ maxWidth: '780px' }} 
+                onClick={e => e.stopPropagation()}
+              >
+                <div className="card-header bg-dark border-secondary d-flex justify-content-between align-items-center p-3">
+                  <div>
+                    <h5 className="fw-bold mb-0 text-white">{previewTree.name}</h5>
+                    <small className="text-muted">{previewTree.code} &bull; {previewTree.location}</small>
+                  </div>
+                  <button type="button" className="btn-close btn-close-white" onClick={() => setPreviewTree(null)}></button>
+                </div>
+                <div className="card-body p-3 bg-black">
+                  <ImageCarousel 
+                    images={previewTree.images || []} 
+                    title={previewTree.name} 
+                    subtitle={`${previewTree.code} • ${previewTree.location}`}
+                    carouselId={`admin-tree-preview-${previewTree.code}`}
+                    height="450px"
+                    showThumbnails={true}
+                    objectFit="contain"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* EDIT MOTHER TREE MODAL */}
           {editingTree && (

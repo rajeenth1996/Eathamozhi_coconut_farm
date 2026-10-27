@@ -73,7 +73,7 @@ export default function BatchesClientList({ initialBatches }: BatchesClientListP
               <div className="card h-100 border-0 shadow-sm rounded-4 overflow-hidden position-relative hover-lift bg-white">
                 
                 {/* Status Badge Ribbon */}
-                <div className="position-absolute top-0 end-0 m-3 z-1">
+                <div className="position-absolute top-0 end-0 m-3 z-1" style={{ pointerEvents: 'none' }}>
                   {b.status === 'AVAILABLE' && <span className="badge bg-success shadow-sm px-3 py-2"><i className="bi bi-check-circle-fill me-1"></i> AVAILABLE</span>}
                   {b.status === 'LIMITED' && <span className="badge bg-warning text-dark shadow-sm px-3 py-2"><i className="bi bi-exclamation-triangle-fill me-1"></i> LIMITED</span>}
                   {b.status === 'COMING_SOON' && <span className="badge bg-info text-dark shadow-sm px-3 py-2"><i className="bi bi-clock-history me-1"></i> UPCOMING</span>}
@@ -84,6 +84,7 @@ export default function BatchesClientList({ initialBatches }: BatchesClientListP
                   <ImageCarousel 
                     images={b.images} 
                     title={b.name} 
+                    subtitle={`Batch ${b.batchCode} • ₹${b.price} / sapling`}
                     carouselId={`batch-card-${b.batchCode}`} 
                     height="240px"
                     showThumbnails={false}

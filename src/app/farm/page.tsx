@@ -123,35 +123,28 @@ export default async function MotherTreesPage() {
 
                       {/* Image */}
                       <div className="position-relative" style={{ height: '220px' }}>
-                        {palm.images && palm.images.length > 1 ? (
-                          <ImageCarousel
-                            images={palm.images}
-                            title={palm.name}
-                            carouselId={`palm-card-${palm.code}`}
-                            height="220px"
-                            showThumbnails={false}
-                            objectFit="cover"
-                          />
-                        ) : (
-                          <img
-                            src={palm.images && palm.images.length > 0 ? palm.images[0] : '/images/placeholder.png'}
-                            alt={palm.name}
-                            className="w-100 h-100 object-fit-cover"
-                          />
-                        )}
+                        <ImageCarousel
+                          images={palm.images && palm.images.length > 0 ? palm.images : ['/images/placeholder.png']}
+                          title={palm.name}
+                          subtitle={`${palm.code} • ${palm.age} Yrs Old • ${palm.location}`}
+                          carouselId={`palm-card-${palm.code}`}
+                          height="220px"
+                          showThumbnails={false}
+                          objectFit="cover"
+                        />
 
                         {/* Overlays */}
-                        <div className="position-absolute top-0 start-0 m-2 d-flex gap-1 flex-wrap">
+                        <div className="position-absolute top-0 start-0 m-2 d-flex gap-1 flex-wrap" style={{ pointerEvents: 'none', zIndex: 3 }}>
                           <span className="badge bg-dark bg-opacity-80 fw-bold">{palm.code}</span>
                           <span className="badge bg-warning text-dark fw-bold">{palm.age} Yrs Old</span>
                         </div>
-                        <div className="position-absolute top-0 end-0 m-2">
+                        <div className="position-absolute top-0 end-0 m-2" style={{ pointerEvents: 'none', zIndex: 3 }}>
                           <span className={`badge bg-${healthColor}`}>
                             <i className="bi bi-heart-pulse-fill me-1"></i>{palm.healthStatus.split(' ')[0]}
                           </span>
                         </div>
                         {totalAvailable > 0 && (
-                          <div className="position-absolute bottom-0 start-0 m-2">
+                          <div className="position-absolute bottom-0 start-0 m-2" style={{ pointerEvents: 'none', zIndex: 3 }}>
                             <span className="badge bg-success bg-opacity-90 fw-bold">
                               <i className="bi bi-check-circle-fill me-1"></i>{totalAvailable} Saplings Available
                             </span>

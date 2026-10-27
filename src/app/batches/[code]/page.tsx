@@ -61,6 +61,7 @@ export default async function BatchDetailPage({
                 <ImageCarousel 
                   images={batch.images} 
                   title={batch.name} 
+                  subtitle={`Batch ${batch.batchCode} • ₹${batch.price} / sapling`}
                   carouselId="batchDetailCarousel" 
                   height="420px"
                   showThumbnails={true}

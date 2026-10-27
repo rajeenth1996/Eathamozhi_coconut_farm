@@ -12,7 +12,9 @@
       "nutCharacteristics": "Large spherical nuts with 180g dry copra content and sweet water volume > 350ml.",
       "whySelected": "Unmatched germination rate (>94%) and strong wind tolerance during coastal storms.",
       "images": [
-        "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792908312/eathamozhi-farm/parent-palms/899154b3-451e-4678-a6ef-7b2128a1195c-1792908312336.jpg"
+        "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792908312/eathamozhi-farm/parent-palms/899154b3-451e-4678-a6ef-7b2128a1195c-1792908312336.jpg",
+        "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792916293/eathamozhi-farm/parent-palms/f0274266-e1bd-49fb-b436-27ba6c6073aa-1792916293471.jpg",
+        "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792917083/eathamozhi-farm/parent-palms/77702e7b-a728-49be-95fb-5fb93df65088-1792917083071.jpg"
       ]
     },
     {
@@ -27,7 +29,9 @@
       "nutCharacteristics": "Medium-large green seed nuts with thick fibrous husk providing natural drought shield.",
       "whySelected": "High sapling survival rate in farm seedbed and rapid initial growth phase.",
       "images": [
-        "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792908410/eathamozhi-farm/parent-palms/75097bcf-a3cf-4f02-95c6-3aa5b9b94923-1792908409986.jpg"
+        "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792908410/eathamozhi-farm/parent-palms/75097bcf-a3cf-4f02-95c6-3aa5b9b94923-1792908409986.jpg",
+        "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792916387/eathamozhi-farm/parent-palms/5b9123e7-94b3-4a6c-b51d-869d5f2fac34-1792916387222.jpg",
+        "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792918139/eathamozhi-farm/parent-palms/d5d287ac-6b3a-4f6b-a7ce-7e313ed56641-1792918139894.jpg"
       ]
     },
     {
@@ -42,7 +46,8 @@
       "nutCharacteristics": "Thick husk with heavy endosperm and oil yield > 68%.",
       "whySelected": "Ideal parent palm for coastal region coconut plantation expansion.",
       "images": [
-        "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909198/eathamozhi-farm/parent-palms/c631bea4-2262-4fa4-a078-a60bfc2a719f-1792909198376.jpg"
+        "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909198/eathamozhi-farm/parent-palms/c631bea4-2262-4fa4-a078-a60bfc2a719f-1792909198376.jpg",
+        "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792914245/eathamozhi-farm/parent-palms/9509b6c7-afb2-490f-8eeb-287076bcfdd4-1792914245243.jpg"
       ]
     },
     {
@@ -173,16 +178,20 @@
       "parentPalmId": "mp-1",
       "parentPalmCode": "EM-MP-014",
       "parentPalmCodes": [
-        "EM-MP-014"
+        "EM-MP-014",
+        "EM-MP-002",
+        "EM-MP-003"
       ],
       "name": "December 2026 Batch (EM-1026-A)",
       "harvestDate": "2026-01-05",
       "seededDate": "2026-01-15",
+      "age": "9 Months",
+      "height": "2.5–4.5 ft",
       "totalQuantity": 500,
       "bookedQuantity": 500,
       "inventoryAdjustments": 0,
       "price": 150,
-      "status": "AVAILABLE",
+      "status": "SOLD_OUT",
       "description": "",
       "viewsCount": 0,
       "images": [
@@ -201,14 +210,16 @@
       "harvestDate": "2025-09-10",
       "seededDate": "2025-09-25",
       "totalQuantity": 500,
-      "bookedQuantity": 280,
+      "bookedQuantity": 475,
       "inventoryAdjustments": 0,
       "price": 150,
       "status": "AVAILABLE",
       "description": "Fully matured 12-month saplings ready for immediate orchard planting. Strong root systems and thick collars.",
-      "viewsCount": 8,
+      "viewsCount": 13,
       "images": [
-        "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909327/eathamozhi-farm/batches/25b2b6ad-0a44-47b6-a4b4-a45d1e426cca-1792909327401.jpg"
+        "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909327/eathamozhi-farm/batches/25b2b6ad-0a44-47b6-a4b4-a45d1e426cca-1792909327401.jpg",
+        "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909391/eathamozhi-farm/batches/5700477e-967d-4133-9a99-76560430a143-1792909391250.jpg",
+        "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792893909/eathamozhy-farm/batches/74cbbdcb-f064-459c-9267-d045737e799c-1792893907395.jpg"
       ]
     },
     {
@@ -228,9 +239,10 @@
       "price": 150,
       "status": "AVAILABLE",
       "description": "Vigorous 11-month saplings from River Bank parent tree. High leaf frond count and dark green color.",
-      "viewsCount": 0,
+      "viewsCount": 2,
       "images": [
-        "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909391/eathamozhi-farm/batches/5700477e-967d-4133-9a99-76560430a143-1792909391250.jpg"
+        "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909391/eathamozhi-farm/batches/5700477e-967d-4133-9a99-76560430a143-1792909391250.jpg",
+        "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792888376/eathamozhy-farm/batches/b76f3226-817a-4ae2-8511-d66aeb861dca-1792888375115.jpg"
       ]
     },
     {
@@ -250,7 +262,7 @@
       "price": 160,
       "status": "AVAILABLE",
       "description": "Coastal shield cultivar batch. Engineered for wind resistance and saline soil adaptability.",
-      "viewsCount": 0,
+      "viewsCount": 1,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792893909/eathamozhy-farm/batches/74cbbdcb-f064-459c-9267-d045737e799c-1792893907395.jpg"
       ]
@@ -404,41 +416,13 @@
       "price": 160,
       "status": "AVAILABLE",
       "description": "Dual-purpose saplings. Ideal for both tender coconut harvesting and copra production.",
-      "viewsCount": 0,
+      "viewsCount": 1,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909327/eathamozhi-farm/batches/25b2b6ad-0a44-47b6-a4b4-a45d1e426cca-1792909327401.jpg"
       ]
     }
   ],
   "bookings": [
-    {
-      "batchCode": "EM-0126-A",
-      "customerName": "Kannan Farmer",
-      "mobile": "9840123456",
-      "whatsapp": "9840123456",
-      "address": "Farm Direct Pickup (Eathamozhi, Kanyakumari)",
-      "district": "Kanyakumari",
-      "state": "Tamil Nadu",
-      "pinCode": "629501",
-      "quantity": 10,
-      "subtotal": 3500,
-      "deliveryCharge": 0,
-      "totalAmount": 3500,
-      "expectedDeliveryDate": "2026-11-05",
-      "deliveryService": "Self Pickup (Farm Direct - Eathamozhi)",
-      "nearestHub": "Eathamozhi Farm Grove, Kanyakumari",
-      "paymentScreenshotUrl": "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909391/test-receipt.jpg",
-      "orderType": "PRE_ORDER",
-      "isPreOrder": true,
-      "paidAmount": 1750,
-      "advancePaid": 1750,
-      "balanceAmount": 1750,
-      "id": "bk-1792926333116",
-      "bookingId": "EM-0126-A-2430",
-      "paymentStatus": "PENDING_VERIFICATION",
-      "bookingStatus": "Pre-order",
-      "createdAt": "2026-10-25T11:05:33.116Z"
-    },
     {
       "_id": "6addbcfeb8d60f4e7de992a1",
       "bookingId": "EM-1026-A-5406",
@@ -578,6 +562,71 @@
       "subtotal": 1500,
       "totalAmount": 1750,
       "whatsapp": "8903849908"
+    },
+    {
+      "_id": "6adde587b8d60f4e7de998a4",
+      "bookingId": "EM-0126-A-7487",
+      "__v": 0,
+      "address": "Kanyakumari, Tamil Nadu - 600091",
+      "balanceAmount": 0,
+      "batchCode": "EM-0126-A",
+      "bookingStatus": "Payment review",
+      "createdAt": "2026-10-25T11:18:31.105Z",
+      "customerName": "Rajeenth",
+      "deliveryCharge": 250,
+      "deliveryService": "MSS Parcel Service",
+      "district": "Kanyakumari",
+      "email": "",
+      "expectedDeliveryDate": "2026-11-01",
+      "farmLocation": "",
+      "id": "bk-1792927111105",
+      "isPreOrder": false,
+      "mobile": "9486880641",
+      "nearestHub": "Eathamozhi Farm Grove, Kanyakumari",
+      "orderType": "COMPLETE",
+      "paidAmount": 1000,
+      "paymentScreenshotUrl": "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792927105/eathamozhi-farm/receipts/6bad3d24-0702-4430-8536-860419805987-1792927105253.png",
+      "paymentStatus": "PENDING_VERIFICATION",
+      "pinCode": "600091",
+      "quantity": 5,
+      "specialInstructions": "",
+      "state": "Tamil Nadu",
+      "subtotal": 750,
+      "totalAmount": 1000,
+      "whatsapp": "9486880641"
+    },
+    {
+      "_id": "6addf668b8d60f4e7de99924",
+      "bookingId": "EM-0126-A-7081",
+      "__v": 0,
+      "address": "Kanyakumari, Tamil Nadu - 629501",
+      "advancePaid": 15000,
+      "balanceAmount": 15000,
+      "batchCode": "EM-0126-A",
+      "bookingStatus": "Pre-order",
+      "createdAt": "2026-10-25T12:30:32.658Z",
+      "customerName": "Rajeenth",
+      "deliveryCharge": 0,
+      "deliveryService": "MSS Parcel Service",
+      "district": "Kanyakumari",
+      "email": "",
+      "expectedDeliveryDate": "2026-11-01",
+      "farmLocation": "",
+      "id": "bk-1792931432658",
+      "isPreOrder": true,
+      "mobile": "9486880641",
+      "nearestHub": "nagercoil",
+      "orderType": "PRE_ORDER",
+      "paidAmount": 15000,
+      "paymentScreenshotUrl": "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792931423/eathamozhi-farm/receipts/3ac4d231-a614-4417-9e5a-16e079f4c09e-1792931423245.jpg",
+      "paymentStatus": "PENDING_VERIFICATION",
+      "pinCode": "629501",
+      "quantity": 200,
+      "specialInstructions": "",
+      "state": "Tamil Nadu",
+      "subtotal": 30000,
+      "totalAmount": 30000,
+      "whatsapp": "9486880641"
     }
   ],
   "adjustments": [],
@@ -602,6 +651,28 @@
     }
   ],
   "pageViews": [
+    {
+      "id": "pv-1792953151867-360",
+      "sessionId": "sess_1792913091087_ndcxpjn",
+      "path": "/farm",
+      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
+      "referrer": "http://localhost:3000/farm",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1536x695",
+      "timestamp": "2026-10-25T18:32:31.867Z"
+    },
+    {
+      "id": "pv-1792926861505-680",
+      "sessionId": "sess_1792913091087_ndcxpjn",
+      "path": "/farm",
+      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
+      "referrer": "http://localhost:3000/farm",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1536x695",
+      "timestamp": "2026-10-25T11:14:21.505Z"
+    },
     {
       "id": "pv-1792926326035-4",
       "sessionId": "sess_1792923401236_f53ulm6",
@@ -637,6 +708,18 @@
     }
   ],
   "visitorJourneys": [
+    {
+      "sessionId": "sess_1792913091087_ndcxpjn",
+      "startedAt": "2026-10-25T11:14:21.505Z",
+      "lastActiveAt": "2026-10-25T18:32:31.867Z",
+      "device": "desktop",
+      "referrerSource": "localhost",
+      "pathCount": 2,
+      "steps": [
+        "/farm"
+      ],
+      "convertedToOrder": false
+    },
     {
       "sessionId": "sess_1792923401236_f53ulm6",
       "startedAt": "2026-10-25T11:04:16.996Z",
