@@ -88,7 +88,7 @@ export default function BatchesClientList({ initialBatches }: BatchesClientListP
                     carouselId={`batch-card-${b.batchCode}`} 
                     height="240px"
                     showThumbnails={false}
-                    objectFit="cover"
+                    objectFit="contain"
                   />
                 </div>
 

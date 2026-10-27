@@ -53,7 +53,7 @@ export default async function ParentPalmDetailPage({
                 carouselId="palmCarousel" 
                 height="420px"
                 showThumbnails={true}
-                objectFit="cover"
+                objectFit="contain"
               />
             </div>
 

@@ -146,7 +146,7 @@ export default function LiveStockTerminal({ initialBatch, initialBatches = [] }:
                     carouselId={`home-featured-${currentBatch?.batchCode || 'batch'}`} 
                     height="360px"
                     showThumbnails={false}
-                    objectFit="cover"
+                    objectFit="contain"
                   />
                 </div>
                 <div className="d-flex justify-content-between align-items-center mt-2 px-1">

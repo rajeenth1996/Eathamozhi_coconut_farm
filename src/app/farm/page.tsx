@@ -122,15 +122,15 @@ export default async function MotherTreesPage() {
                     <div className="card h-100 border-0 shadow-sm rounded-4 overflow-hidden hover-lift bg-white">
 
                       {/* Image */}
-                      <div className="position-relative" style={{ height: '220px' }}>
+                      <div className="position-relative" style={{ height: '240px' }}>
                         <ImageCarousel
                           images={palm.images && palm.images.length > 0 ? palm.images : ['/images/placeholder.png']}
                           title={palm.name}
                           subtitle={`${palm.code} • ${palm.age} Yrs Old • ${palm.location}`}
                           carouselId={`palm-card-${palm.code}`}
-                          height="220px"
+                          height="240px"
                           showThumbnails={false}
-                          objectFit="cover"
+                          objectFit="contain"
                         />
 
                         {/* Overlays */}

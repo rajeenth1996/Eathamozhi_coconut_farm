@@ -215,7 +215,7 @@
       "price": 150,
       "status": "AVAILABLE",
       "description": "Fully matured 12-month saplings ready for immediate orchard planting. Strong root systems and thick collars.",
-      "viewsCount": 13,
+      "viewsCount": 17,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909327/eathamozhi-farm/batches/25b2b6ad-0a44-47b6-a4b4-a45d1e426cca-1792909327401.jpg",
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909391/eathamozhi-farm/batches/5700477e-967d-4133-9a99-76560430a143-1792909391250.jpg",
@@ -652,6 +652,50 @@
   ],
   "pageViews": [
     {
+      "id": "pv-1793107051532-591",
+      "sessionId": "sess_1793106034224_kyaca3p",
+      "path": "/farm",
+      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
+      "referrer": "http://localhost:3000/farm",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1536x695",
+      "timestamp": "2026-10-27T13:17:31.532Z"
+    },
+    {
+      "id": "pv-1793107051496-365",
+      "sessionId": "sess_1793106034224_kyaca3p",
+      "path": "/farm",
+      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
+      "referrer": "http://localhost:3000/farm",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1536x695",
+      "timestamp": "2026-10-27T13:17:31.496Z"
+    },
+    {
+      "id": "pv-1793106057146-420",
+      "sessionId": "sess_1793106034224_kyaca3p",
+      "path": "/farm",
+      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
+      "referrer": "",
+      "referrerSource": "Direct / Bookmark",
+      "device": "desktop",
+      "screenSize": "1536x695",
+      "timestamp": "2026-10-27T13:00:57.146Z"
+    },
+    {
+      "id": "pv-1793106034397-904",
+      "sessionId": "sess_1793106034224_kyaca3p",
+      "path": "/farm",
+      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
+      "referrer": "",
+      "referrerSource": "Direct / Bookmark",
+      "device": "desktop",
+      "screenSize": "1536x695",
+      "timestamp": "2026-10-27T13:00:34.397Z"
+    },
+    {
       "id": "pv-1792953151867-360",
       "sessionId": "sess_1792913091087_ndcxpjn",
       "path": "/farm",
@@ -708,6 +752,18 @@
     }
   ],
   "visitorJourneys": [
+    {
+      "sessionId": "sess_1793106034224_kyaca3p",
+      "startedAt": "2026-10-27T13:00:34.397Z",
+      "lastActiveAt": "2026-10-27T13:17:31.532Z",
+      "device": "desktop",
+      "referrerSource": "Direct / Bookmark",
+      "pathCount": 4,
+      "steps": [
+        "/farm"
+      ],
+      "convertedToOrder": false
+    },
     {
       "sessionId": "sess_1792913091087_ndcxpjn",
       "startedAt": "2026-10-25T11:14:21.505Z",

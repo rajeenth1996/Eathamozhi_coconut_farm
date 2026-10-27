@@ -65,7 +65,7 @@ export default async function BatchDetailPage({
                   carouselId="batchDetailCarousel" 
                   height="420px"
                   showThumbnails={true}
-                  objectFit="cover"
+                  objectFit="contain"
                 />
               </div>
 
