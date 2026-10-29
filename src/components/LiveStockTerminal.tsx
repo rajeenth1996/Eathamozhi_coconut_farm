@@ -23,10 +23,11 @@ export default function LiveStockTerminal({ initialBatch, initialBatches = [] }:
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data) && data.length > 0) {
-          setBatches(data);
+          const visibleOnly = data.filter((b: any) => b.isVisible !== false);
+          setBatches(visibleOnly);
           setLastSynced(new Date());
-          if (!selectedBatchCode) {
-            const ready = data.find((b: any) => b.availableQuantity > 0 && b.status !== 'COMING_SOON') || data[0];
+          if (!selectedBatchCode || !visibleOnly.find((b: any) => b.batchCode === selectedBatchCode)) {
+            const ready = visibleOnly.find((b: any) => b.availableQuantity > 0 && b.status !== 'COMING_SOON') || visibleOnly[0];
             setSelectedBatchCode(ready?.batchCode || '');
           }
         }
@@ -138,7 +139,7 @@ export default function LiveStockTerminal({ initialBatch, initialBatches = [] }:
               
               {/* Photo Carousel Preview */}
               <div className="col-lg-5">
-                <div className="rounded-4 overflow-hidden shadow-sm bg-dark position-relative w-100" style={{ height: '360px' }}>
+                <div className="rounded-4 overflow-hidden shadow-sm bg-light position-relative w-100" style={{ height: '360px' }}>
                   <ImageCarousel 
                     images={currentBatch?.images || []} 
                     title={currentBatch?.name || 'Featured Batch'} 
@@ -146,7 +147,7 @@ export default function LiveStockTerminal({ initialBatch, initialBatches = [] }:
                     carouselId={`home-featured-${currentBatch?.batchCode || 'batch'}`} 
                     height="360px"
                     showThumbnails={false}
-                    objectFit="contain"
+                    objectFit="cover"
                   />
                 </div>
                 <div className="d-flex justify-content-between align-items-center mt-2 px-1">

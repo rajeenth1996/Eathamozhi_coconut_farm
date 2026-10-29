@@ -10,6 +10,7 @@ export interface ParentPalm {
   nutCharacteristics: string;
   whySelected: string;
   images: string[];
+  isVisible?: boolean;
 }
 
 export interface Batch {
@@ -33,6 +34,7 @@ export interface Batch {
   images: string[];
   availableQuantity?: number;
   bookedPercentage?: number;
+  isVisible?: boolean;
 }
 
 export interface InventoryAdjustment {
@@ -98,6 +100,12 @@ export interface FAQ {
   answer: string;
   category: string;
 }
+
+export interface SiteSettings {
+  showBatchesOnMainPage: boolean;
+  showMotherTreesOnMainPage: boolean;
+}
+
 
 export interface Enquiry {
   id: string;

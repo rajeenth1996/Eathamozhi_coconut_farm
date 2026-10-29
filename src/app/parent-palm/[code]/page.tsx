@@ -12,12 +12,13 @@ export default async function ParentPalmDetailPage({
 }) {
   const { code } = await params;
   const palm = await DataStore.getParentPalmByCodeAsync(code);
-  if (!palm) {
+  if (!palm || palm.isVisible === false) {
     notFound();
   }
 
   const allBatches = await DataStore.getBatchesAsync();
   const relatedBatches = allBatches.filter(b => {
+    if (b.isVisible === false) return false;
     const codes = (b.parentPalmCodes && b.parentPalmCodes.length > 0) ? b.parentPalmCodes : [b.parentPalmCode];
     return codes.some(c => c.toLowerCase() === palm.code.toLowerCase());
   });
@@ -53,7 +54,7 @@ export default async function ParentPalmDetailPage({
                 carouselId="palmCarousel" 
                 height="420px"
                 showThumbnails={true}
-                objectFit="contain"
+                objectFit="cover"
               />
             </div>
 

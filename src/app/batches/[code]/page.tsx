@@ -12,7 +12,7 @@ export default async function BatchDetailPage({
 }) {
   const { code } = await params;
   const batch = await DataStore.getBatchByCodeAsync(code);
-  if (!batch) {
+  if (!batch || batch.isVisible === false) {
     notFound();
   }
 
@@ -65,7 +65,7 @@ export default async function BatchDetailPage({
                   carouselId="batchDetailCarousel" 
                   height="420px"
                   showThumbnails={true}
-                  objectFit="contain"
+                  objectFit="cover"
                 />
               </div>
 

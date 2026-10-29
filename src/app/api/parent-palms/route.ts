@@ -3,9 +3,12 @@ import { DataStore } from '@/lib/dataStore';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const includeHidden = searchParams.get('all') === 'true' || searchParams.get('admin') === 'true';
   const palms = await DataStore.getParentPalmsAsync();
-  return NextResponse.json(palms, {
+  const result = includeHidden ? palms : palms.filter(p => p.isVisible !== false);
+  return NextResponse.json(result, {
     headers: {
       'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
     },

@@ -4,7 +4,8 @@ import BatchesClientList from '@/components/BatchesClientList';
 export const dynamic = 'force-dynamic';
 
 export default async function BatchesPage() {
-  const batches = await DataStore.getBatchesAsync();
+  const allBatches = await DataStore.getBatchesAsync();
+  const batches = allBatches.filter(b => b.isVisible !== false);
 
   return (
     <>

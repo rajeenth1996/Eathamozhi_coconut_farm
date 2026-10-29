@@ -8,6 +8,9 @@ import ImageCarousel from '@/components/ImageCarousel';
 export default function AdminBatchesPage() {
   const [batches, setBatches] = useState<any[]>([]);
   const [parentPalms, setParentPalms] = useState<any[]>([]);
+  const [visibilityFilter, setVisibilityFilter] = useState<'ALL' | 'VISIBLE' | 'HIDDEN'>('ALL');
+  const [togglingBatchCode, setTogglingBatchCode] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   // File Upload State
@@ -22,6 +25,7 @@ export default function AdminBatchesPage() {
   const [editTotalQuantity, setEditTotalQuantity] = useState<number>(500);
   const [editDescription, setEditDescription] = useState<string>('');
   const [editImages, setEditImages] = useState<string[]>([]);
+  const [editIsVisible, setEditIsVisible] = useState<boolean>(true);
   const [newImageUrl, setNewImageUrl] = useState<string>('');
   const [savingImages, setSavingImages] = useState(false);
 
@@ -45,6 +49,7 @@ export default function AdminBatchesPage() {
     totalQuantity: 500,
     price: 150,
     status: 'AVAILABLE',
+    isVisible: true,
     description: ''
   });
   const [treeSearchTerm, setTreeSearchTerm] = useState('');
@@ -92,13 +97,18 @@ export default function AdminBatchesPage() {
   const calculatedMetrics = getSaplingMetrics(newBatch.seededDate);
 
   const fetchBatchesData = async () => {
-    const [batchesData, palmsData] = await Promise.all([
-      fetch('/api/batches').then(res => res.json()),
-      fetch('/api/parent-palms').then(res => res.json())
-    ]);
-    setBatches(batchesData);
-    setParentPalms(palmsData);
-    setLoading(false);
+    try {
+      const [batchesData, palmsData] = await Promise.all([
+        fetch('/api/batches?all=true').then(res => res.json()),
+        fetch('/api/parent-palms?all=true').then(res => res.json())
+      ]);
+      setBatches(Array.isArray(batchesData) ? batchesData : []);
+      setParentPalms(Array.isArray(palmsData) ? palmsData : []);
+    } catch (err) {
+      console.error('Failed to fetch batches data:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -212,6 +222,7 @@ export default function AdminBatchesPage() {
           totalQuantity: 500,
           price: 150,
           status: 'AVAILABLE',
+          isVisible: true,
           description: ''
         });
         setTreeSearchTerm('');
@@ -229,12 +240,37 @@ export default function AdminBatchesPage() {
     setEditTotalQuantity(batch.totalQuantity);
     setEditDescription(batch.description || '');
     setEditImages(batch.images && batch.images.length > 0 ? [...batch.images] : []);
+    setEditIsVisible(batch.isVisible !== false);
     setNewImageUrl('');
     const codes = (batch.parentPalmCodes && batch.parentPalmCodes.length > 0)
       ? [...batch.parentPalmCodes]
       : (batch.parentPalmCode ? [batch.parentPalmCode] : ['EM-MP-001']);
     setEditParentPalmCodes(codes);
     setEditTreeSearchTerm('');
+  };
+
+  const handleToggleSingleBatchVisibility = async (batch: any) => {
+    const nextVal = batch.isVisible === false ? true : false;
+    setTogglingBatchCode(batch.batchCode);
+    setBatches(prev => prev.map(b => b.batchCode === batch.batchCode ? { ...b, isVisible: nextVal } : b));
+    try {
+      const res = await fetch('/api/batches', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ batchCode: batch.batchCode, isVisible: nextVal })
+      });
+      if (res.ok) {
+        setToastMessage(`✓ Batch ${batch.batchCode} is now ${nextVal ? 'VISIBLE (ON) to customers' : 'HIDDEN (OFF) from customers'}.`);
+        setTimeout(() => setToastMessage(null), 4000);
+      } else {
+        throw new Error('Update failed');
+      }
+    } catch (e: any) {
+      alert('Error updating visibility: ' + e.message);
+      fetchBatchesData();
+    } finally {
+      setTogglingBatchCode(null);
+    }
   };
 
   const handleAddEditFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -311,6 +347,7 @@ export default function AdminBatchesPage() {
           totalQuantity: editTotalQuantity,
           description: editDescription,
           images: editImages,
+          isVisible: editIsVisible,
           parentPalmCodes: editParentPalmCodes,
           parentPalmCode: editParentPalmCodes[0]
         })
@@ -392,7 +429,15 @@ export default function AdminBatchesPage() {
             <span className="badge bg-success me-2">ADMIN PORTAL</span>
             <h3 className="fw-bold mb-0 text-light d-inline align-middle">Batch & Image Management</h3>
           </div>
-          <div className="d-flex gap-2 align-items-center">
+          <div className="d-flex gap-2 align-items-center flex-wrap">
+            <Link 
+              href="/batches" 
+              target="_blank" 
+              className="btn btn-outline-light btn-sm fw-semibold d-inline-flex align-items-center gap-1"
+              title="Preview Batches as seen by customers"
+            >
+              <i className="bi bi-box-arrow-up-right"></i> Customer View
+            </Link>
             <a 
               href="/api/admin/export?type=batches" 
               download 
@@ -402,7 +447,7 @@ export default function AdminBatchesPage() {
               <i className="bi bi-file-earmark-excel-fill text-success me-1"></i> Export Batches (.xlsx)
             </a>
             <Link href="/admin" className="btn btn-outline-light btn-sm">
-              <i className="bi bi-arrow-left me-1"></i> Back to Admin Dashboard
+              <i className="bi bi-arrow-left me-1"></i> Back to Dashboard
             </Link>
           </div>
         </div>
@@ -686,6 +731,31 @@ export default function AdminBatchesPage() {
                   ></textarea>
                 </div>
 
+                {/* Customer Visibility Toggle in Add Form */}
+                <div className="col-12 bg-light p-3 rounded-3 border d-flex flex-wrap justify-content-between align-items-center gap-2">
+                  <div>
+                    <label className="form-label small fw-bold text-dark mb-0 d-block">
+                      <i className="bi bi-eye-fill text-success me-1"></i> Customer Visibility
+                    </label>
+                    <small className="text-muted extra-small">
+                      Turn ON to make this batch visible to customers on the main page &amp; catalog immediately.
+                    </small>
+                  </div>
+                  <div className="form-check form-switch m-0 fs-5">
+                    <input 
+                      className="form-check-input" 
+                      type="checkbox" 
+                      role="switch" 
+                      id="newBatchVisibility" 
+                      checked={newBatch.isVisible !== false} 
+                      onChange={e => setNewBatch({ ...newBatch, isVisible: e.target.checked })} 
+                    />
+                    <label className="form-check-label small fw-bold ms-2" htmlFor="newBatchVisibility">
+                      {newBatch.isVisible !== false ? <span className="text-success">ON (Visible to Customers)</span> : <span className="text-secondary">OFF (Hidden from Customers)</span>}
+                    </label>
+                  </div>
+                </div>
+
                 <div className="col-12 text-end">
                   <button type="submit" className="btn btn-success fw-bold px-4">
                     <i className="bi bi-check-circle me-1"></i> Save & Add to Live Batches
@@ -695,9 +765,52 @@ export default function AdminBatchesPage() {
             </form>
           </div>
 
-          {/* Batches Inventory Table with Edit Feature */}
+          {/* Batches Inventory Table with Visibility Filter & Edit Feature */}
           <div className="card border-0 shadow-sm rounded-4 p-4 bg-white">
-            <h4 className="fw-bold text-dark mb-3">All Active & Past Batches ({batches.length})</h4>
+            <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+              <div>
+                <h4 className="fw-bold text-dark mb-1">
+                  Batches Inventory ({batches.filter(b => {
+                    if (visibilityFilter === 'VISIBLE') return b.isVisible !== false;
+                    if (visibilityFilter === 'HIDDEN') return b.isVisible === false;
+                    return true;
+                  }).length} of {batches.length})
+                </h4>
+                <small className="text-secondary">Toggle the visibility switch per batch to instantly show or hide from customer pages.</small>
+              </div>
+
+              {/* Visibility Filter Tabs */}
+              <div className="d-flex align-items-center gap-1 bg-light p-1 rounded-pill border">
+                <button
+                  type="button"
+                  onClick={() => setVisibilityFilter('ALL')}
+                  className={`btn btn-sm fw-bold rounded-pill px-3 py-1 ${visibilityFilter === 'ALL' ? 'btn-dark text-white shadow-sm' : 'btn-light text-secondary border-0'}`}
+                >
+                  All ({batches.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setVisibilityFilter('VISIBLE')}
+                  className={`btn btn-sm fw-bold rounded-pill px-3 py-1 ${visibilityFilter === 'VISIBLE' ? 'btn-success text-white shadow-sm' : 'btn-light text-secondary border-0'}`}
+                >
+                  <i className="bi bi-eye-fill me-1"></i> Visible / ON ({batches.filter(b => b.isVisible !== false).length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setVisibilityFilter('HIDDEN')}
+                  className={`btn btn-sm fw-bold rounded-pill px-3 py-1 ${visibilityFilter === 'HIDDEN' ? 'btn-danger text-white shadow-sm' : 'btn-light text-secondary border-0'}`}
+                >
+                  <i className="bi bi-eye-slash-fill me-1"></i> Hidden / OFF ({batches.filter(b => b.isVisible === false).length})
+                </button>
+              </div>
+            </div>
+
+            {toastMessage && (
+              <div className="alert alert-success alert-dismissible py-2 px-3 small rounded-3 d-flex align-items-center gap-2 mb-3 shadow-sm">
+                <i className="bi bi-check-circle-fill fs-6"></i>
+                <span className="fw-semibold">{toastMessage}</span>
+              </div>
+            )}
 
             {loading ? (
               <div className="text-center py-4">Loading...</div>
@@ -717,12 +830,19 @@ export default function AdminBatchesPage() {
                       <th>Available</th>
                       <th>Price</th>
                       <th>Status</th>
+                      <th>Customer Visibility</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {batches.map(b => (
-                      <tr key={b.id}>
+                    {batches
+                      .filter(b => {
+                        if (visibilityFilter === 'VISIBLE') return b.isVisible !== false;
+                        if (visibilityFilter === 'HIDDEN') return b.isVisible === false;
+                        return true;
+                      })
+                      .map(b => (
+                      <tr key={b.id} className={b.isVisible === false ? 'table-secondary opacity-75' : ''}>
                         <td>
                           <div 
                             className="position-relative rounded-3 overflow-hidden border shadow-sm cursor-pointer hover-lift"
@@ -778,6 +898,27 @@ export default function AdminBatchesPage() {
                           </span>
                         </td>
                         <td>
+                          <div className="d-flex flex-column align-items-start gap-1">
+                            <button
+                              type="button"
+                              disabled={togglingBatchCode === b.batchCode}
+                              onClick={() => handleToggleSingleBatchVisibility(b)}
+                              className={`btn btn-sm fw-bold d-inline-flex align-items-center gap-1 shadow-sm rounded-pill px-3 py-1 ${
+                                b.isVisible !== false 
+                                  ? 'btn-success text-white' 
+                                  : 'btn-outline-danger'
+                              }`}
+                              title={b.isVisible !== false ? 'Currently ON (visible to customers). Click to turn OFF & hide.' : 'Currently OFF (hidden from customers). Click to turn ON & show.'}
+                            >
+                              <i className={`bi ${b.isVisible !== false ? 'bi-toggle-on fs-6' : 'bi-toggle-off fs-6'}`}></i>
+                              <span>{togglingBatchCode === b.batchCode ? 'Saving...' : (b.isVisible !== false ? 'ON (Visible)' : 'OFF (Hidden)')}</span>
+                            </button>
+                            <small className="extra-small text-muted">
+                              {b.isVisible !== false ? 'Shown to Customers' : 'Hidden from Customers'}
+                            </small>
+                          </div>
+                        </td>
+                        <td>
                           <div className="d-flex gap-1">
                             <button 
                               className="btn btn-sm btn-outline-primary"
@@ -830,7 +971,7 @@ export default function AdminBatchesPage() {
                     carouselId={`admin-batch-preview-${previewBatch.batchCode}`}
                     height="450px"
                     showThumbnails={true}
-                    objectFit="contain"
+                    objectFit="cover"
                   />
                 </div>
               </div>
@@ -875,6 +1016,31 @@ export default function AdminBatchesPage() {
                     value={editDescription}
                     onChange={e => setEditDescription(e.target.value)}
                   ></textarea>
+                </div>
+
+                {/* Edit Batch Customer Visibility Switch */}
+                <div className="mb-3 p-3 bg-light rounded-3 border d-flex justify-content-between align-items-center">
+                  <div>
+                    <label className="form-label small fw-bold text-dark mb-0 d-block">
+                      <i className="bi bi-eye-fill text-success me-1"></i> Customer Visibility
+                    </label>
+                    <small className="text-muted extra-small">
+                      {editIsVisible ? 'This batch is currently VISIBLE to customers on main page & catalog.' : 'This batch is currently HIDDEN from customers.'}
+                    </small>
+                  </div>
+                  <div className="form-check form-switch m-0 fs-5">
+                    <input 
+                      className="form-check-input" 
+                      type="checkbox" 
+                      role="switch" 
+                      id="editBatchVisibility" 
+                      checked={editIsVisible} 
+                      onChange={e => setEditIsVisible(e.target.checked)} 
+                    />
+                    <label className="form-check-label small fw-bold ms-2" htmlFor="editBatchVisibility">
+                      {editIsVisible ? <span className="text-success">ON (Visible)</span> : <span className="text-secondary">OFF (Hidden)</span>}
+                    </label>
+                  </div>
                 </div>
 
                 {/* Edit Mother Trees Selection */}

@@ -3,9 +3,14 @@ import { DataStore } from '@/lib/dataStore';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const includeHidden = searchParams.get('all') === 'true' || searchParams.get('admin') === 'true';
   const batches = await DataStore.getBatchesAsync();
-  return NextResponse.json(batches);
+  if (includeHidden) {
+    return NextResponse.json(batches);
+  }
+  return NextResponse.json(batches.filter(b => b.isVisible !== false));
 }
 
 export async function POST(request: Request) {

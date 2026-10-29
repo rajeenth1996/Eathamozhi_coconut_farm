@@ -16,7 +16,9 @@ export default function BatchesClientList({ initialBatches }: BatchesClientListP
     fetch('/api/batches')
       .then(res => res.json())
       .then(data => {
-        if (Array.isArray(data)) setBatches(data);
+        if (Array.isArray(data)) {
+          setBatches(data.filter((b: any) => b.isVisible !== false));
+        }
       })
       .catch(() => {});
   }, []);
@@ -80,7 +82,7 @@ export default function BatchesClientList({ initialBatches }: BatchesClientListP
                   {b.status === 'SOLD_OUT' && <span className="badge bg-danger shadow-sm px-3 py-2">SOLD OUT</span>}
                 </div>
 
-                <div className="overflow-hidden bg-dark position-relative w-100" style={{ height: '240px' }}>
+                <div className="overflow-hidden bg-light position-relative w-100" style={{ height: '240px' }}>
                   <ImageCarousel 
                     images={b.images} 
                     title={b.name} 
@@ -88,7 +90,7 @@ export default function BatchesClientList({ initialBatches }: BatchesClientListP
                     carouselId={`batch-card-${b.batchCode}`} 
                     height="240px"
                     showThumbnails={false}
-                    objectFit="contain"
+                    objectFit="cover"
                   />
                 </div>
 

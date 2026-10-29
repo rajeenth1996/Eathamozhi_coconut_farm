@@ -6,19 +6,23 @@ import AdminLogoutButton from '@/components/AdminLogoutButton';
 
 export default function AdminDashboardPage() {
   const [batches, setBatches] = useState<any[]>([]);
+  const [parentPalms, setParentPalms] = useState<any[]>([]);
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchDashboardData = async () => {
     try {
-      const [batchesRes, bookingsRes] = await Promise.all([
-        fetch('/api/batches'),
-        fetch('/api/bookings')
+      const [batchesRes, palmsRes, bookingsRes] = await Promise.all([
+        fetch('/api/batches?all=true'),
+        fetch('/api/parent-palms?all=true'),
+        fetch('/api/bookings'),
       ]);
       const batchesData = await batchesRes.json();
+      const palmsData = await palmsRes.json();
       const bookingsData = await bookingsRes.json();
       
       setBatches(Array.isArray(batchesData) ? batchesData : []);
+      setParentPalms(Array.isArray(palmsData) ? palmsData : []);
       setBookings(Array.isArray(bookingsData) ? bookingsData : []);
     } catch (err) {
       console.error('Failed to fetch dashboard metrics');
@@ -36,6 +40,18 @@ export default function AdminDashboardPage() {
   const totalAvailable = batches.reduce((acc, b) => acc + (b.availableQuantity || 0), 0);
   const activeOrders = bookings.filter(b => b.bookingStatus !== 'Delivered' && b.bookingStatus !== 'Cancelled').length;
   const totalOrders = bookings.length;
+
+  const statusCounts = {
+    all: bookings.length,
+    preOrder: bookings.filter(b => b.bookingStatus === 'Pre-order' || b.isPreOrder || b.orderType === 'PRE_ORDER').length,
+    paymentReview: bookings.filter(b => b.bookingStatus === 'Payment review').length,
+    confirmed: bookings.filter(b => b.bookingStatus === 'Confirmed').length,
+    preparing: bookings.filter(b => b.bookingStatus === 'Preparing').length,
+    packed: bookings.filter(b => b.bookingStatus === 'Packed').length,
+    dispatched: bookings.filter(b => b.bookingStatus === 'Dispatched').length,
+    delivered: bookings.filter(b => b.bookingStatus === 'Delivered').length,
+    cancelled: bookings.filter(b => b.bookingStatus === 'Cancelled').length,
+  };
 
   return (
     <>
@@ -105,7 +121,45 @@ export default function AdminDashboardPage() {
               <div className="card border-0 shadow-sm rounded-4 p-4 bg-white border-start border-danger border-4">
                 <small className="text-muted d-block text-uppercase fw-bold">Active Orders</small>
                 <h2 className="fw-bold text-danger mb-0">{loading ? '...' : activeOrders.toLocaleString()}</h2>
-                <small className="text-secondary">{loading ? '' : `${totalOrders} Total Booking(s)`}</small>
+                <small className="text-secondary d-block">{loading ? '' : `${totalOrders} Total Booking(s)`}</small>
+                {!loading && (
+                  <div className="d-flex flex-wrap gap-1 mt-2">
+                    <span className="badge bg-warning text-dark extra-small">Pre: {statusCounts.preOrder}</span>
+                    <span className="badge bg-danger-subtle text-danger extra-small">Rev: {statusCounts.paymentReview}</span>
+                    <span className="badge bg-success-subtle text-success extra-small">Conf: {statusCounts.confirmed}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Customer Visibility Overview Card */}
+          <div className="card border-0 shadow-sm rounded-4 p-4 mb-5 bg-white border-start border-success border-4">
+            <div className="d-flex flex-wrap justify-content-between align-items-center gap-3">
+              <div>
+                <span className="badge bg-success-subtle text-success border border-success extra-small mb-1">
+                  <i className="bi bi-eye-fill me-1"></i> CUSTOMER VISIBILITY
+                </span>
+                <h5 className="fw-bold text-dark mb-1">Catalog &amp; Main Page Visibility</h5>
+                <p className="text-secondary small mb-0">
+                  Per-item visibility switches (ON/OFF) and filters are located directly in the respective management modules.
+                </p>
+              </div>
+              <div className="d-flex flex-wrap align-items-center gap-2">
+                <Link href="/admin/batches" className="btn btn-outline-success btn-sm fw-bold rounded-pill px-3 py-2 d-inline-flex align-items-center gap-2">
+                  <i className="bi bi-grid-3x3-gap-fill"></i>
+                  <span>Batches ({batches.filter(b => b.isVisible !== false).length} / {batches.length} Visible)</span>
+                  <i className="bi bi-arrow-right"></i>
+                </Link>
+                <Link href="/admin/mother-trees" className="btn btn-outline-success btn-sm fw-bold rounded-pill px-3 py-2 d-inline-flex align-items-center gap-2">
+                  <i className="bi bi-tree-fill"></i>
+                  <span>Mother Trees ({parentPalms.filter(p => p.isVisible !== false).length} / {parentPalms.length} Visible)</span>
+                  <i className="bi bi-arrow-right"></i>
+                </Link>
+                <Link href="/" target="_blank" className="btn btn-success text-white btn-sm fw-bold rounded-pill px-3 py-2 d-inline-flex align-items-center gap-1 shadow-sm">
+                  <i className="bi bi-box-arrow-up-right"></i>
+                  <span>Preview Customer View</span>
+                </Link>
               </div>
             </div>
           </div>
@@ -209,8 +263,30 @@ export default function AdminDashboardPage() {
 
             <div className="col-md-4">
               <div className="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
-                <h5 className="fw-bold text-dark mb-2"><i className="bi bi-bag-check text-primary me-2"></i> Order Management</h5>
-                <p className="text-secondary small mb-3">View bookings, check payment screenshots, update status & enter tracking IDs.</p>
+                <div className="d-flex justify-content-between align-items-start mb-2">
+                  <h5 className="fw-bold text-dark mb-0"><i className="bi bi-bag-check text-primary me-2"></i> Order Management</h5>
+                  <span className="badge bg-primary-subtle text-primary fw-bold">{loading ? '...' : `${totalOrders} Orders`}</span>
+                </div>
+                <p className="text-secondary small mb-2">View bookings, check payment screenshots, update status & enter tracking IDs.</p>
+                
+                {/* Live count tracking */}
+                {!loading && (
+                  <div className="d-flex flex-wrap gap-1 mb-3">
+                    <span className="badge bg-warning bg-opacity-25 text-dark border border-warning extra-small">
+                      <i className="bi bi-clock-history me-1"></i>Pre-order: <strong>{statusCounts.preOrder}</strong>
+                    </span>
+                    <span className="badge bg-danger bg-opacity-10 text-danger border border-danger extra-small">
+                      <i className="bi bi-hourglass-split me-1"></i>Review: <strong>{statusCounts.paymentReview}</strong>
+                    </span>
+                    <span className="badge bg-success bg-opacity-10 text-success border border-success extra-small">
+                      <i className="bi bi-check-circle-fill me-1"></i>Confirmed: <strong>{statusCounts.confirmed}</strong>
+                    </span>
+                    <span className="badge bg-primary bg-opacity-10 text-primary border border-primary extra-small">
+                      <i className="bi bi-truck me-1"></i>Dispatched: <strong>{statusCounts.dispatched}</strong>
+                    </span>
+                  </div>
+                )}
+
                 <Link href="/admin/orders" className="btn btn-outline-primary fw-bold mt-auto">
                   Manage Customer Orders <i className="bi bi-arrow-right ms-1"></i>
                 </Link>

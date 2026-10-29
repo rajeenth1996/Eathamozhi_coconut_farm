@@ -52,6 +52,10 @@ export default function BookingFlowPage({
     fetch(`/api/batches/${code}`)
       .then(res => res.json())
       .then(data => {
+        if (!data || data.error || data.isVisible === false) {
+          router.replace('/batches');
+          return;
+        }
         setBatch(data);
         setLoading(false);
       });

@@ -71,6 +71,19 @@ export default function AdminOrdersPage() {
     }
   };
 
+  // Live status counts computed across all loaded customer bookings
+  const statusCounts = {
+    all: orders.length,
+    preOrder: orders.filter(o => o.bookingStatus === 'Pre-order' || o.isPreOrder || o.orderType === 'PRE_ORDER').length,
+    paymentReview: orders.filter(o => o.bookingStatus === 'Payment review').length,
+    confirmed: orders.filter(o => o.bookingStatus === 'Confirmed').length,
+    preparing: orders.filter(o => o.bookingStatus === 'Preparing').length,
+    packed: orders.filter(o => o.bookingStatus === 'Packed').length,
+    dispatched: orders.filter(o => o.bookingStatus === 'Dispatched').length,
+    delivered: orders.filter(o => o.bookingStatus === 'Delivered').length,
+    cancelled: orders.filter(o => o.bookingStatus === 'Cancelled').length,
+  };
+
   // Filtered orders with date range & expected delivery date range
   const filteredOrders = orders.filter(o => {
     const matchSearch = !search || 
@@ -80,7 +93,12 @@ export default function AdminOrdersPage() {
       o.batchCode?.toLowerCase().includes(search.toLowerCase()) ||
       o.district?.toLowerCase().includes(search.toLowerCase());
 
-    const matchStatus = filterStatus === 'ALL' || o.bookingStatus === filterStatus;
+    const isPreOrder = Boolean(o.bookingStatus === 'Pre-order' || o.isPreOrder || o.orderType === 'PRE_ORDER');
+    const matchStatus = filterStatus === 'ALL' 
+      ? true 
+      : filterStatus === 'Pre-order'
+        ? isPreOrder
+        : o.bookingStatus === filterStatus;
 
     // Order Placed Date (from o.createdAt YYYY-MM-DD)
     const orderDate = o.createdAt ? o.createdAt.split('T')[0] : '';
@@ -228,6 +246,172 @@ export default function AdminOrdersPage() {
       <section className="py-5 bg-light">
         <div className="container">
           
+          {/* Top Booking Pipeline Status Overview & Quick Counters */}
+          <div className="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white border-top border-primary border-4">
+            <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+              <div>
+                <h5 className="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                  <i className="bi bi-bar-chart-fill text-primary"></i>
+                  <span>Customer Bookings Status Breakdown</span>
+                </h5>
+                <small className="text-secondary">Click any status card below to immediately filter the customer booking sheet without going through the entire list</small>
+              </div>
+              {filterStatus !== 'ALL' && (
+                <button 
+                  type="button" 
+                  onClick={() => setFilterStatus('ALL')}
+                  className="btn btn-sm btn-outline-secondary rounded-pill extra-small fw-semibold py-1 px-3 d-inline-flex align-items-center gap-1 shadow-sm"
+                >
+                  <i className="bi bi-x-circle"></i> Show All ({statusCounts.all})
+                </button>
+              )}
+            </div>
+
+            <div className="row g-2">
+              {/* All Bookings */}
+              <div className="col-6 col-sm-4 col-md-3 col-lg">
+                <div 
+                  onClick={() => setFilterStatus('ALL')}
+                  className={`card p-2 text-center h-100 rounded-3 cursor-pointer transition-all ${filterStatus === 'ALL' ? 'border-dark bg-dark text-white shadow-sm' : 'border bg-light text-dark hover-lift-subtle'}`}
+                  role="button"
+                  title="Show all bookings"
+                >
+                  <small className={`extra-small text-uppercase fw-bold ${filterStatus === 'ALL' ? 'text-light opacity-75' : 'text-muted'}`}>Total Bookings</small>
+                  <div className="fs-3 fw-bold my-1">{loading ? '...' : statusCounts.all}</div>
+                  <small className={`extra-small ${filterStatus === 'ALL' ? 'text-light' : 'text-secondary'}`}>All Records</small>
+                </div>
+              </div>
+
+              {/* Pre-order */}
+              <div className="col-6 col-sm-4 col-md-3 col-lg">
+                <div 
+                  onClick={() => setFilterStatus('Pre-order')}
+                  className={`card p-2 text-center h-100 rounded-3 cursor-pointer transition-all ${filterStatus === 'Pre-order' ? 'border-warning bg-warning text-dark shadow-sm' : 'border border-warning border-opacity-50 bg-warning-subtle text-dark hover-lift-subtle'}`}
+                  role="button"
+                  title="Filter by Pre-orders"
+                >
+                  <small className="extra-small text-uppercase fw-bold text-dark opacity-75">
+                    <i className="bi bi-clock-history me-1"></i> Pre-Order
+                  </small>
+                  <div className="fs-3 fw-bold my-1 text-dark">{loading ? '...' : statusCounts.preOrder}</div>
+                  <small className="extra-small text-dark opacity-75">Advance Paid</small>
+                </div>
+              </div>
+
+              {/* Payment Review */}
+              <div className="col-6 col-sm-4 col-md-3 col-lg">
+                <div 
+                  onClick={() => setFilterStatus('Payment review')}
+                  className={`card p-2 text-center h-100 rounded-3 cursor-pointer transition-all ${filterStatus === 'Payment review' ? 'border-danger bg-danger text-white shadow-sm' : 'border border-danger border-opacity-50 bg-danger-subtle text-danger hover-lift-subtle'}`}
+                  role="button"
+                  title="Filter by Payment Review"
+                >
+                  <small className={`extra-small text-uppercase fw-bold ${filterStatus === 'Payment review' ? 'text-white opacity-90' : 'text-danger'}`}>
+                    <i className="bi bi-hourglass-split me-1"></i> Review
+                  </small>
+                  <div className={`fs-3 fw-bold my-1 ${filterStatus === 'Payment review' ? 'text-white' : 'text-danger'}`}>{loading ? '...' : statusCounts.paymentReview}</div>
+                  <small className={`extra-small ${filterStatus === 'Payment review' ? 'text-white opacity-90' : 'text-danger'}`}>Verify Screenshot</small>
+                </div>
+              </div>
+
+              {/* Confirmed */}
+              <div className="col-6 col-sm-4 col-md-3 col-lg">
+                <div 
+                  onClick={() => setFilterStatus('Confirmed')}
+                  className={`card p-2 text-center h-100 rounded-3 cursor-pointer transition-all ${filterStatus === 'Confirmed' ? 'border-success bg-success text-white shadow-sm' : 'border border-success border-opacity-50 bg-success-subtle text-success hover-lift-subtle'}`}
+                  role="button"
+                  title="Filter by Confirmed"
+                >
+                  <small className={`extra-small text-uppercase fw-bold ${filterStatus === 'Confirmed' ? 'text-white opacity-90' : 'text-success'}`}>
+                    <i className="bi bi-check-circle-fill me-1"></i> Confirmed
+                  </small>
+                  <div className={`fs-3 fw-bold my-1 ${filterStatus === 'Confirmed' ? 'text-white' : 'text-success'}`}>{loading ? '...' : statusCounts.confirmed}</div>
+                  <small className={`extra-small ${filterStatus === 'Confirmed' ? 'text-white opacity-90' : 'text-success'}`}>Payment Verified</small>
+                </div>
+              </div>
+
+              {/* Preparing */}
+              <div className="col-6 col-sm-4 col-md-3 col-lg">
+                <div 
+                  onClick={() => setFilterStatus('Preparing')}
+                  className={`card p-2 text-center h-100 rounded-3 cursor-pointer transition-all ${filterStatus === 'Preparing' ? 'border-primary bg-primary text-white shadow-sm' : 'border border-primary border-opacity-50 bg-primary-subtle text-primary hover-lift-subtle'}`}
+                  role="button"
+                  title="Filter by Preparing"
+                >
+                  <small className={`extra-small text-uppercase fw-bold ${filterStatus === 'Preparing' ? 'text-white opacity-90' : 'text-primary'}`}>
+                    <i className="bi bi-gear-fill me-1"></i> Preparing
+                  </small>
+                  <div className={`fs-3 fw-bold my-1 ${filterStatus === 'Preparing' ? 'text-white' : 'text-primary'}`}>{loading ? '...' : statusCounts.preparing}</div>
+                  <small className={`extra-small ${filterStatus === 'Preparing' ? 'text-white opacity-90' : 'text-primary'}`}>Farm Grove</small>
+                </div>
+              </div>
+
+              {/* Packed */}
+              <div className="col-6 col-sm-4 col-md-3 col-lg">
+                <div 
+                  onClick={() => setFilterStatus('Packed')}
+                  className={`card p-2 text-center h-100 rounded-3 cursor-pointer transition-all ${filterStatus === 'Packed' ? 'border-info bg-info text-dark shadow-sm' : 'border border-info border-opacity-50 bg-info-subtle text-dark hover-lift-subtle'}`}
+                  role="button"
+                  title="Filter by Packed"
+                >
+                  <small className="extra-small text-uppercase fw-bold text-dark opacity-90">
+                    <i className="bi bi-box-seam me-1"></i> Packed
+                  </small>
+                  <div className="fs-3 fw-bold my-1 text-dark">{loading ? '...' : statusCounts.packed}</div>
+                  <small className="extra-small text-dark opacity-75">Ready to Ship</small>
+                </div>
+              </div>
+
+              {/* Dispatched */}
+              <div className="col-6 col-sm-4 col-md-3 col-lg">
+                <div 
+                  onClick={() => setFilterStatus('Dispatched')}
+                  className={`card p-2 text-center h-100 rounded-3 cursor-pointer transition-all ${filterStatus === 'Dispatched' ? 'border-primary bg-primary text-white shadow-sm' : 'border border-primary border-opacity-50 bg-primary-subtle text-primary hover-lift-subtle'}`}
+                  role="button"
+                  title="Filter by Dispatched"
+                >
+                  <small className={`extra-small text-uppercase fw-bold ${filterStatus === 'Dispatched' ? 'text-white opacity-90' : 'text-primary'}`}>
+                    <i className="bi bi-truck me-1"></i> Dispatched
+                  </small>
+                  <div className={`fs-3 fw-bold my-1 ${filterStatus === 'Dispatched' ? 'text-white' : 'text-primary'}`}>{loading ? '...' : statusCounts.dispatched}</div>
+                  <small className={`extra-small ${filterStatus === 'Dispatched' ? 'text-white opacity-90' : 'text-primary'}`}>In Transit</small>
+                </div>
+              </div>
+
+              {/* Delivered */}
+              <div className="col-6 col-sm-4 col-md-3 col-lg">
+                <div 
+                  onClick={() => setFilterStatus('Delivered')}
+                  className={`card p-2 text-center h-100 rounded-3 cursor-pointer transition-all ${filterStatus === 'Delivered' ? 'border-success bg-success text-white shadow-sm' : 'border border-success border-opacity-50 bg-success-subtle text-success hover-lift-subtle'}`}
+                  role="button"
+                  title="Filter by Delivered"
+                >
+                  <small className={`extra-small text-uppercase fw-bold ${filterStatus === 'Delivered' ? 'text-white opacity-90' : 'text-success'}`}>
+                    <i className="bi bi-house-check-fill me-1"></i> Delivered
+                  </small>
+                  <div className={`fs-3 fw-bold my-1 ${filterStatus === 'Delivered' ? 'text-white' : 'text-success'}`}>{loading ? '...' : statusCounts.delivered}</div>
+                  <small className={`extra-small ${filterStatus === 'Delivered' ? 'text-white opacity-90' : 'text-success'}`}>Completed</small>
+                </div>
+              </div>
+
+              {/* Cancelled */}
+              <div className="col-6 col-sm-4 col-md-3 col-lg">
+                <div 
+                  onClick={() => setFilterStatus('Cancelled')}
+                  className={`card p-2 text-center h-100 rounded-3 cursor-pointer transition-all ${filterStatus === 'Cancelled' ? 'border-secondary bg-secondary text-white shadow-sm' : 'border bg-light text-secondary hover-lift-subtle'}`}
+                  role="button"
+                  title="Filter by Cancelled"
+                >
+                  <small className={`extra-small text-uppercase fw-bold ${filterStatus === 'Cancelled' ? 'text-white opacity-90' : 'text-secondary'}`}>
+                    <i className="bi bi-x-circle me-1"></i> Cancelled
+                  </small>
+                  <div className={`fs-3 fw-bold my-1 ${filterStatus === 'Cancelled' ? 'text-white' : 'text-secondary'}`}>{loading ? '...' : statusCounts.cancelled}</div>
+                  <small className={`extra-small ${filterStatus === 'Cancelled' ? 'text-white opacity-90' : 'text-secondary'}`}>Cancelled</small>
+                </div>
+              </div>
+            </div>
+          </div>
+          
           {/* Advanced Search & Filter Bar */}
           <div className="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
             <div className="d-flex justify-content-between align-items-center mb-3">
@@ -269,14 +453,15 @@ export default function AdminOrdersPage() {
                   value={filterStatus}
                   onChange={e => setFilterStatus(e.target.value)}
                 >
-                  <option value="ALL">All Order Statuses</option>
-                  <option value="Payment review">Payment review (New Orders)</option>
-                  <option value="Confirmed">Confirmed</option>
-                  <option value="Preparing">Preparing</option>
-                  <option value="Packed">Packed</option>
-                  <option value="Dispatched">Dispatched</option>
-                  <option value="Delivered">Delivered</option>
-                  <option value="Cancelled">Cancelled</option>
+                  <option value="ALL">All Order Statuses ({statusCounts.all})</option>
+                  <option value="Pre-order">Pre-orders ({statusCounts.preOrder})</option>
+                  <option value="Payment review">Payment review ({statusCounts.paymentReview})</option>
+                  <option value="Confirmed">Confirmed ({statusCounts.confirmed})</option>
+                  <option value="Preparing">Preparing ({statusCounts.preparing})</option>
+                  <option value="Packed">Packed ({statusCounts.packed})</option>
+                  <option value="Dispatched">Dispatched ({statusCounts.dispatched})</option>
+                  <option value="Delivered">Delivered ({statusCounts.delivered})</option>
+                  <option value="Cancelled">Cancelled ({statusCounts.cancelled})</option>
                 </select>
               </div>
 
@@ -433,13 +618,90 @@ export default function AdminOrdersPage() {
           {/* Orders Table */}
           <div className="card border-0 shadow-sm rounded-4 p-4 bg-white">
             <div className="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
-              <h4 className="fw-bold text-dark mb-0">
-                Customer Bookings ({filteredOrders.length} / {orders.length})
-              </h4>
+              <div>
+                <h4 className="fw-bold text-dark mb-1">
+                  Customer Bookings ({filteredOrders.length} / {orders.length})
+                </h4>
+                {/* Real-time Status Badges on Top of Sheet */}
+                <div className="d-flex flex-wrap gap-1 align-items-center mt-2">
+                  <span 
+                    className={`badge cursor-pointer ${filterStatus === 'ALL' ? 'bg-dark text-white' : 'bg-light text-dark border'}`} 
+                    onClick={() => setFilterStatus('ALL')}
+                    role="button"
+                    title="Show all bookings"
+                  >
+                    All: <strong>{statusCounts.all}</strong>
+                  </span>
+                  <span 
+                    className={`badge cursor-pointer ${filterStatus === 'Pre-order' ? 'bg-warning text-dark' : 'bg-warning-subtle text-dark border border-warning'}`} 
+                    onClick={() => setFilterStatus('Pre-order')}
+                    role="button"
+                    title="Filter Pre-orders"
+                  >
+                    <i className="bi bi-clock-history me-1"></i>Pre-order: <strong>{statusCounts.preOrder}</strong>
+                  </span>
+                  <span 
+                    className={`badge cursor-pointer ${filterStatus === 'Payment review' ? 'bg-danger text-white' : 'bg-danger-subtle text-danger border border-danger'}`} 
+                    onClick={() => setFilterStatus('Payment review')}
+                    role="button"
+                    title="Filter Payment Review"
+                  >
+                    <i className="bi bi-hourglass-split me-1"></i>Review: <strong>{statusCounts.paymentReview}</strong>
+                  </span>
+                  <span 
+                    className={`badge cursor-pointer ${filterStatus === 'Confirmed' ? 'bg-success text-white' : 'bg-success-subtle text-success border border-success'}`} 
+                    onClick={() => setFilterStatus('Confirmed')}
+                    role="button"
+                    title="Filter Confirmed"
+                  >
+                    <i className="bi bi-check-circle-fill me-1"></i>Confirmed: <strong>{statusCounts.confirmed}</strong>
+                  </span>
+                  <span 
+                    className={`badge cursor-pointer ${filterStatus === 'Preparing' ? 'bg-primary text-white' : 'bg-primary-subtle text-primary border border-primary'}`} 
+                    onClick={() => setFilterStatus('Preparing')}
+                    role="button"
+                    title="Filter Preparing"
+                  >
+                    <i className="bi bi-gear-fill me-1"></i>Preparing: <strong>{statusCounts.preparing}</strong>
+                  </span>
+                  <span 
+                    className={`badge cursor-pointer ${filterStatus === 'Packed' ? 'bg-info text-dark' : 'bg-info-subtle text-dark border border-info'}`} 
+                    onClick={() => setFilterStatus('Packed')}
+                    role="button"
+                    title="Filter Packed"
+                  >
+                    <i className="bi bi-box-seam me-1"></i>Packed: <strong>{statusCounts.packed}</strong>
+                  </span>
+                  <span 
+                    className={`badge cursor-pointer ${filterStatus === 'Dispatched' ? 'bg-primary text-white' : 'bg-primary-subtle text-primary border border-primary'}`} 
+                    onClick={() => setFilterStatus('Dispatched')}
+                    role="button"
+                    title="Filter Dispatched"
+                  >
+                    <i className="bi bi-truck me-1"></i>Dispatched: <strong>{statusCounts.dispatched}</strong>
+                  </span>
+                  <span 
+                    className={`badge cursor-pointer ${filterStatus === 'Delivered' ? 'bg-success text-white' : 'bg-success-subtle text-success border border-success'}`} 
+                    onClick={() => setFilterStatus('Delivered')}
+                    role="button"
+                    title="Filter Delivered"
+                  >
+                    <i className="bi bi-house-check-fill me-1"></i>Delivered: <strong>{statusCounts.delivered}</strong>
+                  </span>
+                  <span 
+                    className={`badge cursor-pointer ${filterStatus === 'Cancelled' ? 'bg-secondary text-white' : 'bg-light text-secondary border'}`} 
+                    onClick={() => setFilterStatus('Cancelled')}
+                    role="button"
+                    title="Filter Cancelled"
+                  >
+                    <i className="bi bi-x-circle me-1"></i>Cancelled: <strong>{statusCounts.cancelled}</strong>
+                  </span>
+                </div>
+              </div>
               <button 
                 type="button"
                 onClick={downloadFilteredOrdersExcel}
-                className="btn btn-outline-success btn-sm fw-bold d-inline-flex align-items-center gap-1"
+                className="btn btn-outline-success btn-sm fw-bold d-inline-flex align-items-center gap-1 shadow-sm"
               >
                 <i className="bi bi-download"></i> Export This Filtered View (.xlsx)
               </button>

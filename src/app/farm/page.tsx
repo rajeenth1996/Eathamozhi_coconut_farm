@@ -5,8 +5,10 @@ import ImageCarousel from '@/components/ImageCarousel';
 export const dynamic = 'force-dynamic';
 
 export default async function MotherTreesPage() {
-  const palms = await DataStore.getParentPalmsAsync();
-  const batches = await DataStore.getBatchesAsync();
+  const allPalms = await DataStore.getParentPalmsAsync();
+  const palms = allPalms.filter(p => p.isVisible !== false);
+  const allBatches = await DataStore.getBatchesAsync();
+  const batches = allBatches.filter(b => b.isVisible !== false);
 
   const getActiveBatchesForPalm = (palmCode: string) => {
     return batches.filter(b => {
@@ -130,7 +132,7 @@ export default async function MotherTreesPage() {
                           carouselId={`palm-card-${palm.code}`}
                           height="240px"
                           showThumbnails={false}
-                          objectFit="contain"
+                          objectFit="cover"
                         />
 
                         {/* Overlays */}

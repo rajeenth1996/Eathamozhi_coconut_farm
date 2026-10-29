@@ -13,6 +13,7 @@ const ParentPalmSchema = new Schema({
   nutCharacteristics: { type: String, required: true },
   whySelected:  { type: String, required: true },
   images:       [String],
+  isVisible:    { type: Boolean, default: true },
 }, { timestamps: false });
 
 // ─── Batch ────────────────────────────────────────────────────────────────────
@@ -35,6 +36,7 @@ const BatchSchema = new Schema({
   description:      String,
   viewsCount:       { type: Number, default: 0 },
   images:           [String],
+  isVisible:        { type: Boolean, default: true },
 }, { timestamps: false });
 
 // ─── InventoryAdjustment ──────────────────────────────────────────────────────
@@ -142,6 +144,13 @@ const VisitorJourneySchema = new Schema({
   orderId:          String,
 }, { timestamps: false });
 
+// ─── SiteSettings ──────────────────────────────────────────────────────────────
+const SiteSettingsSchema = new Schema({
+  id:                        { type: String, required: true, unique: true, default: 'site_settings' },
+  showBatchesOnMainPage:     { type: Boolean, default: true },
+  showMotherTreesOnMainPage: { type: Boolean, default: true },
+}, { timestamps: true });
+
 // Export models (use existing model if already compiled — important for Next.js hot-reload)
 export const ParentPalmModel  = models.ParentPalm  || model('ParentPalm',  ParentPalmSchema);
 export const BatchModel       = models.Batch       || model('Batch',       BatchSchema);
@@ -152,4 +161,6 @@ export const EnquiryModel     = models.Enquiry     || model('Enquiry',     Enqui
 export const InventoryAdjustmentModel = models.InventoryAdjustment || model('InventoryAdjustment', InventoryAdjustmentSchema);
 export const PageViewModel    = models.PageView    || model('PageView',    PageViewSchema);
 export const VisitorJourneyModel = models.VisitorJourney || model('VisitorJourney', VisitorJourneySchema);
+export const SiteSettingsModel = models.SiteSettings || model('SiteSettings', SiteSettingsSchema);
+
 

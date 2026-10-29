@@ -20,7 +20,7 @@ export default function ImageCarousel({
   carouselId = 'imageCarousel',
   height = '240px',
   showThumbnails = true,
-  objectFit = 'contain',
+  objectFit = 'cover',
   className = ''
 }: ImageCarouselProps) {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -117,7 +117,7 @@ export default function ImageCarousel({
       <style jsx>{`
         .carousel-card-wrap {
           position: relative;
-          background: radial-gradient(circle at center, #131d27 0%, #0a1118 100%);
+          background: #f1f5f9;
           overflow: hidden;
           transition: box-shadow 0.2s ease;
         }

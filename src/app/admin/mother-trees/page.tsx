@@ -6,6 +6,9 @@ import ImageCarousel from '@/components/ImageCarousel';
 
 export default function AdminMotherTreesPage() {
   const [palms, setPalms] = useState<any[]>([]);
+  const [visibilityFilter, setVisibilityFilter] = useState<'ALL' | 'VISIBLE' | 'HIDDEN'>('ALL');
+  const [togglingPalmCode, setTogglingPalmCode] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [previewTree, setPreviewTree] = useState<any | null>(null);
 
@@ -20,7 +23,8 @@ export default function AdminMotherTreesPage() {
     description: 'Selected for heavy canopy, disease immunity, and large copra content.',
     nutCharacteristics: 'Large spherical nuts with high coconut water volume and thick kernel.',
     whySelected: 'Consistently high yield for over 40 years without dropping premature buttons.',
-    images: [] as string[]
+    images: [] as string[],
+    isVisible: true
   });
 
   const [treeFiles, setTreeFiles] = useState<File[]>([]);
@@ -35,13 +39,37 @@ export default function AdminMotherTreesPage() {
 
   const fetchPalms = async () => {
     try {
-      const res = await fetch(`/api/parent-palms?_t=${Date.now()}`, { cache: 'no-store' });
+      const res = await fetch(`/api/parent-palms?all=true&_t=${Date.now()}`, { cache: 'no-store' });
       const data = await res.json();
       setPalms(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error('Failed to fetch parent palms');
+      console.error('Failed to fetch parent palms:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleToggleSinglePalmVisibility = async (palm: any) => {
+    const nextVal = palm.isVisible === false ? true : false;
+    setTogglingPalmCode(palm.code);
+    setPalms(prev => prev.map(p => p.code === palm.code ? { ...p, isVisible: nextVal } : p));
+    try {
+      const res = await fetch('/api/parent-palms', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: palm.code, isVisible: nextVal })
+      });
+      if (res.ok) {
+        setToastMessage(`✓ Mother Tree ${palm.code} is now ${nextVal ? 'VISIBLE (ON) to customers' : 'HIDDEN (OFF) from customers'}.`);
+        setTimeout(() => setToastMessage(null), 4000);
+      } else {
+        throw new Error('Update failed');
+      }
+    } catch (e: any) {
+      alert('Error updating visibility: ' + e.message);
+      fetchPalms();
+    } finally {
+      setTogglingPalmCode(null);
     }
   };
 
@@ -120,7 +148,8 @@ export default function AdminMotherTreesPage() {
           description: 'High-yielding mother tree selected for mother seed nut production.',
           nutCharacteristics: 'Large spherical nuts with high coconut water volume and thick kernel.',
           whySelected: 'Consistently high yield with exceptional seedling germination rate.',
-          images: []
+          images: [],
+          isVisible: true
         });
       } else {
         const errData = await res.json();
@@ -379,7 +408,10 @@ export default function AdminMotherTreesPage() {
             <span className="badge bg-success me-2">MOTHER TREE GENETICS</span>
             <h3 className="fw-bold mb-0 text-light d-inline align-middle">Mother Tree &amp; Ancestral Palm Registry</h3>
           </div>
-          <div className="d-flex gap-2">
+          <div className="d-flex gap-2 align-items-center flex-wrap">
+            <Link href="/farm" target="_blank" className="btn btn-outline-warning btn-sm text-warning">
+              <i className="bi bi-box-arrow-up-right me-1"></i> Customer Farm View
+            </Link>
             <a 
               href="/api/admin/export?type=trees" 
               download 
@@ -388,9 +420,6 @@ export default function AdminMotherTreesPage() {
             >
               <i className="bi bi-file-earmark-excel me-1"></i> Export (.xlsx)
             </a>
-            <Link href="/farm" target="_blank" className="btn btn-outline-warning btn-sm text-warning">
-              <i className="bi bi-box-arrow-up-right me-1"></i> Public Farm Page
-            </Link>
             <Link href="/admin" className="btn btn-outline-secondary btn-sm text-light">
               <i className="bi bi-arrow-left me-1"></i> Dashboard
             </Link>
@@ -530,6 +559,31 @@ export default function AdminMotherTreesPage() {
                   )}
                 </div>
 
+                {/* Customer Visibility Toggle in Add Form */}
+                <div className="col-12 bg-light p-3 rounded-3 border d-flex flex-wrap justify-content-between align-items-center gap-2">
+                  <div>
+                    <label className="form-label small fw-bold text-dark mb-0 d-block">
+                      <i className="bi bi-eye-fill text-success me-1"></i> Customer Visibility
+                    </label>
+                    <small className="text-muted extra-small">
+                      Turn ON to make this mother tree visible to customers on the farm page &amp; pedigree registry.
+                    </small>
+                  </div>
+                  <div className="form-check form-switch m-0 fs-5">
+                    <input 
+                      className="form-check-input" 
+                      type="checkbox" 
+                      role="switch" 
+                      id="newTreeVisibility" 
+                      checked={newTree.isVisible !== false} 
+                      onChange={e => setNewTree({ ...newTree, isVisible: e.target.checked })} 
+                    />
+                    <label className="form-check-label small fw-bold ms-2" htmlFor="newTreeVisibility">
+                      {newTree.isVisible !== false ? <span className="text-success">ON (Visible to Customers)</span> : <span className="text-secondary">OFF (Hidden from Customers)</span>}
+                    </label>
+                  </div>
+                </div>
+
                 <div className="col-12">
                   <button type="submit" className="btn btn-success fw-bold px-4" disabled={uploading}>
                     <i className="bi bi-plus-circle me-1"></i> {uploading ? 'Uploading to Cloudinary & Saving...' : 'Save Mother Tree Record'}
@@ -539,14 +593,52 @@ export default function AdminMotherTreesPage() {
             </form>
           </div>
 
-          {/* Mother Trees List Table */}
+          {/* Mother Trees List Table with Visibility Filter */}
           <div className="card border-0 shadow-sm rounded-4 p-4 bg-white">
-            <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-              <h4 className="fw-bold text-dark mb-0">Registered Mother Trees ({palms.length})</h4>
-              <small className="text-muted extra-small">
-                Click <strong>Edit</strong> to upload new tree photos, change cover picture, or modify genetics records.
-              </small>
+            <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+              <div>
+                <h4 className="fw-bold text-dark mb-1">
+                  Registered Mother Trees ({palms.filter(p => {
+                    if (visibilityFilter === 'VISIBLE') return p.isVisible !== false;
+                    if (visibilityFilter === 'HIDDEN') return p.isVisible === false;
+                    return true;
+                  }).length} of {palms.length})
+                </h4>
+                <small className="text-secondary">Toggle visibility per mother tree to instantly show or hide from customer view.</small>
+              </div>
+
+              {/* Visibility Filter Tabs */}
+              <div className="d-flex align-items-center gap-1 bg-light p-1 rounded-pill border">
+                <button
+                  type="button"
+                  onClick={() => setVisibilityFilter('ALL')}
+                  className={`btn btn-sm fw-bold rounded-pill px-3 py-1 ${visibilityFilter === 'ALL' ? 'btn-dark text-white shadow-sm' : 'btn-light text-secondary border-0'}`}
+                >
+                  All ({palms.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setVisibilityFilter('VISIBLE')}
+                  className={`btn btn-sm fw-bold rounded-pill px-3 py-1 ${visibilityFilter === 'VISIBLE' ? 'btn-success text-white shadow-sm' : 'btn-light text-secondary border-0'}`}
+                >
+                  <i className="bi bi-eye-fill me-1"></i> Visible / ON ({palms.filter(p => p.isVisible !== false).length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setVisibilityFilter('HIDDEN')}
+                  className={`btn btn-sm fw-bold rounded-pill px-3 py-1 ${visibilityFilter === 'HIDDEN' ? 'btn-danger text-white shadow-sm' : 'btn-light text-secondary border-0'}`}
+                >
+                  <i className="bi bi-eye-slash-fill me-1"></i> Hidden / OFF ({palms.filter(p => p.isVisible === false).length})
+                </button>
+              </div>
             </div>
+
+            {toastMessage && (
+              <div className="alert alert-success alert-dismissible py-2 px-3 small rounded-3 d-flex align-items-center gap-2 mb-3 shadow-sm">
+                <i className="bi bi-check-circle-fill fs-6"></i>
+                <span className="fw-semibold">{toastMessage}</span>
+              </div>
+            )}
 
             {loading ? (
               <div className="text-center py-4">Loading mother tree data...</div>
@@ -561,16 +653,24 @@ export default function AdminMotherTreesPage() {
                       <th>Age</th>
                       <th>Location</th>
                       <th>Yield Record</th>
+                      <th>Customer Visibility</th>
                       <th className="text-end">Action</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {palms.map(p => {
+                    {palms
+                      .filter(p => {
+                        if (visibilityFilter === 'VISIBLE') return p.isVisible !== false;
+                        if (visibilityFilter === 'HIDDEN') return p.isVisible === false;
+                        return true;
+                      })
+                      .map(p => {
                       const primaryPhoto = (p.images && p.images.length > 0) ? p.images[0] : '/images/placeholder.png';
                       const photoCount = p.images ? p.images.length : 0;
+                      const isVisible = p.isVisible !== false;
 
                       return (
-                        <tr key={p.id}>
+                        <tr key={p.id} className={!isVisible ? 'table-secondary opacity-75' : ''}>
                           {/* Visual Photo Thumbnail Column */}
                           <td>
                             <div 
@@ -601,6 +701,27 @@ export default function AdminMotherTreesPage() {
                           <td><span className="badge bg-dark">{p.age} Years</span></td>
                           <td><small className="text-muted">{p.location}</small></td>
                           <td><small className="text-success fw-bold">{p.yieldHistory}</small></td>
+                          <td>
+                            <div className="d-flex flex-column align-items-start gap-1">
+                              <button
+                                type="button"
+                                disabled={togglingPalmCode === p.code}
+                                onClick={() => handleToggleSinglePalmVisibility(p)}
+                                className={`btn btn-sm fw-bold d-inline-flex align-items-center gap-1 shadow-sm rounded-pill px-3 py-1 ${
+                                  isVisible 
+                                    ? 'btn-success text-white' 
+                                    : 'btn-outline-danger'
+                                }`}
+                                title={isVisible ? 'Currently ON (visible to customers). Click to turn OFF & hide.' : 'Currently OFF (hidden from customers). Click to turn ON & show.'}
+                              >
+                                <i className={`bi ${isVisible ? 'bi-toggle-on fs-6' : 'bi-toggle-off fs-6'}`}></i>
+                                <span>{togglingPalmCode === p.code ? 'Saving...' : (isVisible ? 'ON (Visible)' : 'OFF (Hidden)')}</span>
+                              </button>
+                              <small className="extra-small text-muted">
+                                {isVisible ? 'Shown to Customers' : 'Hidden from Customers'}
+                              </small>
+                            </div>
+                          </td>
                           <td className="text-end">
                             <div className="d-flex justify-content-end gap-1">
                               <Link href={`/parent-palm/${p.code}`} target="_blank" className="btn btn-sm btn-outline-info" title="View Public Profile">
@@ -658,7 +779,7 @@ export default function AdminMotherTreesPage() {
                     carouselId={`admin-tree-preview-${previewTree.code}`}
                     height="450px"
                     showThumbnails={true}
-                    objectFit="contain"
+                    objectFit="cover"
                   />
                 </div>
               </div>
@@ -756,6 +877,31 @@ export default function AdminMotherTreesPage() {
                       value={editingTree.description}
                       onChange={e => setEditingTree({ ...editingTree, description: e.target.value })}
                     ></textarea>
+                  </div>
+
+                  {/* Customer Visibility Switch in Edit Modal */}
+                  <div className="col-12 bg-light p-3 rounded-3 border d-flex justify-content-between align-items-center">
+                    <div>
+                      <label className="form-label small fw-bold text-dark mb-0 d-block">
+                        <i className="bi bi-eye-fill text-success me-1"></i> Customer Visibility
+                      </label>
+                      <small className="text-muted extra-small">
+                        {editingTree.isVisible !== false ? 'This mother tree is currently VISIBLE to customers in the registry & farm page.' : 'This mother tree is currently HIDDEN from customers.'}
+                      </small>
+                    </div>
+                    <div className="form-check form-switch m-0 fs-5">
+                      <input 
+                        className="form-check-input" 
+                        type="checkbox" 
+                        role="switch" 
+                        id="editTreeVisibility" 
+                        checked={editingTree.isVisible !== false} 
+                        onChange={e => setEditingTree({ ...editingTree, isVisible: e.target.checked })} 
+                      />
+                      <label className="form-check-label small fw-bold ms-2" htmlFor="editTreeVisibility">
+                        {editingTree.isVisible !== false ? <span className="text-success">ON (Visible)</span> : <span className="text-secondary">OFF (Hidden)</span>}
+                      </label>
+                    </div>
                   </div>
 
                   {/* Mother Tree Images — Gallery, URL Manager & Device Uploader */}

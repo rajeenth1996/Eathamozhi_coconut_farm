@@ -6,8 +6,10 @@ import {
   ReviewModel,
   FAQModel,
   EnquiryModel,
-  InventoryAdjustmentModel
+  InventoryAdjustmentModel,
+  SiteSettingsModel
 } from '@/lib/models';
+import { SiteSettings } from '@/lib/types';
 
 export interface ParentPalm {
   id: string;
@@ -21,6 +23,7 @@ export interface ParentPalm {
   nutCharacteristics: string;
   whySelected: string;
   images: string[];
+  isVisible?: boolean;
 }
 
 export interface Batch {
@@ -44,6 +47,7 @@ export interface Batch {
   description: string;
   viewsCount?: number; // Social proof view counter
   images: string[];
+  isVisible?: boolean;
 }
 
 export interface InventoryAdjustment {
@@ -216,6 +220,10 @@ let faqs: FAQ[] = [
 let enquiries: Enquiry[] = [];
 let pageViews: PageViewEvent[] = [];
 let visitorJourneys: VisitorJourney[] = [];
+let siteSettings: SiteSettings = {
+  showBatchesOnMainPage: true,
+  showMotherTreesOnMainPage: true,
+};
 
 // Persistent File Storage (JSON DB in src/data/db.json)
 function getNodeModule(moduleName: string) {
@@ -271,6 +279,12 @@ function loadFromDb() {
       if (Array.isArray(data.faqs)) faqs = data.faqs;
       if (Array.isArray(data.pageViews)) pageViews = data.pageViews;
       if (Array.isArray(data.visitorJourneys)) visitorJourneys = data.visitorJourneys;
+      if (data.siteSettings && typeof data.siteSettings === 'object') {
+        siteSettings = {
+          showBatchesOnMainPage: data.siteSettings.showBatchesOnMainPage !== false,
+          showMotherTreesOnMainPage: data.siteSettings.showMotherTreesOnMainPage !== false,
+        };
+      }
     }
   } catch (err) {
     // Non-fatal fallback to initial data
@@ -289,7 +303,8 @@ function saveToDb() {
       reviews,
       faqs,
       pageViews: pageViews.slice(0, 1000),
-      visitorJourneys: visitorJourneys.slice(0, 500)
+      visitorJourneys: visitorJourneys.slice(0, 500),
+      siteSettings
     };
     const jsonStr = JSON.stringify(payload, null, 2);
 
@@ -407,7 +422,7 @@ async function syncFromMongo(force = false): Promise<void> {
       const conn = await connectToDatabase();
       if (!conn) return;
 
-      const [mPalms, mBatches, mBookings, mEnquiries, mReviews, mAdjustments, mFaqs] = await Promise.all([
+      const [mPalms, mBatches, mBookings, mEnquiries, mReviews, mAdjustments, mFaqs, mSettings] = await Promise.all([
         ParentPalmModel.find({}).lean(),
         BatchModel.find({}).lean(),
         BookingModel.find({}).lean(),
@@ -415,6 +430,7 @@ async function syncFromMongo(force = false): Promise<void> {
         ReviewModel.find({}).lean(),
         InventoryAdjustmentModel.find({}).lean(),
         FAQModel.find({}).lean(),
+        SiteSettingsModel.findOne({ id: 'site_settings' }).lean(),
       ]);
 
       if (Array.isArray(mPalms) && mPalms.length > 0) {
@@ -429,7 +445,8 @@ async function syncFromMongo(force = false): Promise<void> {
           description: p.description || '',
           nutCharacteristics: p.nutCharacteristics || '',
           whySelected: p.whySelected || '',
-          images: Array.isArray(p.images) ? p.images : []
+          images: Array.isArray(p.images) ? p.images : [],
+          isVisible: p.isVisible !== false
         }));
       }
 
@@ -452,7 +469,8 @@ async function syncFromMongo(force = false): Promise<void> {
           status: b.status || 'AVAILABLE',
           description: b.description || '',
           viewsCount: Number(b.viewsCount) || 0,
-          images: Array.isArray(b.images) ? b.images : []
+          images: Array.isArray(b.images) ? b.images : [],
+          isVisible: b.isVisible !== false
         }));
       }
 
@@ -470,6 +488,12 @@ async function syncFromMongo(force = false): Promise<void> {
       }
       if (Array.isArray(mFaqs) && mFaqs.length > 0) {
         faqs = mFaqs.map((f: any) => ({ ...f }));
+      }
+      if (mSettings) {
+        siteSettings = {
+          showBatchesOnMainPage: mSettings.showBatchesOnMainPage !== false,
+          showMotherTreesOnMainPage: mSettings.showMotherTreesOnMainPage !== false,
+        };
       }
 
       lastMongoSyncTime = Date.now();
@@ -506,7 +530,8 @@ export const DataStore = {
         height: metrics.height,
         availableQuantity: available,
         status: computedStatus,
-        bookedPercentage: netStock > 0 ? Number(((computedBookedQuantity / netStock) * 100).toFixed(1)) : 0
+        bookedPercentage: netStock > 0 ? Number(((computedBookedQuantity / netStock) * 100).toFixed(1)) : 0,
+        isVisible: b.isVisible !== false
       };
     });
   },
@@ -568,7 +593,8 @@ export const DataStore = {
       status: 'AVAILABLE',
       description: newBatchData.description || '',
       viewsCount: 15,
-      images: newBatchData.images && newBatchData.images.length > 0 ? newBatchData.images : defaultFolderImages
+      images: newBatchData.images && newBatchData.images.length > 0 ? newBatchData.images : defaultFolderImages,
+      isVisible: newBatchData.isVisible !== undefined ? Boolean(newBatchData.isVisible) : true
     };
 
     batches.unshift(created);
@@ -581,6 +607,7 @@ export const DataStore = {
     const target = batches.find(b => b.batchCode.toLowerCase() === code.toLowerCase());
     if (!target) throw new Error('Batch not found');
 
+    if (updatedFields.isVisible !== undefined) target.isVisible = Boolean(updatedFields.isVisible);
     if (updatedFields.price !== undefined) target.price = Number(updatedFields.price);
     if (updatedFields.totalQuantity !== undefined) target.totalQuantity = Number(updatedFields.totalQuantity);
     if (updatedFields.harvestDate) target.harvestDate = updatedFields.harvestDate;
@@ -617,12 +644,14 @@ export const DataStore = {
 
   getParentPalms: () => {
     loadFromDb();
-    return parentPalms;
+    return parentPalms.map(p => ({ ...p, isVisible: p.isVisible !== false }));
   },
 
   getParentPalmByCode: (code: string) => {
     loadFromDb();
-    return parentPalms.find(p => p.code.toLowerCase() === code.toLowerCase()) || null;
+    const palm = parentPalms.find(p => p.code.toLowerCase() === code.toLowerCase());
+    if (!palm) return null;
+    return { ...palm, isVisible: palm.isVisible !== false };
   },
 
   addParentPalm: (data: Omit<ParentPalm, 'id'>) => {
@@ -1314,6 +1343,46 @@ export const DataStore = {
     loadFromDb();
     await syncFromMongo();
     return DataStore.getAdjustments();
+  },
+
+  
+  getSiteSettings: (): SiteSettings => {
+    loadFromDb();
+    return { ...siteSettings };
+  },
+
+  updateSiteSettings: (newSettings: Partial<SiteSettings>): SiteSettings => {
+    loadFromDb();
+    siteSettings = {
+      ...siteSettings,
+      ...newSettings,
+    };
+    saveToDb();
+    return { ...siteSettings };
+  },
+
+  getSiteSettingsAsync: async (): Promise<SiteSettings> => {
+    loadFromDb();
+    await syncFromMongo();
+    return DataStore.getSiteSettings();
+  },
+
+  updateSiteSettingsAsync: async (newSettings: Partial<SiteSettings>): Promise<SiteSettings> => {
+    const updated = DataStore.updateSiteSettings(newSettings);
+    try {
+      const conn = await connectToDatabase();
+      if (conn) {
+        await SiteSettingsModel.findOneAndUpdate(
+          { id: 'site_settings' },
+          { $set: { id: 'site_settings', ...updated } },
+          { upsert: true, new: true }
+        );
+        lastMongoSyncTime = 0;
+      }
+    } catch (err) {
+      console.error('Failed to update SiteSettings in MongoDB:', err);
+    }
+    return updated;
   },
 
   adjustInventoryAsync: async (batchCode: string, change: number, reason: string, adminName: string): Promise<InventoryAdjustment> => {

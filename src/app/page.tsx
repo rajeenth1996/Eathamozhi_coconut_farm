@@ -3,14 +3,21 @@ import { DataStore } from '@/lib/dataStore';
 import LiveStockTerminal from '@/components/LiveStockTerminal';
 import PlantingCalculator from '@/components/PlantingCalculator';
 import HeroVideo from '@/components/HeroVideo';
+import ImageCarousel from '@/components/ImageCarousel';
 
 export const dynamic = 'force-dynamic';
 
 export default async function Home() {
-  const batches = await DataStore.getBatchesAsync();
-  const currentBatch = await DataStore.getOldestAvailableBatchAsync();
-  const motherPalms = await DataStore.getParentPalmsAsync();
+  const allBatches = await DataStore.getBatchesAsync();
+  const visibleBatches = allBatches.filter(b => b.isVisible !== false);
+  const currentBatch = visibleBatches.find(b => (b.availableQuantity ?? 0) > 0 && b.status !== 'COMING_SOON') || visibleBatches[0];
+  const allMotherPalms = await DataStore.getParentPalmsAsync();
+  const visibleMotherPalms = allMotherPalms.filter(p => p.isVisible !== false);
   const reviews = await DataStore.getReviewsAsync();
+
+  // Only populated with batches and mother trees that have their customer visibility toggle turned ON
+  const batches = visibleBatches;
+  const motherPalms = visibleMotherPalms;
 
   return (
     <>
@@ -156,58 +163,62 @@ export default async function Home() {
                 <div key={palm.id} className="col-md-6 col-lg-3">
                   <div className="card h-100 border-0 shadow-sm rounded-4 overflow-hidden hover-lift bg-white">
                     <div className="position-relative" style={{ height: '200px' }}>
-                      <img 
-                        src={palm.images && palm.images.length > 0 ? palm.images[0] : '/images/placeholder.png'} 
-                        alt={palm.name} 
-                        className="w-100 h-100 object-fit-cover"
+                      <ImageCarousel 
+                        images={palm.images && palm.images.length > 0 ? palm.images : ['/images/placeholder.png']} 
+                        title={palm.name} 
+                        subtitle={`${palm.code} • ${palm.age} Yrs Old • ${palm.location}`}
+                        carouselId={`home-palm-${palm.code}`} 
+                        height="200px" 
+                        showThumbnails={false} 
+                        objectFit="cover" 
                       />
-                      <div className="position-absolute top-0 start-0 m-2">
+                      <div className="position-absolute top-0 start-0 m-2" style={{ pointerEvents: 'none', zIndex: 3 }}>
                         <span className="badge bg-dark bg-opacity-75">{palm.code}</span>
                       </div>
-                      <div className="position-absolute top-0 end-0 m-2">
+                      <div className="position-absolute top-0 end-0 m-2" style={{ pointerEvents: 'none', zIndex: 3 }}>
                         <span className="badge bg-warning text-dark fw-bold">{palm.age} Yrs</span>
                       </div>
                     </div>
 
-                    <div className="card-body p-3 d-flex flex-column justify-content-between">
-                      <div>
-                        <h6 className="fw-bold text-dark mb-1">{palm.name}</h6>
-                        <small className="text-muted d-block mb-2">
-                          <i className="bi bi-geo-alt-fill text-danger me-1"></i> {palm.location}
-                        </small>
-                        <div className="d-flex gap-1 mb-2 flex-wrap">
-                          <span className="badge bg-success-subtle text-success border border-success extra-small">{palm.healthStatus.split(' ')[0]}</span>
+                      <div className="card-body p-3 d-flex flex-column justify-content-between">
+                        <div>
+                          <h6 className="fw-bold text-dark mb-1">{palm.name}</h6>
+                          <small className="text-muted d-block mb-2">
+                            <i className="bi bi-geo-alt-fill text-danger me-1"></i> {palm.location}
+                          </small>
+                          <div className="d-flex gap-1 mb-2 flex-wrap">
+                            <span className="badge bg-success-subtle text-success border border-success extra-small">{palm.healthStatus.split(' ')[0]}</span>
+                          </div>
+                          <p className="extra-small text-secondary mb-1" style={{ overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                            {palm.yieldHistory}
+                          </p>
+                          <p className="extra-small text-primary mb-2" style={{ overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                            <i className="bi bi-droplet-half me-1"></i>{palm.nutCharacteristics}
+                          </p>
                         </div>
-                        <p className="extra-small text-secondary mb-1" style={{ overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-                          {palm.yieldHistory}
-                        </p>
-                        <p className="extra-small text-primary mb-2" style={{ overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-                          <i className="bi bi-droplet-half me-1"></i>{palm.nutCharacteristics}
-                        </p>
-                      </div>
 
-                      <Link 
-                        href={`/parent-palm/${palm.code}`} 
-                        className="btn btn-outline-success btn-sm w-100 fw-semibold rounded-3"
-                      >
-                        Inspect Full Profile <i className="bi bi-arrow-right ms-1"></i>
-                      </Link>
+                        <Link 
+                          href={`/parent-palm/${palm.code}`} 
+                          className="btn btn-outline-success btn-sm w-100 fw-semibold rounded-3"
+                        >
+                          Inspect Full Profile <i className="bi bi-arrow-right ms-1"></i>
+                        </Link>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))
+                ))
+              )}
+            </div>
+
+            {motherPalms.length > 0 && (
+              <div className="text-center mt-4">
+                <Link href="/farm" className="btn btn-outline-dark px-4 py-2 rounded-3 fw-semibold">
+                  Explore All {motherPalms.length} Verified Mother Trees <i className="bi bi-arrow-right ms-1"></i>
+                </Link>
+              </div>
             )}
           </div>
-
-          {motherPalms.length > 0 && (
-            <div className="text-center mt-4">
-              <Link href="/farm" className="btn btn-outline-dark px-4 py-2 rounded-3 fw-semibold">
-                Explore All {motherPalms.length} Verified Mother Trees <i className="bi bi-arrow-right ms-1"></i>
-              </Link>
-            </div>
-          )}
-        </div>
-      </section>
+        </section>
 
       {/* 5. WHY EATHAMOZHI TALL? (GI BENEFITS) */}
       <section className="py-5 bg-white border-top border-bottom">

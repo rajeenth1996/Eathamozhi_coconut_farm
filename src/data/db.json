@@ -15,7 +15,8 @@
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792908312/eathamozhi-farm/parent-palms/899154b3-451e-4678-a6ef-7b2128a1195c-1792908312336.jpg",
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792916293/eathamozhi-farm/parent-palms/f0274266-e1bd-49fb-b436-27ba6c6073aa-1792916293471.jpg",
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792917083/eathamozhi-farm/parent-palms/77702e7b-a728-49be-95fb-5fb93df65088-1792917083071.jpg"
-      ]
+      ],
+      "isVisible": false
     },
     {
       "id": "mp-2",
@@ -32,7 +33,8 @@
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792908410/eathamozhi-farm/parent-palms/75097bcf-a3cf-4f02-95c6-3aa5b9b94923-1792908409986.jpg",
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792916387/eathamozhi-farm/parent-palms/5b9123e7-94b3-4a6c-b51d-869d5f2fac34-1792916387222.jpg",
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792918139/eathamozhi-farm/parent-palms/d5d287ac-6b3a-4f6b-a7ce-7e313ed56641-1792918139894.jpg"
-      ]
+      ],
+      "isVisible": false
     },
     {
       "id": "mp-3",
@@ -48,7 +50,8 @@
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909198/eathamozhi-farm/parent-palms/c631bea4-2262-4fa4-a078-a60bfc2a719f-1792909198376.jpg",
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792914245/eathamozhi-farm/parent-palms/9509b6c7-afb2-490f-8eeb-287076bcfdd4-1792914245243.jpg"
-      ]
+      ],
+      "isVisible": false
     },
     {
       "id": "mp-4",
@@ -63,7 +66,8 @@
       "whySelected": "Selected for quick 4-month germination and robust initial root anchorage.",
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792913197/eathamozhi-farm/parent-palms/3dbcbfa9-b41d-44c7-9fe8-156cdee9004a-1792913197403.jpg"
-      ]
+      ],
+      "isVisible": false
     },
     {
       "id": "mp-5",
@@ -78,7 +82,8 @@
       "whySelected": "Proven drought tolerance and high pest immunity.",
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792908312/eathamozhi-farm/parent-palms/899154b3-451e-4678-a6ef-7b2128a1195c-1792908312336.jpg"
-      ]
+      ],
+      "isVisible": false
     },
     {
       "id": "mp-6",
@@ -93,7 +98,8 @@
       "whySelected": "Top candidate for commercial oil-yielding coconut orchards.",
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792908410/eathamozhi-farm/parent-palms/75097bcf-a3cf-4f02-95c6-3aa5b9b94923-1792908409986.jpg"
-      ]
+      ],
+      "isVisible": true
     },
     {
       "id": "mp-7",
@@ -108,7 +114,8 @@
       "whySelected": "Unbeatable genetic stability and longevity.",
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909198/eathamozhi-farm/parent-palms/c631bea4-2262-4fa4-a078-a60bfc2a719f-1792909198376.jpg"
-      ]
+      ],
+      "isVisible": true
     },
     {
       "id": "mp-8",
@@ -123,7 +130,8 @@
       "whySelected": "Fastest farm sprout emergence rate on record.",
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792913197/eathamozhi-farm/parent-palms/3dbcbfa9-b41d-44c7-9fe8-156cdee9004a-1792913197403.jpg"
-      ]
+      ],
+      "isVisible": true
     },
     {
       "id": "mp-9",
@@ -138,7 +146,8 @@
       "whySelected": "Ideal for rain-fed agricultural fields.",
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792908312/eathamozhi-farm/parent-palms/899154b3-451e-4678-a6ef-7b2128a1195c-1792908312336.jpg"
-      ]
+      ],
+      "isVisible": true
     },
     {
       "id": "mp-10",
@@ -153,7 +162,8 @@
       "whySelected": "Popular dual-purpose tender/mature coconut seedling lineage.",
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792908410/eathamozhi-farm/parent-palms/75097bcf-a3cf-4f02-95c6-3aa5b9b94923-1792908409986.jpg"
-      ]
+      ],
+      "isVisible": true
     },
     {
       "id": "mp-1792918140787",
@@ -168,7 +178,8 @@
       "whySelected": "Consistently high yield for over 40 years without dropping premature buttons.",
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792918139/eathamozhi-farm/parent-palms/d5d287ac-6b3a-4f6b-a7ce-7e313ed56641-1792918139894.jpg"
-      ]
+      ],
+      "isVisible": true
     }
   ],
   "batches": [
@@ -196,7 +207,8 @@
       "viewsCount": 0,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792893909/eathamozhy-farm/batches/74cbbdcb-f064-459c-9267-d045737e799c-1792893907395.jpg"
-      ]
+      ],
+      "isVisible": false
     },
     {
       "id": "b-1",
@@ -209,18 +221,21 @@
       "name": "January 2026 Ready Batch (EM-0126-A)",
       "harvestDate": "2025-09-10",
       "seededDate": "2025-09-25",
+      "age": "13 Months",
+      "height": "6.0+ ft (Ready for Field Planting)",
       "totalQuantity": 500,
       "bookedQuantity": 475,
       "inventoryAdjustments": 0,
       "price": 150,
-      "status": "AVAILABLE",
+      "status": "LIMITED",
       "description": "Fully matured 12-month saplings ready for immediate orchard planting. Strong root systems and thick collars.",
-      "viewsCount": 17,
+      "viewsCount": 27,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909327/eathamozhi-farm/batches/25b2b6ad-0a44-47b6-a4b4-a45d1e426cca-1792909327401.jpg",
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909391/eathamozhi-farm/batches/5700477e-967d-4133-9a99-76560430a143-1792909391250.jpg",
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792893909/eathamozhy-farm/batches/74cbbdcb-f064-459c-9267-d045737e799c-1792893907395.jpg"
-      ]
+      ],
+      "isVisible": false
     },
     {
       "id": "b-2",
@@ -233,17 +248,20 @@
       "name": "February 2026 Prime Batch (EM-0226-B)",
       "harvestDate": "2025-10-05",
       "seededDate": "2025-10-20",
+      "age": "12 Months",
+      "height": "4.5–6.0 ft",
       "totalQuantity": 450,
       "bookedQuantity": 0,
       "inventoryAdjustments": 0,
       "price": 150,
       "status": "AVAILABLE",
       "description": "Vigorous 11-month saplings from River Bank parent tree. High leaf frond count and dark green color.",
-      "viewsCount": 2,
+      "viewsCount": 6,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909391/eathamozhi-farm/batches/5700477e-967d-4133-9a99-76560430a143-1792909391250.jpg",
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792888376/eathamozhy-farm/batches/b76f3226-817a-4ae2-8511-d66aeb861dca-1792888375115.jpg"
-      ]
+      ],
+      "isVisible": false
     },
     {
       "id": "b-3",
@@ -256,6 +274,8 @@
       "name": "March 2026 Coastal Batch (EM-0326-C)",
       "harvestDate": "2025-11-01",
       "seededDate": "2025-11-15",
+      "age": "11 Months",
+      "height": "4.5–6.0 ft",
       "totalQuantity": 600,
       "bookedQuantity": 0,
       "inventoryAdjustments": 0,
@@ -265,7 +285,8 @@
       "viewsCount": 1,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792893909/eathamozhy-farm/batches/74cbbdcb-f064-459c-9267-d045737e799c-1792893907395.jpg"
-      ]
+      ],
+      "isVisible": false
     },
     {
       "id": "b-4",
@@ -287,7 +308,8 @@
       "viewsCount": 0,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909327/eathamozhi-farm/batches/25b2b6ad-0a44-47b6-a4b4-a45d1e426cca-1792909327401.jpg"
-      ]
+      ],
+      "isVisible": true
     },
     {
       "id": "b-5",
@@ -309,7 +331,8 @@
       "viewsCount": 0,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909391/eathamozhi-farm/batches/5700477e-967d-4133-9a99-76560430a143-1792909391250.jpg"
-      ]
+      ],
+      "isVisible": true
     },
     {
       "id": "b-6",
@@ -331,7 +354,8 @@
       "viewsCount": 0,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792893909/eathamozhy-farm/batches/74cbbdcb-f064-459c-9267-d045737e799c-1792893907395.jpg"
-      ]
+      ],
+      "isVisible": true
     },
     {
       "id": "b-7",
@@ -353,7 +377,8 @@
       "viewsCount": 0,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909327/eathamozhi-farm/batches/25b2b6ad-0a44-47b6-a4b4-a45d1e426cca-1792909327401.jpg"
-      ]
+      ],
+      "isVisible": true
     },
     {
       "id": "b-8",
@@ -375,7 +400,8 @@
       "viewsCount": 0,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909391/eathamozhi-farm/batches/5700477e-967d-4133-9a99-76560430a143-1792909391250.jpg"
-      ]
+      ],
+      "isVisible": true
     },
     {
       "id": "b-9",
@@ -397,7 +423,8 @@
       "viewsCount": 0,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792893909/eathamozhy-farm/batches/74cbbdcb-f064-459c-9267-d045737e799c-1792893907395.jpg"
-      ]
+      ],
+      "isVisible": true
     },
     {
       "id": "b-10",
@@ -419,7 +446,8 @@
       "viewsCount": 1,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909327/eathamozhi-farm/batches/25b2b6ad-0a44-47b6-a4b4-a45d1e426cca-1792909327401.jpg"
-      ]
+      ],
+      "isVisible": true
     }
   ],
   "bookings": [
@@ -652,142 +680,523 @@
   ],
   "pageViews": [
     {
-      "id": "pv-1793107051532-591",
-      "sessionId": "sess_1793106034224_kyaca3p",
-      "path": "/farm",
+      "id": "pv-1793305463452-133",
+      "sessionId": "sess_1793296994170_mnjec6s",
+      "path": "/",
       "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
-      "referrer": "http://localhost:3000/farm",
+      "referrer": "http://localhost:3000/admin/batches",
       "referrerSource": "localhost",
       "device": "desktop",
-      "screenSize": "1536x695",
-      "timestamp": "2026-10-27T13:17:31.532Z"
+      "screenSize": "1528x732",
+      "timestamp": "2026-10-29T20:24:23.452Z"
     },
     {
-      "id": "pv-1793107051496-365",
-      "sessionId": "sess_1793106034224_kyaca3p",
-      "path": "/farm",
+      "id": "pv-1793305453198-255",
+      "sessionId": "sess_1793304481859_flf2up7",
+      "path": "/parent-palm/EM-MP-006",
       "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
-      "referrer": "http://localhost:3000/farm",
+      "referrer": "http://localhost:3000/admin/mother-trees",
       "referrerSource": "localhost",
       "device": "desktop",
-      "screenSize": "1536x695",
-      "timestamp": "2026-10-27T13:17:31.496Z"
+      "screenSize": "1528x732",
+      "timestamp": "2026-10-29T20:24:13.198Z"
     },
     {
-      "id": "pv-1793106057146-420",
-      "sessionId": "sess_1793106034224_kyaca3p",
-      "path": "/farm",
-      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
-      "referrer": "",
-      "referrerSource": "Direct / Bookmark",
-      "device": "desktop",
-      "screenSize": "1536x695",
-      "timestamp": "2026-10-27T13:00:57.146Z"
-    },
-    {
-      "id": "pv-1793106034397-904",
-      "sessionId": "sess_1793106034224_kyaca3p",
-      "path": "/farm",
-      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
-      "referrer": "",
-      "referrerSource": "Direct / Bookmark",
-      "device": "desktop",
-      "screenSize": "1536x695",
-      "timestamp": "2026-10-27T13:00:34.397Z"
-    },
-    {
-      "id": "pv-1792953151867-360",
-      "sessionId": "sess_1792913091087_ndcxpjn",
-      "path": "/farm",
-      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
-      "referrer": "http://localhost:3000/farm",
+      "id": "pv-1793304550860-172",
+      "sessionId": "sess_1793296994170_mnjec6s",
+      "path": "/",
+      "title": "",
+      "referrer": "http://localhost:3000/",
       "referrerSource": "localhost",
       "device": "desktop",
-      "screenSize": "1536x695",
-      "timestamp": "2026-10-25T18:32:31.867Z"
+      "screenSize": "1528x732",
+      "timestamp": "2026-10-29T20:09:10.860Z"
     },
     {
-      "id": "pv-1792926861505-680",
-      "sessionId": "sess_1792913091087_ndcxpjn",
-      "path": "/farm",
-      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
-      "referrer": "http://localhost:3000/farm",
+      "id": "pv-1793304549220-462",
+      "sessionId": "sess_1793296994170_mnjec6s",
+      "path": "/about",
+      "title": "",
+      "referrer": "http://localhost:3000/",
       "referrerSource": "localhost",
       "device": "desktop",
-      "screenSize": "1536x695",
-      "timestamp": "2026-10-25T11:14:21.505Z"
+      "screenSize": "1528x732",
+      "timestamp": "2026-10-29T20:09:09.220Z"
     },
     {
-      "id": "pv-1792926326035-4",
-      "sessionId": "sess_1792923401236_f53ulm6",
-      "path": "/book/EM-0126-A",
-      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
-      "referrer": "http://localhost:3000/book/EM-0126-A",
+      "id": "pv-1793304547636-71",
+      "sessionId": "sess_1793296994170_mnjec6s",
+      "path": "/guide",
+      "title": "",
+      "referrer": "http://localhost:3000/",
       "referrerSource": "localhost",
       "device": "desktop",
-      "screenSize": "1536x695",
-      "timestamp": "2026-10-25T11:05:26.035Z"
+      "screenSize": "1528x732",
+      "timestamp": "2026-10-29T20:09:07.636Z"
     },
     {
-      "id": "pv-1792926277759-869",
-      "sessionId": "sess_1792923401236_f53ulm6",
-      "path": "/book/EM-0126-A",
+      "id": "pv-1793304545914-444",
+      "sessionId": "sess_1793296994170_mnjec6s",
+      "path": "/reviews",
+      "title": "",
+      "referrer": "http://localhost:3000/",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-10-29T20:09:05.914Z"
+    },
+    {
+      "id": "pv-1793304542291-6",
+      "sessionId": "sess_1793296994170_mnjec6s",
+      "path": "/tracking",
+      "title": "",
+      "referrer": "http://localhost:3000/",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-10-29T20:09:02.291Z"
+    },
+    {
+      "id": "pv-1793304534306-867",
+      "sessionId": "sess_1793296994170_mnjec6s",
+      "path": "/batches",
+      "title": "",
+      "referrer": "http://localhost:3000/",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-10-29T20:08:54.306Z"
+    },
+    {
+      "id": "pv-1793304481873-838",
+      "sessionId": "sess_1793304481859_flf2up7",
+      "path": "/parent-palm/EM-MP-006",
+      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
+      "referrer": "http://localhost:3000/admin/mother-trees",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-10-29T20:08:01.873Z"
+    },
+    {
+      "id": "pv-1793304429340-938",
+      "sessionId": "sess_1793296994170_mnjec6s",
+      "path": "/",
+      "title": "",
+      "referrer": "http://localhost:3000/",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-10-29T20:07:09.340Z"
+    },
+    {
+      "id": "pv-1793304408148-475",
+      "sessionId": "sess_1793296994170_mnjec6s",
+      "path": "/batches",
       "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
       "referrer": "http://localhost:3000/",
       "referrerSource": "localhost",
       "device": "desktop",
-      "screenSize": "1536x695",
-      "timestamp": "2026-10-25T11:04:37.759Z"
+      "screenSize": "1528x732",
+      "timestamp": "2026-10-29T20:06:48.148Z"
     },
     {
-      "id": "pv-1792926256996-171",
-      "sessionId": "sess_1792923401236_f53ulm6",
+      "id": "pv-1793304402574-730",
+      "sessionId": "sess_1793296994170_mnjec6s",
       "path": "/",
       "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
       "referrer": "http://localhost:3000/",
       "referrerSource": "localhost",
       "device": "desktop",
-      "screenSize": "1536x695",
-      "timestamp": "2026-10-25T11:04:16.996Z"
+      "screenSize": "1528x732",
+      "timestamp": "2026-10-29T20:06:42.574Z"
+    },
+    {
+      "id": "pv-1793304373091-235",
+      "sessionId": "sess_1793301400555_rrj0fsj",
+      "path": "/",
+      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
+      "referrer": "http://localhost:3000/",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-10-29T20:06:13.091Z"
+    },
+    {
+      "id": "pv-1793304365651-973",
+      "sessionId": "sess_1793301454473_slytupj",
+      "path": "/batches",
+      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
+      "referrer": "http://localhost:3000/",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-10-29T20:06:05.651Z"
+    },
+    {
+      "id": "pv-1793304273854-322",
+      "sessionId": "sess_1793301454473_slytupj",
+      "path": "/batches",
+      "title": "",
+      "referrer": "http://localhost:3000/",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-10-29T20:04:33.854Z"
+    },
+    {
+      "id": "pv-1793304252754-255",
+      "sessionId": "sess_1793301454473_slytupj",
+      "path": "/",
+      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
+      "referrer": "http://localhost:3000/",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-10-29T20:04:12.754Z"
+    },
+    {
+      "id": "pv-1793304192000-362",
+      "sessionId": "sess_1793301454473_slytupj",
+      "path": "/",
+      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
+      "referrer": "http://localhost:3000/",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-10-29T20:03:12.000Z"
+    },
+    {
+      "id": "pv-1793303927295-468",
+      "sessionId": "sess_1793301454473_slytupj",
+      "path": "/",
+      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
+      "referrer": "http://localhost:3000/",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-10-29T19:58:47.295Z"
+    },
+    {
+      "id": "pv-1793302027395-213",
+      "sessionId": "sess_1793301454473_slytupj",
+      "path": "/",
+      "title": "",
+      "referrer": "http://localhost:3000/admin",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-10-29T19:27:07.395Z"
+    },
+    {
+      "id": "pv-1793302025052-26",
+      "sessionId": "sess_1793301454473_slytupj",
+      "path": "/tracking",
+      "title": "",
+      "referrer": "http://localhost:3000/admin",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-10-29T19:27:05.052Z"
+    },
+    {
+      "id": "pv-1793302022161-450",
+      "sessionId": "sess_1793301454473_slytupj",
+      "path": "/reviews",
+      "title": "",
+      "referrer": "http://localhost:3000/admin",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-10-29T19:27:02.161Z"
+    },
+    {
+      "id": "pv-1793302020533-71",
+      "sessionId": "sess_1793301454473_slytupj",
+      "path": "/guide",
+      "title": "",
+      "referrer": "http://localhost:3000/admin",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-10-29T19:27:00.533Z"
+    },
+    {
+      "id": "pv-1793301998894-56",
+      "sessionId": "sess_1793301454473_slytupj",
+      "path": "/batches",
+      "title": "",
+      "referrer": "http://localhost:3000/admin",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-10-29T19:26:38.894Z"
+    },
+    {
+      "id": "pv-1793301997907-852",
+      "sessionId": "sess_1793301454473_slytupj",
+      "path": "/farm",
+      "title": "",
+      "referrer": "http://localhost:3000/admin",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-10-29T19:26:37.907Z"
+    },
+    {
+      "id": "pv-1793301939386-51",
+      "sessionId": "sess_1793301454473_slytupj",
+      "path": "/book/EM-0126-A",
+      "title": "",
+      "referrer": "http://localhost:3000/admin",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-10-29T19:25:39.386Z"
+    },
+    {
+      "id": "pv-1793301932792-34",
+      "sessionId": "sess_1793301454473_slytupj",
+      "path": "/batches",
+      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
+      "referrer": "http://localhost:3000/admin",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-10-29T19:25:32.792Z"
+    },
+    {
+      "id": "pv-1793301510293-261",
+      "sessionId": "sess_1793301419327_jw16b4x",
+      "path": "/",
+      "title": "",
+      "referrer": "",
+      "referrerSource": "Direct / Bookmark",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-10-29T19:18:30.293Z"
+    },
+    {
+      "id": "pv-1793301464456-582",
+      "sessionId": "sess_1793301454473_slytupj",
+      "path": "/",
+      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
+      "referrer": "http://localhost:3000/admin",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-10-29T19:17:44.456Z"
+    },
+    {
+      "id": "pv-1793301454489-476",
+      "sessionId": "sess_1793301454473_slytupj",
+      "path": "/",
+      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
+      "referrer": "http://localhost:3000/admin",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-10-29T19:17:34.489Z"
+    },
+    {
+      "id": "pv-1793301424708-933",
+      "sessionId": "sess_1793301419327_jw16b4x",
+      "path": "/batches",
+      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
+      "referrer": "",
+      "referrerSource": "Direct / Bookmark",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-10-29T19:17:04.708Z"
+    },
+    {
+      "id": "pv-1793301419352-599",
+      "sessionId": "sess_1793301419327_jw16b4x",
+      "path": "/batches",
+      "title": "",
+      "referrer": "",
+      "referrerSource": "Direct / Bookmark",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-10-29T19:16:59.352Z"
+    },
+    {
+      "id": "pv-1793301400692-998",
+      "sessionId": "sess_1793301400555_rrj0fsj",
+      "path": "/",
+      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
+      "referrer": "http://localhost:3000/admin",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-10-29T19:16:40.692Z"
+    },
+    {
+      "id": "pv-1793299670753-617",
+      "sessionId": "sess_1793296994170_mnjec6s",
+      "path": "/",
+      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
+      "referrer": "",
+      "referrerSource": "Direct / Bookmark",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-10-29T18:47:50.753Z"
+    },
+    {
+      "id": "pv-1793297678954-193",
+      "sessionId": "sess_1793296994170_mnjec6s",
+      "path": "/",
+      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
+      "referrer": "",
+      "referrerSource": "Direct / Bookmark",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-10-29T18:14:38.954Z"
+    },
+    {
+      "id": "pv-1793297642542-105",
+      "sessionId": "sess_1793296994170_mnjec6s",
+      "path": "/batches",
+      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
+      "referrer": "",
+      "referrerSource": "Direct / Bookmark",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-10-29T18:14:02.542Z"
+    },
+    {
+      "id": "pv-1793297597550-476",
+      "sessionId": "sess_1793296994170_mnjec6s",
+      "path": "/batches",
+      "title": "",
+      "referrer": "",
+      "referrerSource": "Direct / Bookmark",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-10-29T18:13:17.550Z"
+    },
+    {
+      "id": "pv-1793297562828-377",
+      "sessionId": "sess_1793296994170_mnjec6s",
+      "path": "/",
+      "title": "",
+      "referrer": "",
+      "referrerSource": "Direct / Bookmark",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-10-29T18:12:42.828Z"
+    },
+    {
+      "id": "pv-1793297321364-858",
+      "sessionId": "sess_1793296994170_mnjec6s",
+      "path": "/batches",
+      "title": "",
+      "referrer": "",
+      "referrerSource": "Direct / Bookmark",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-10-29T18:08:41.364Z"
+    },
+    {
+      "id": "pv-1793297306688-634",
+      "sessionId": "sess_1793296994170_mnjec6s",
+      "path": "/farm",
+      "title": "",
+      "referrer": "",
+      "referrerSource": "Direct / Bookmark",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-10-29T18:08:26.688Z"
+    },
+    {
+      "id": "pv-1793296998621-163",
+      "sessionId": "sess_1793296994170_mnjec6s",
+      "path": "/",
+      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
+      "referrer": "",
+      "referrerSource": "Direct / Bookmark",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-10-29T18:03:18.621Z"
     }
   ],
   "visitorJourneys": [
     {
-      "sessionId": "sess_1793106034224_kyaca3p",
-      "startedAt": "2026-10-27T13:00:34.397Z",
-      "lastActiveAt": "2026-10-27T13:17:31.532Z",
-      "device": "desktop",
-      "referrerSource": "Direct / Bookmark",
-      "pathCount": 4,
-      "steps": [
-        "/farm"
-      ],
-      "convertedToOrder": false
-    },
-    {
-      "sessionId": "sess_1792913091087_ndcxpjn",
-      "startedAt": "2026-10-25T11:14:21.505Z",
-      "lastActiveAt": "2026-10-25T18:32:31.867Z",
+      "sessionId": "sess_1793304481859_flf2up7",
+      "startedAt": "2026-10-29T20:08:01.873Z",
+      "lastActiveAt": "2026-10-29T20:24:13.198Z",
       "device": "desktop",
       "referrerSource": "localhost",
       "pathCount": 2,
       "steps": [
-        "/farm"
+        "/parent-palm/EM-MP-006"
       ],
       "convertedToOrder": false
     },
     {
-      "sessionId": "sess_1792923401236_f53ulm6",
-      "startedAt": "2026-10-25T11:04:16.996Z",
-      "lastActiveAt": "2026-10-25T11:05:26.035Z",
+      "sessionId": "sess_1793301454473_slytupj",
+      "startedAt": "2026-10-29T19:17:34.489Z",
+      "lastActiveAt": "2026-10-29T20:06:05.651Z",
       "device": "desktop",
       "referrerSource": "localhost",
-      "pathCount": 3,
+      "pathCount": 15,
       "steps": [
         "/",
-        "/book/EM-0126-A"
+        "/batches",
+        "/book/EM-0126-A",
+        "/farm",
+        "/guide",
+        "/reviews",
+        "/tracking"
+      ],
+      "convertedToOrder": false
+    },
+    {
+      "sessionId": "sess_1793301419327_jw16b4x",
+      "startedAt": "2026-10-29T19:16:59.352Z",
+      "lastActiveAt": "2026-10-29T19:18:30.293Z",
+      "device": "desktop",
+      "referrerSource": "Direct / Bookmark",
+      "pathCount": 3,
+      "steps": [
+        "/batches",
+        "/"
+      ],
+      "convertedToOrder": false
+    },
+    {
+      "sessionId": "sess_1793301400555_rrj0fsj",
+      "startedAt": "2026-10-29T19:16:40.692Z",
+      "lastActiveAt": "2026-10-29T20:06:13.091Z",
+      "device": "desktop",
+      "referrerSource": "localhost",
+      "pathCount": 2,
+      "steps": [
+        "/"
+      ],
+      "convertedToOrder": false
+    },
+    {
+      "sessionId": "sess_1793296994170_mnjec6s",
+      "startedAt": "2026-10-29T18:03:18.621Z",
+      "lastActiveAt": "2026-10-29T20:24:23.452Z",
+      "device": "desktop",
+      "referrerSource": "Direct / Bookmark",
+      "pathCount": 18,
+      "steps": [
+        "/",
+        "/farm",
+        "/batches",
+        "/tracking",
+        "/reviews",
+        "/guide",
+        "/about"
       ],
       "convertedToOrder": false
     }
-  ]
+  ],
+  "siteSettings": {
+    "showBatchesOnMainPage": true,
+    "showMotherTreesOnMainPage": true
+  }
 }
