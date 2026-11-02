@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import AdminNav from '@/components/AdminNav';
 import * as XLSX from 'xlsx';
 
 export default function AdminOrdersPage() {
@@ -212,6 +213,7 @@ export default function AdminOrdersPage() {
 
   return (
     <>
+      <AdminNav />
       <section className="bg-dark text-white py-3 border-bottom">
         <div className="container d-flex flex-wrap justify-content-between align-items-center gap-2">
           <div>
@@ -753,7 +755,29 @@ export default function AdminOrdersPage() {
                             </small>
                           )}
                         </td>
-                        <td><span className="badge bg-secondary">{ord.batchCode}</span></td>
+                        <td>
+                          <span className="badge bg-secondary font-monospace d-block mb-1">{ord.batchCode}</span>
+                          {ord.sourceFarmCode && (
+                            <span className="badge bg-info-subtle text-info border extra-small d-block mb-1">
+                              Farm: {ord.sourceFarmCode}
+                            </span>
+                          )}
+                          {ord.isMixedSource ? (
+                            <span className="badge bg-warning text-dark extra-small d-block mb-1">
+                              Multi-Source
+                            </span>
+                          ) : ord.sourceMotherTreeCode ? (
+                            <span className="badge bg-success-subtle text-success border extra-small d-block mb-1">
+                              MT: {ord.sourceMotherTreeCode}
+                            </span>
+                          ) : null}
+                          <Link
+                            href={`/admin/traceability?query=${encodeURIComponent(ord.bookingId)}`}
+                            className="btn btn-outline-success btn-sm py-0 px-2 extra-small rounded-pill d-inline-flex align-items-center gap-1 mt-1"
+                          >
+                            <i className="bi bi-diagram-3"></i> Trace
+                          </Link>
+                        </td>
                         <td><strong className="fs-6">{ord.quantity} Saplings</strong></td>
                         {/* Order Type & Total */}
                         <td>

@@ -6,7 +6,17 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const includeHidden = searchParams.get('all') === 'true' || searchParams.get('admin') === 'true';
-  const batches = await DataStore.getBatchesAsync();
+  const farmCode = searchParams.get('farmCode')?.toLowerCase();
+  
+  let batches = await DataStore.getBatchesAsync();
+
+  if (farmCode && farmCode !== 'all') {
+    batches = batches.filter(b => 
+      b.primaryFarmCode?.toLowerCase() === farmCode ||
+      b.sources?.some(s => s.farmCode.toLowerCase() === farmCode)
+    );
+  }
+
   if (includeHidden) {
     return NextResponse.json(batches);
   }
@@ -16,10 +26,6 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    if (!body.batchCode) {
-      return NextResponse.json({ error: 'batchCode is required' }, { status: 400 });
-    }
-
     const newBatch = await DataStore.addBatchAsync(body);
     return NextResponse.json(newBatch, { status: 201 });
   } catch (err: any) {

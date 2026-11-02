@@ -2,257 +2,245 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import AdminNav from '@/components/AdminNav';
+import AdminLogoutButton from '@/components/AdminLogoutButton';
 import { getSaplingMetrics } from '@/lib/metrics';
 import ImageCarousel from '@/components/ImageCarousel';
 
+interface SourceItem {
+  farmId: string;
+  farmCode: string;
+  farmName: string;
+  motherTreeId: string;
+  motherTreeCode: string;
+  motherTreeName: string;
+  coconutQuantity: number;
+  collectionDate: string;
+  collectionStatus: 'Collected' | 'Verified' | 'Pending' | 'Rejected';
+  notes: string;
+}
+
 export default function AdminBatchesPage() {
   const [batches, setBatches] = useState<any[]>([]);
+  const [farms, setFarms] = useState<any[]>([]);
   const [parentPalms, setParentPalms] = useState<any[]>([]);
-  const [visibilityFilter, setVisibilityFilter] = useState<'ALL' | 'VISIBLE' | 'HIDDEN'>('ALL');
-  const [togglingBatchCode, setTogglingBatchCode] = useState<string | null>(null);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // File Upload State
+  // Filters & State
+  const [visibilityFilter, setVisibilityFilter] = useState<'ALL' | 'VISIBLE' | 'HIDDEN'>('ALL');
+  const [farmFilter, setFarmFilter] = useState('ALL');
+  const [search, setSearch] = useState('');
+  const [togglingBatchCode, setTogglingBatchCode] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [previewBatch, setPreviewBatch] = useState<any | null>(null);
+
+  // Batch Creation Workflow (Module 4.2)
+  const [primaryFarmCode, setPrimaryFarmCode] = useState('ETH-RA-F001');
+  const [batchSeededDate, setBatchSeededDate] = useState('2026-11-15');
+  const [batchHarvestDate, setBatchHarvestDate] = useState('2026-11-01');
+  const [batchPrice, setBatchPrice] = useState(150);
+  const [batchDescription, setBatchDescription] = useState('');
+  const [batchIsVisible, setBatchIsVisible] = useState(true);
   const [batchFiles, setBatchFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
-  const [uploadedUrls, setUploadedUrls] = useState<string[]>([]);
+  const [submitting, setSubmitting] = useState(false);
 
-  // Edit Batch Modal State
+  // Source selection state
+  const [sourceFarmCode, setSourceFarmCode] = useState('ETH-RA-F001');
+  const [sourcesList, setSourcesList] = useState<SourceItem[]>([]);
+  const [tempTreeQuantities, setTempTreeQuantities] = useState<Record<string, number>>({});
+  const [tempTreeDates, setTempTreeDates] = useState<Record<string, string>>({});
+
+  // Edit Modal State
   const [editingBatch, setEditingBatch] = useState<any | null>(null);
-  const [previewBatch, setPreviewBatch] = useState<any | null>(null);
   const [editPrice, setEditPrice] = useState<number>(150);
   const [editTotalQuantity, setEditTotalQuantity] = useState<number>(500);
   const [editDescription, setEditDescription] = useState<string>('');
   const [editImages, setEditImages] = useState<string[]>([]);
   const [editIsVisible, setEditIsVisible] = useState<boolean>(true);
   const [newImageUrl, setNewImageUrl] = useState<string>('');
-  const [savingImages, setSavingImages] = useState(false);
+  const [savingEdit, setSavingEdit] = useState(false);
 
-  // Auto-generate Batch Code (e.g. EM-1226-D)
-  const generateAutoBatchCode = () => {
-    const d = new Date();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const year = String(d.getFullYear()).slice(-2);
-    const letter = String.fromCharCode(65 + Math.floor(Math.random() * 6));
-    return `EM-${month}${year}-${letter}`;
-  };
-
-  // New Batch Form State
-  const [newBatch, setNewBatch] = useState({
-    batchCode: '',
-    parentPalmCodes: ['EM-MP-014'] as string[],
-    parentPalmCode: 'EM-MP-014',
-    name: 'December 2026 Batch',
-    harvestDate: '2026-01-05',
-    seededDate: '2026-01-15',
-    totalQuantity: 500,
-    price: 150,
-    status: 'AVAILABLE',
-    isVisible: true,
-    description: ''
-  });
-  const [treeSearchTerm, setTreeSearchTerm] = useState('');
-
-  // Edit Batch State
-  const [editParentPalmCodes, setEditParentPalmCodes] = useState<string[]>([]);
-  const [editTreeSearchTerm, setEditTreeSearchTerm] = useState('');
-
-  const toggleNewBatchTree = (code: string) => {
-    setNewBatch(prev => {
-      const exists = prev.parentPalmCodes.includes(code);
-      let nextCodes: string[];
-      if (exists) {
-        if (prev.parentPalmCodes.length <= 1) {
-          alert('A batch must have at least one mother tree assigned.');
-          return prev;
-        }
-        nextCodes = prev.parentPalmCodes.filter(c => c !== code);
-      } else {
-        nextCodes = [...prev.parentPalmCodes, code];
-      }
-      return {
-        ...prev,
-        parentPalmCodes: nextCodes,
-        parentPalmCode: nextCodes[0] || 'EM-MP-001'
-      };
-    });
-  };
-
-  const toggleEditBatchTree = (code: string) => {
-    setEditParentPalmCodes(prev => {
-      const exists = prev.includes(code);
-      if (exists) {
-        if (prev.length <= 1) {
-          alert('A batch must have at least one mother tree assigned.');
-          return prev;
-        }
-        return prev.filter(c => c !== code);
-      } else {
-        return [...prev, code];
-      }
-    });
-  };
-
-  const calculatedMetrics = getSaplingMetrics(newBatch.seededDate);
-
-  const fetchBatchesData = async () => {
+  const fetchInitialData = async () => {
     try {
-      const [batchesData, palmsData] = await Promise.all([
-        fetch('/api/batches?all=true').then(res => res.json()),
-        fetch('/api/parent-palms?all=true').then(res => res.json())
+      const [batchesRes, palmsRes, farmsRes] = await Promise.all([
+        fetch('/api/batches?all=true'),
+        fetch('/api/parent-palms?all=true'),
+        fetch('/api/farms')
       ]);
+      const batchesData = await batchesRes.json();
+      const palmsData = await palmsRes.json();
+      const farmsData = await farmsRes.json();
+
       setBatches(Array.isArray(batchesData) ? batchesData : []);
       setParentPalms(Array.isArray(palmsData) ? palmsData : []);
+      if (Array.isArray(farmsData) && farmsData.length > 0) {
+        setFarms(farmsData);
+        if (!primaryFarmCode) setPrimaryFarmCode(farmsData[0].farmCode);
+        if (!sourceFarmCode) setSourceFarmCode(farmsData[0].farmCode);
+      }
     } catch (err) {
-      console.error('Failed to fetch batches data:', err);
+      console.error('Failed to fetch batches or farms:', err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    setNewBatch(prev => ({ ...prev, batchCode: generateAutoBatchCode() }));
-    fetchBatchesData();
+    fetchInitialData();
   }, []);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setBatchFiles(Array.from(e.target.files));
+  // Compute Preview Batch ID & Full Display Name
+  const getPreviewBatchIdAndName = () => {
+    const d = new Date(batchSeededDate || '2026-11-15');
+    const monthNum = d.getMonth() + 1;
+    const yearNum = d.getFullYear();
+    const monthStr = String(monthNum).padStart(2, '0');
+    const yearStr = String(yearNum);
+    const prefix = `${primaryFarmCode}-${monthStr}${yearStr}`;
+
+    const monthNames = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    const fullMonth = monthNames[monthNum - 1] || 'November';
+
+    let maxSeq = 0;
+    for (const b of batches) {
+      if (b.batchCode && b.batchCode.startsWith(prefix + '-B')) {
+        const num = parseInt(b.batchCode.split('-B')[1], 10);
+        if (!isNaN(num) && num > maxSeq) maxSeq = num;
+      }
     }
+    const batchId = `${prefix}-B${String(maxSeq + 1).padStart(3, '0')}`;
+    const displayName = `${primaryFarmCode} ${batchId} ${fullMonth} ${yearNum}`;
+
+    return { batchId, displayName, monthNum, yearNum };
   };
 
-  const handleUploadFiles = async () => {
-    if (!newBatch.batchCode) {
-      alert('Please enter a Batch Code first');
+  const previewInfo = getPreviewBatchIdAndName();
+
+  // Add tree to sources
+  const handleAddTreeToSources = (tree: any) => {
+    const tCode = tree.motherTreeCode || tree.code;
+    const exists = sourcesList.some(s => s.motherTreeCode === tCode);
+    if (exists) {
+      alert('This mother tree is already added to the batch sources.');
       return;
     }
 
-    if (batchFiles.length === 0) {
-      alert('Please select image files to upload.');
-      return;
-    }
+    const farm = farms.find(f => f.farmCode === (tree.farmCode || sourceFarmCode)) || farms[0];
+    const qty = tempTreeQuantities[tCode] || 100;
+    const date = tempTreeDates[tCode] || batchHarvestDate;
 
-    setUploading(true);
-    const formData = new FormData();
-    batchFiles.forEach(f => formData.append('files', f));
-    formData.append('category', 'batches');
-    formData.append('tag', newBatch.batchCode);
+    const newSource: SourceItem = {
+      farmId: farm?.id || 'farm-eth-ra-f001',
+      farmCode: farm?.farmCode || sourceFarmCode,
+      farmName: farm?.farmName || 'Primary Farm',
+      motherTreeId: tree.id,
+      motherTreeCode: tCode,
+      motherTreeName: tree.name,
+      coconutQuantity: qty,
+      collectionDate: date,
+      collectionStatus: 'Verified',
+      notes: `Collected from verified mother tree ${tCode}`
+    };
 
-    try {
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setUploadedUrls(data.urls);
-        alert(`Uploaded ${data.urls.length} image(s) to Cloudinary!`);
-      } else {
-        alert(data.error || 'Upload failed');
-      }
-    } catch (err) {
-      alert('File upload error');
-    } finally {
-      setUploading(false);
-    }
+    setSourcesList(prev => [...prev, newSource]);
+  };
+
+  const handleRemoveSource = (motherTreeCode: string) => {
+    setSourcesList(prev => prev.filter(s => s.motherTreeCode !== motherTreeCode));
   };
 
   const handleCreateBatch = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (sourcesList.length === 0) {
+      alert('Please add at least one mother tree source to the batch.');
+      return;
+    }
 
-    let finalImages: string[] = uploadedUrls;
+    setSubmitting(true);
+    let uploadedUrls: string[] = [];
 
-    // If files are selected in input but not uploaded yet, upload them automatically
-    if (batchFiles.length > 0 && uploadedUrls.length === 0) {
+    if (batchFiles.length > 0) {
       setUploading(true);
       const formData = new FormData();
       batchFiles.forEach(f => formData.append('files', f));
       formData.append('category', 'batches');
-      formData.append('tag', newBatch.batchCode);
+      formData.append('tag', previewInfo.batchId);
 
       try {
-        const uploadRes = await fetch('/api/upload', {
+        const res = await fetch('/api/upload', {
           method: 'POST',
           body: formData
         });
-        const uploadData = await uploadRes.json();
-        if (uploadRes.ok && uploadData.urls) {
-          finalImages = uploadData.urls;
+        const uploadData = await res.json();
+        if (res.ok && uploadData.urls) {
+          uploadedUrls = uploadData.urls;
         }
       } catch (err) {
-        console.error('Auto upload error during batch creation');
+        console.error('File upload error');
       } finally {
         setUploading(false);
       }
     }
 
-    if (finalImages.length === 0) {
-      finalImages = ['/images/placeholder.png'];
+    if (uploadedUrls.length === 0) {
+      uploadedUrls = ['/images/placeholder.png'];
     }
 
-    if (!newBatch.parentPalmCodes || newBatch.parentPalmCodes.length === 0) {
-      alert('Please select at least one mother tree for this batch.');
-      return;
-    }
+    const totalCoconuts = sourcesList.reduce((sum, s) => sum + s.coconutQuantity, 0);
 
     try {
+      const payload = {
+        batchCode: previewInfo.batchId,
+        primaryFarmCode,
+        name: previewInfo.displayName,
+        harvestDate: batchHarvestDate,
+        seededDate: batchSeededDate,
+        totalQuantity: totalCoconuts,
+        totalCoconuts,
+        price: batchPrice,
+        description: batchDescription,
+        isVisible: batchIsVisible,
+        parentPalmCodes: sourcesList.map(s => s.motherTreeCode),
+        sources: sourcesList.map(s => ({
+          ...s,
+          coconutsSown: s.coconutQuantity,
+          germinatedQuantity: s.coconutQuantity,
+          rejectedQuantity: 0
+        })),
+        images: uploadedUrls
+      };
+
       const res = await fetch('/api/batches', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...newBatch,
-          parentPalmCode: newBatch.parentPalmCodes[0],
-          images: finalImages
-        })
+        body: JSON.stringify(payload)
       });
 
       if (res.ok) {
-        alert(`Batch ${newBatch.batchCode} added successfully!`);
-        fetchBatchesData();
-        setUploadedUrls([]);
+        alert(`✅ Batch ${previewInfo.batchId} created successfully with ${sourcesList.length} sources!`);
+        fetchInitialData();
+        setSourcesList([]);
         setBatchFiles([]);
-        setNewBatch({
-          batchCode: generateAutoBatchCode(),
-          parentPalmCodes: ['EM-MP-014'],
-          parentPalmCode: 'EM-MP-014',
-          name: 'December 2026 Batch',
-          harvestDate: '2026-01-05',
-          seededDate: '2026-01-15',
-          totalQuantity: 500,
-          price: 150,
-          status: 'AVAILABLE',
-          isVisible: true,
-          description: ''
-        });
-        setTreeSearchTerm('');
       } else {
-        alert('Failed to save batch');
+        const errData = await res.json();
+        alert(errData.error || 'Failed to create batch');
       }
     } catch (err) {
-      alert('Error saving batch');
+      alert('Error creating batch');
+    } finally {
+      setSubmitting(false);
     }
-  };
-
-  const openEditModal = (batch: any) => {
-    setEditingBatch(batch);
-    setEditPrice(batch.price);
-    setEditTotalQuantity(batch.totalQuantity);
-    setEditDescription(batch.description || '');
-    setEditImages(batch.images && batch.images.length > 0 ? [...batch.images] : []);
-    setEditIsVisible(batch.isVisible !== false);
-    setNewImageUrl('');
-    const codes = (batch.parentPalmCodes && batch.parentPalmCodes.length > 0)
-      ? [...batch.parentPalmCodes]
-      : (batch.parentPalmCode ? [batch.parentPalmCode] : ['EM-MP-001']);
-    setEditParentPalmCodes(codes);
-    setEditTreeSearchTerm('');
   };
 
   const handleToggleSingleBatchVisibility = async (batch: any) => {
     const nextVal = batch.isVisible === false ? true : false;
     setTogglingBatchCode(batch.batchCode);
     setBatches(prev => prev.map(b => b.batchCode === batch.batchCode ? { ...b, isVisible: nextVal } : b));
+
     try {
       const res = await fetch('/api/batches', {
         method: 'PUT',
@@ -267,75 +255,25 @@ export default function AdminBatchesPage() {
       }
     } catch (e: any) {
       alert('Error updating visibility: ' + e.message);
-      fetchBatchesData();
+      fetchInitialData();
     } finally {
       setTogglingBatchCode(null);
     }
   };
 
-  const handleAddEditFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0 || !editingBatch) return;
-
-    const files = Array.from(e.target.files);
-    setUploading(true);
-    const formData = new FormData();
-    files.forEach(f => formData.append('files', f));
-    formData.append('category', 'batches');
-    formData.append('tag', editingBatch.batchCode);
-
-    try {
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData
-      });
-      const data = await res.json();
-      if (res.ok && (data.urls || data.url)) {
-        const newUrls = data.urls || [data.url];
-        setEditImages(prev => [...prev, ...newUrls]);
-        alert(`Successfully uploaded ${newUrls.length} photo(s) to Cloudinary!`);
-      } else {
-        alert(data.error || 'Failed to upload images to cloud storage');
-      }
-    } catch (err) {
-      alert('Network error while uploading images to cloud storage');
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const removeEditImage = async (indexToRemove: number) => {
-    const targetUrl = editImages[indexToRemove];
-    setEditImages(prev => prev.filter((_, idx) => idx !== indexToRemove));
-    if (targetUrl && targetUrl.startsWith('/images/')) {
-      try {
-        await fetch(`/api/upload?path=${encodeURIComponent(targetUrl)}`, { method: 'DELETE' });
-      } catch (e) {
-        console.error('Failed to unlink deleted image file:', e);
-      }
-    }
-  };
-
-  const removeAllEditImages = async () => {
-    if (confirm('Are you sure you want to remove ALL current images for this batch?')) {
-      const toDelete = [...editImages];
-      setEditImages([]);
-      for (const imgUrl of toDelete) {
-        if (imgUrl && imgUrl.startsWith('/images/')) {
-          try {
-            await fetch(`/api/upload?path=${encodeURIComponent(imgUrl)}`, { method: 'DELETE' });
-          } catch (e) {}
-        }
-      }
-    }
+  const openEditModal = (batch: any) => {
+    setEditingBatch({ ...batch });
+    setEditPrice(batch.price);
+    setEditTotalQuantity(batch.totalQuantity);
+    setEditDescription(batch.description || '');
+    setEditIsVisible(batch.isVisible !== false);
+    setEditImages(batch.images && Array.isArray(batch.images) ? [...batch.images] : []);
+    setNewImageUrl('');
   };
 
   const handleSaveEdit = async () => {
     if (!editingBatch) return;
-
-    if (editParentPalmCodes.length === 0) {
-      alert('Please select at least one mother tree for this batch.');
-      return;
-    }
+    setSavingEdit(true);
 
     try {
       const res = await fetch('/api/batches', {
@@ -346,890 +284,709 @@ export default function AdminBatchesPage() {
           price: editPrice,
           totalQuantity: editTotalQuantity,
           description: editDescription,
-          images: editImages,
           isVisible: editIsVisible,
-          parentPalmCodes: editParentPalmCodes,
-          parentPalmCode: editParentPalmCodes[0]
+          images: editImages
         })
       });
 
       if (res.ok) {
-        alert(`Batch ${editingBatch.batchCode} updated! ${editImages.length} photo(s) saved for customer viewing.`);
+        alert('✅ Batch details updated successfully!');
         setEditingBatch(null);
-        fetchBatchesData();
+        fetchInitialData();
       } else {
-        alert('Failed to update batch');
+        throw new Error('Failed to update');
       }
-    } catch (err) {
-      alert('Error updating batch');
-    }
-  };
-
-  // Save ONLY images array via PATCH (used by URL manager)
-  const handleSaveImageUrls = async () => {
-    if (!editingBatch) return;
-    setSavingImages(true);
-    try {
-      const res = await fetch(`/api/batches/${editingBatch.batchCode}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ images: editImages })
-      });
-      if (res.ok) {
-        alert(`✅ Image URLs saved for batch ${editingBatch.batchCode}. All pages now show updated photos.`);
-        fetchBatchesData();
-      } else {
-        const err = await res.json();
-        alert(err.error || 'Failed to save image URLs');
-      }
-    } catch (e) {
-      alert('Network error saving image URLs');
+    } catch (e: any) {
+      alert('Error saving batch: ' + e.message);
     } finally {
-      setSavingImages(false);
+      setSavingEdit(false);
     }
   };
 
-  const addImageUrl = () => {
-    const url = newImageUrl.trim();
-    if (!url) return;
-    if (editImages.includes(url)) { alert('This URL is already in the list.'); return; }
-    setEditImages(prev => [...prev, url]);
-    setNewImageUrl('');
-  };
+  // Trees available for source farm
+  const sourceTrees = parentPalms.filter(p => (p.farmCode || 'ETH-RA-F001') === sourceFarmCode);
 
-  const updateImageUrl = (idx: number, val: string) => {
-    setEditImages(prev => prev.map((u, i) => i === idx ? val : u));
-  };
+  // Filtered Batches
+  const filteredBatches = batches.filter(b => {
+    const matchSearch = !search ||
+      b.batchCode?.toLowerCase().includes(search.toLowerCase()) ||
+      b.name?.toLowerCase().includes(search.toLowerCase()) ||
+      b.primaryFarmCode?.toLowerCase().includes(search.toLowerCase());
 
-  const handleDeleteBatch = async (batchCode: string) => {
-    if (!confirm(`Are you sure you want to remove batch ${batchCode}?`)) {
-      return;
-    }
+    const matchFarm = farmFilter === 'ALL' || b.primaryFarmCode === farmFilter;
 
-    try {
-      const res = await fetch(`/api/batches?code=${encodeURIComponent(batchCode)}`, {
-        method: 'DELETE'
-      });
-      if (res.ok) {
-        alert(`Batch ${batchCode} removed.`);
-        fetchBatchesData();
-      } else {
-        alert('Failed to delete batch');
-      }
-    } catch (err) {
-      alert('Error deleting batch');
-    }
-  };
+    const isVis = b.isVisible !== false;
+    const matchVis = visibilityFilter === 'ALL'
+      ? true
+      : visibilityFilter === 'VISIBLE'
+        ? isVis
+        : !isVis;
+
+    return matchSearch && matchFarm && matchVis;
+  });
+
+  const totalCoconutsSourced = sourcesList.reduce((sum, s) => sum + s.coconutQuantity, 0);
+  const contributingFarmsCount = new Set(sourcesList.map(s => s.farmCode)).size;
 
   return (
     <>
-      <section className="bg-dark text-white py-3 border-bottom">
-        <div className="container d-flex justify-content-between align-items-center">
-          <div>
-            <span className="badge bg-success me-2">ADMIN PORTAL</span>
-            <h3 className="fw-bold mb-0 text-light d-inline align-middle">Batch & Image Management</h3>
-          </div>
-          <div className="d-flex gap-2 align-items-center flex-wrap">
-            <Link 
-              href="/batches" 
-              target="_blank" 
-              className="btn btn-outline-light btn-sm fw-semibold d-inline-flex align-items-center gap-1"
-              title="Preview Batches as seen by customers"
-            >
-              <i className="bi bi-box-arrow-up-right"></i> Customer View
-            </Link>
-            <a 
-              href="/api/admin/export?type=batches" 
-              download 
-              className="btn btn-outline-success btn-sm text-light border-success"
-              title="Download Batches in Excel"
-            >
-              <i className="bi bi-file-earmark-excel-fill text-success me-1"></i> Export Batches (.xlsx)
-            </a>
-            <Link href="/admin" className="btn btn-outline-light btn-sm">
-              <i className="bi bi-arrow-left me-1"></i> Back to Dashboard
-            </Link>
+      <section className="bg-dark text-white py-3 border-bottom border-success border-3">
+        <div className="container">
+          <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+              <span className="badge bg-success mb-1">MODULE 4: MULTI-FARM BATCH SOURCING</span>
+              <h2 className="fw-bold mb-0 text-light">Batch Management &amp; Sourcing</h2>
+            </div>
+            <div className="d-flex align-items-center gap-2">
+              <Link href="/admin/germination" className="btn btn-outline-light btn-sm fw-bold d-inline-flex align-items-center gap-1">
+                <i className="bi bi-flower1 text-success"></i> Germination
+              </Link>
+              <Link href="/admin/seedling-inventory" className="btn btn-outline-light btn-sm fw-bold d-inline-flex align-items-center gap-1">
+                <i className="bi bi-box-seam text-primary"></i> Inventory
+              </Link>
+              <Link href="/admin" className="btn btn-outline-light btn-sm">
+                <i className="bi bi-arrow-left me-1"></i> Admin Hub
+              </Link>
+              <AdminLogoutButton />
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="py-5 bg-light">
+      <AdminNav />
+
+      {toastMessage && (
+        <div className="alert alert-success border-0 rounded-0 py-2 text-center fw-semibold mb-0 shadow-sm">
+          <i className="bi bi-check-circle-fill me-2"></i>
+          {toastMessage}
+        </div>
+      )}
+
+      <section className="py-4 bg-light min-vh-100">
         <div className="container">
-          
-          {/* Create New Batch Form Card */}
-          <div className="card border-0 shadow-sm rounded-4 p-4 mb-5 bg-white">
-            <div className="d-flex justify-content-between align-items-center mb-3">
-              <h4 className="fw-bold text-dark mb-0">
-                <i className="bi bi-plus-circle-fill text-success me-2"></i> Create New Sapling Batch
-              </h4>
-              <button 
-                type="button" 
-                className="btn btn-sm btn-outline-secondary"
-                onClick={() => setNewBatch({ ...newBatch, batchCode: generateAutoBatchCode() })}
-              >
-                <i className="bi bi-arrow-clockwise me-1"></i> Regenerate Batch Code
-              </button>
+
+          {/* Module 4.2: Step-by-Step Multi-Farm Batch Creation Workflow */}
+          <div className="card border-0 shadow-sm rounded-4 p-4 mb-5 bg-white border-start border-success border-4">
+            <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+              <div>
+                <span className="badge bg-success-subtle text-success border border-success extra-small mb-1">
+                  WORKFLOW ENGINE
+                </span>
+                <h4 className="fw-bold text-dark mb-0">Create New Multi-Farm Batch</h4>
+                <p className="text-secondary small mb-0">
+                  Supports coconuts sourced from multiple registered farms and multiple mother trees.
+                </p>
+              </div>
+              <div className="text-end">
+                <span className="badge bg-dark font-monospace px-3 py-2 fs-6">
+                  ID: {previewInfo.batchId}
+                </span>
+              </div>
             </div>
-            
+
             <form onSubmit={handleCreateBatch}>
-              <div className="row g-3">
+              {/* Step 1 & 2: Primary Farm & Dates */}
+              <div className="row g-3 p-3 bg-light rounded-3 mb-4">
                 <div className="col-md-4">
-                  <label className="form-label small fw-bold text-success">Batch Code (Auto-populated) *</label>
-                  <input 
-                    type="text" 
-                    className="form-control fw-bold border-success" 
-                    required 
-                    value={newBatch.batchCode}
-                    onChange={e => setNewBatch({ ...newBatch, batchCode: e.target.value })}
+                  <label className="form-label fw-bold small text-secondary">
+                    <span className="badge bg-success rounded-circle me-1">1</span> Primary Farm (ID Prefix) *
+                  </label>
+                  <select
+                    className="form-select fw-semibold"
+                    value={primaryFarmCode}
+                    onChange={(e) => setPrimaryFarmCode(e.target.value)}
+                    required
+                  >
+                    {farms.map(f => (
+                      <option key={f.farmCode} value={f.farmCode}>
+                        {f.farmCode} - {f.farmName}
+                      </option>
+                    ))}
+                  </select>
+                  <small className="text-muted extra-small">
+                    Determines the Batch ID prefix (e.g. <code>{primaryFarmCode}-MMYYYY-BNNN</code>).
+                  </small>
+                </div>
+
+                <div className="col-md-4">
+                  <label className="form-label fw-bold small text-secondary">
+                    <span className="badge bg-success rounded-circle me-1">2</span> Seeded Date (Month &amp; Year) *
+                  </label>
+                  <input
+                    type="date"
+                    className="form-control"
+                    value={batchSeededDate}
+                    onChange={(e) => setBatchSeededDate(e.target.value)}
+                    required
+                  />
+                  <small className="text-muted extra-small">
+                    Sequence counter resets per Farm ID + Month/Year.
+                  </small>
+                </div>
+
+                <div className="col-md-4">
+                  <label className="form-label fw-bold small text-secondary">
+                    Coconut Collection / Harvest Date *
+                  </label>
+                  <input
+                    type="date"
+                    className="form-control"
+                    value={batchHarvestDate}
+                    onChange={(e) => setBatchHarvestDate(e.target.value)}
+                    required
                   />
                 </div>
 
-                <div className="col-md-5">
-                  <label className="form-label small fw-bold">Base Batch Name *</label>
-                  <input 
-                    type="text" 
-                    className="form-control" 
-                    required 
-                    placeholder="e.g. December 2026 Batch"
-                    value={newBatch.name}
-                    onChange={e => setNewBatch({ ...newBatch, name: e.target.value })}
-                  />
-                  <small className="text-muted extra-small">Combined Full Name: <strong>{newBatch.name} ({newBatch.batchCode})</strong></small>
-                </div>
-
-                <div className="col-md-3">
-                  <label className="form-label small fw-bold">Price (₹/sapling) *</label>
-                  <input 
-                    type="number" 
-                    className="form-control" 
-                    required 
-                    value={newBatch.price}
-                    onChange={e => setNewBatch({ ...newBatch, price: Number(e.target.value) })}
-                  />
-                </div>
-
-                {/* Multiple Mother Trees Selection Section */}
-                <div className="col-12">
-                  <div className="p-3 bg-light rounded-3 border">
-                    <div className="d-flex flex-wrap justify-content-between align-items-center mb-2 gap-2">
-                      <div>
-                        <label className="form-label small fw-bold text-dark mb-0">
-                          <i className="bi bi-tree-fill text-success me-1"></i>
-                          Mother Trees / Parent Palms Tagging * (Multiple Allowed)
-                        </label>
-                        <small className="text-muted d-block extra-small">
-                          A batch can be raised from nuts harvested across multiple mother trees. Select all contributing mother trees below.
-                        </small>
+                {/* Batch Name Display Requirement */}
+                <div className="col-12 pt-2 border-top">
+                  <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div className="small">
+                      <strong className="text-dark">Customer Batch Display Name:</strong>
+                      <span className="badge bg-success-subtle text-success ms-2 font-monospace fs-6">
+                        {previewInfo.displayName}
+                      </span>
+                    </div>
+                    <div className="d-flex align-items-center gap-3">
+                      <div className="input-group input-group-sm" style={{ width: '180px' }}>
+                        <span className="input-group-text">Price (₹)</span>
+                        <input
+                          type="number"
+                          className="form-control"
+                          value={batchPrice}
+                          onChange={(e) => setBatchPrice(parseInt(e.target.value, 10) || 150)}
+                          required
+                        />
                       </div>
-                      <div className="d-flex gap-2">
-                        <button 
-                          type="button" 
-                          className="btn btn-outline-success btn-sm py-0 px-2 extra-small"
-                          onClick={() => setNewBatch(prev => ({ 
-                            ...prev, 
-                            parentPalmCodes: parentPalms.map(p => p.code),
-                            parentPalmCode: parentPalms[0]?.code || 'EM-MP-001'
-                          }))}
-                        >
-                          <i className="bi bi-check-all me-1"></i> Select All ({parentPalms.length})
-                        </button>
-                        <button 
-                          type="button" 
-                          className="btn btn-outline-secondary btn-sm py-0 px-2 extra-small"
-                          onClick={() => setNewBatch(prev => ({ 
-                            ...prev, 
-                            parentPalmCodes: [parentPalms[0]?.code || 'EM-MP-001'],
-                            parentPalmCode: parentPalms[0]?.code || 'EM-MP-001'
-                          }))}
-                        >
-                          Reset to Primary
-                        </button>
+                      <div className="form-check form-switch mb-0">
+                        <input
+                          className="form-check-input cursor-pointer"
+                          type="checkbox"
+                          role="switch"
+                          id="batchVisSwitch"
+                          checked={batchIsVisible}
+                          onChange={(e) => setBatchIsVisible(e.target.checked)}
+                        />
+                        <label className="form-check-label extra-small fw-semibold" htmlFor="batchVisSwitch">
+                          Visible to Customers ({batchIsVisible ? 'ON' : 'OFF'})
+                        </label>
                       </div>
                     </div>
+                  </div>
+                </div>
+              </div>
 
-                    {/* Currently Tagged Badges Bar */}
-                    <div className="d-flex flex-wrap align-items-center gap-1 mb-2 p-2 bg-white rounded border">
-                      <small className="text-secondary fw-bold extra-small me-2">
-                        Tagged Trees ({newBatch.parentPalmCodes.length}):
-                      </small>
-                      {newBatch.parentPalmCodes.length === 0 ? (
-                        <span className="text-danger extra-small fw-semibold">
-                          <i className="bi bi-exclamation-triangle-fill me-1"></i> No mother trees selected. Please choose at least one option below.
-                        </span>
+              {/* Step 3: Coconut Sources Selector (Multi-Farm & Multi-Tree) */}
+              <div className="p-3 border rounded-3 mb-4">
+                <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                  <h6 className="fw-bold text-dark mb-0">
+                    <span className="badge bg-success rounded-circle me-1">3</span>
+                    Add Contributing Mother Trees (From Multiple Farms)
+                  </h6>
+                  <div className="d-flex align-items-center gap-2">
+                    <label className="small text-muted mb-0 fw-semibold">Choose Farm Source:</label>
+                    <select
+                      className="form-select form-select-sm"
+                      style={{ width: '260px' }}
+                      value={sourceFarmCode}
+                      onChange={(e) => setSourceFarmCode(e.target.value)}
+                    >
+                      {farms.map(f => (
+                        <option key={f.farmCode} value={f.farmCode}>
+                          {f.farmCode} - {f.farmName}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Available Mother Trees Under Chosen Farm */}
+                <div className="table-responsive border rounded-3 bg-light mb-3">
+                  <table className="table table-sm table-hover align-middle mb-0 text-nowrap">
+                    <thead className="table-light">
+                      <tr>
+                        <th>Tree ID</th>
+                        <th>Tree Name</th>
+                        <th>Variety</th>
+                        <th style={{ width: '140px' }}>Coconut Qty</th>
+                        <th style={{ width: '150px' }}>Collection Date</th>
+                        <th className="text-end">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sourceTrees.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} className="text-center py-3 text-muted">
+                            No mother trees found registered under {sourceFarmCode}.
+                          </td>
+                        </tr>
                       ) : (
-                        newBatch.parentPalmCodes.map(code => {
-                          const palm = parentPalms.find(p => p.code === code);
+                        sourceTrees.map(tree => {
+                          const tCode = tree.motherTreeCode || tree.code;
+                          const isAlreadyAdded = sourcesList.some(s => s.motherTreeCode === tCode);
                           return (
-                            <span key={code} className="badge bg-success-subtle text-success border border-success d-inline-flex align-items-center gap-1 py-1 px-2">
-                              <i className="bi bi-patch-check-fill text-success"></i>
-                              <strong>{code}</strong> {palm ? `(${palm.name.split('#')[0].trim()})` : ''}
-                              <button 
-                                type="button"
-                                className="btn-close btn-close-sm ms-1"
-                                style={{ fontSize: '0.6rem' }}
-                                onClick={() => toggleNewBatchTree(code)}
-                                title={`Remove ${code}`}
-                              ></button>
-                            </span>
+                            <tr key={tCode} className={isAlreadyAdded ? 'table-success bg-opacity-25' : ''}>
+                              <td>
+                                <span className="badge bg-secondary-subtle text-secondary font-monospace fw-bold">
+                                  {tCode}
+                                </span>
+                              </td>
+                              <td className="fw-semibold">{tree.name}</td>
+                              <td><small>{tree.variety}</small></td>
+                              <td>
+                                <input
+                                  type="number"
+                                  className="form-control form-control-sm"
+                                  placeholder="Qty"
+                                  min={10}
+                                  value={tempTreeQuantities[tCode] || 100}
+                                  onChange={(e) => setTempTreeQuantities({
+                                    ...tempTreeQuantities,
+                                    [tCode]: parseInt(e.target.value, 10) || 100
+                                  })}
+                                  disabled={isAlreadyAdded}
+                                />
+                              </td>
+                              <td>
+                                <input
+                                  type="date"
+                                  className="form-control form-control-sm"
+                                  value={tempTreeDates[tCode] || batchHarvestDate}
+                                  onChange={(e) => setTempTreeDates({
+                                    ...tempTreeDates,
+                                    [tCode]: e.target.value
+                                  })}
+                                  disabled={isAlreadyAdded}
+                                />
+                              </td>
+                              <td className="text-end">
+                                {isAlreadyAdded ? (
+                                  <span className="badge bg-success">
+                                    <i className="bi bi-check2 me-1"></i> Added
+                                  </span>
+                                ) : (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleAddTreeToSources(tree)}
+                                    className="btn btn-sm btn-outline-success extra-small fw-bold"
+                                  >
+                                    <i className="bi bi-plus-lg me-1"></i> Add Source
+                                  </button>
+                                )}
+                              </td>
+                            </tr>
                           );
                         })
                       )}
-                    </div>
+                    </tbody>
+                  </table>
+                </div>
 
-                    {/* Filter search within mother trees */}
-                    <div className="mb-2">
-                      <input 
-                        type="text" 
-                        className="form-control form-control-sm"
-                        placeholder="Filter mother trees by code, name, or location..."
-                        value={treeSearchTerm}
-                        onChange={e => setTreeSearchTerm(e.target.value)}
-                      />
-                    </div>
+                {/* Module 4.3: Batch Source Summary Table */}
+                <div className="card bg-white border shadow-none p-3 rounded-3">
+                  <div className="d-flex justify-content-between align-items-center mb-2">
+                    <h6 className="fw-bold text-dark mb-0">
+                      <i className="bi bi-card-checklist text-success me-1"></i>
+                      Current Batch Sources Summary ({sourcesList.length} Trees from {contributingFarmsCount} Farms)
+                    </h6>
+                    <span className="badge bg-primary fs-6">
+                      Total Coconuts Sourced: {totalCoconutsSourced}
+                    </span>
+                  </div>
 
-                    {/* Scrollable Mother Trees Choice Grid */}
-                    <div className="border rounded p-2 bg-white overflow-y-auto" style={{ maxHeight: '180px' }}>
-                      <div className="row g-2">
-                        {parentPalms
-                          .filter(p => !treeSearchTerm || p.code.toLowerCase().includes(treeSearchTerm.toLowerCase()) || p.name.toLowerCase().includes(treeSearchTerm.toLowerCase()) || p.location.toLowerCase().includes(treeSearchTerm.toLowerCase()))
-                          .map(p => {
-                            const isSelected = newBatch.parentPalmCodes.includes(p.code);
-                            return (
-                              <div key={p.code} className="col-md-6 col-lg-4">
-                                <div 
-                                  className={`p-2 rounded border h-100 d-flex align-items-center justify-content-between transition-all ${isSelected ? 'border-success bg-success-subtle' : 'border-light-subtle bg-light'}`}
-                                  style={{ cursor: 'pointer' }}
-                                  onClick={() => toggleNewBatchTree(p.code)}
+                  {sourcesList.length === 0 ? (
+                    <div className="text-center py-4 text-muted small bg-light rounded">
+                      <i className="bi bi-basket display-6 d-block mb-1 text-secondary"></i>
+                      No coconut sources added yet. Select mother trees from above and click &quot;Add Source&quot;.
+                    </div>
+                  ) : (
+                    <div className="table-responsive">
+                      <table className="table table-sm table-bordered align-middle mb-0">
+                        <thead className="table-light">
+                          <tr>
+                            <th>Contributing Farm ID</th>
+                            <th>Farm Name</th>
+                            <th>Mother Tree ID</th>
+                            <th className="text-center">Coconut Qty</th>
+                            <th>Collection Date</th>
+                            <th className="text-center">Status</th>
+                            <th className="text-end">Remove</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {sourcesList.map(s => (
+                            <tr key={s.motherTreeCode}>
+                              <td><span className="badge bg-light text-dark border font-monospace">{s.farmCode}</span></td>
+                              <td>{s.farmName}</td>
+                              <td><span className="badge bg-secondary-subtle text-secondary font-monospace">{s.motherTreeCode}</span></td>
+                              <td className="text-center fw-bold text-success">{s.coconutQuantity}</td>
+                              <td>{s.collectionDate}</td>
+                              <td className="text-center"><span className="badge bg-success-subtle text-success">{s.collectionStatus}</span></td>
+                              <td className="text-end">
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveSource(s.motherTreeCode)}
+                                  className="btn btn-sm btn-outline-danger extra-small p-1"
+                                  title="Remove source"
                                 >
-                                  <div className="form-check m-0 d-flex align-items-center gap-2">
-                                    <input 
-                                      type="checkbox"
-                                      className="form-check-input"
-                                      id={`create-tree-${p.code}`}
-                                      checked={isSelected}
-                                      onChange={() => toggleNewBatchTree(p.code)}
-                                      onClick={(e) => e.stopPropagation()}
-                                    />
-                                    <label className="form-check-label extra-small" htmlFor={`create-tree-${p.code}`} style={{ cursor: 'pointer' }}>
-                                      <strong className="text-dark d-block">{p.code}</strong>
-                                      <span className="text-muted text-truncate d-inline-block" style={{ maxWidth: '180px' }}>{p.name}</span>
-                                    </label>
-                                  </div>
-                                  <span className="badge bg-light text-dark border extra-small">{p.age} Yrs</span>
-                                </div>
-                              </div>
-                            );
-                          })}
-                      </div>
+                                  <i className="bi bi-trash"></i>
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
-                  </div>
+                  )}
                 </div>
+              </div>
 
-                {/* DATES SECTION */}
+              {/* Step 4: Photos & Batch Confirmation */}
+              <div className="row g-3 align-items-center">
                 <div className="col-md-6">
-                  <label className="form-label small fw-bold text-dark">
-                    <i className="bi bi-calendar-event me-1 text-success"></i> Coconut Cut From Tree Date (Harvest Date) *
-                  </label>
-                  <input 
-                    type="date" 
-                    className="form-control" 
-                    required 
-                    value={newBatch.harvestDate}
-                    onChange={e => setNewBatch({ ...newBatch, harvestDate: e.target.value })}
+                  <label className="form-label fw-bold small text-secondary">Batch Photographs</label>
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    className="form-control"
+                    onChange={(e) => e.target.files && setBatchFiles(Array.from(e.target.files))}
                   />
                 </div>
-
-                <div className="col-md-6">
-                  <label className="form-label small fw-bold text-dark">
-                    <i className="bi bi-calendar-check-fill me-1 text-success"></i> Seeded On Date (Farm Seedbed Sowing) *
-                  </label>
-                  <input 
-                    type="date" 
-                    className="form-control" 
-                    required 
-                    value={newBatch.seededDate}
-                    onChange={e => setNewBatch({ ...newBatch, seededDate: e.target.value })}
-                  />
-                </div>
-
-                {/* AUTOMATIC CALCULATION DISPLAY */}
-                <div className="col-12">
-                  <div className="alert alert-success border-success-subtle rounded-3 p-3 d-flex flex-wrap justify-content-between align-items-center">
-                    <div>
-                      <span className="badge bg-success me-2">AUTOMATICALLY CALCULATED METRICS</span>
-                      <span className="fw-bold text-dark me-3">
-                        Sapling Age: <strong className="text-success fs-6">{calculatedMetrics.age}</strong>
-                      </span>
-                      <span className="fw-bold text-dark">
-                        Estimated Average Height: <strong className="text-success fs-6">{calculatedMetrics.height}</strong>
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* FILE UPLOAD BOX */}
-                <div className="col-12 bg-light p-3 rounded-3 border">
-                  <label className="form-label small fw-bold text-dark d-block">
-                    <i className="bi bi-cloud-arrow-up-fill text-success me-1"></i> Upload Seedling / Batch Photographs
-                  </label>
-                  <div className="d-flex flex-wrap align-items-center gap-2">
-                    <input 
-                      type="file" 
-                      className="form-control form-control-sm w-auto" 
-                      multiple 
-                      accept="image/*"
-                      onChange={handleFileChange}
-                    />
-                    <button 
-                      type="button" 
-                      className="btn btn-sm btn-outline-success fw-bold"
-                      onClick={handleUploadFiles}
-                      disabled={uploading || batchFiles.length === 0}
-                    >
-                      {uploading ? 'Uploading to Cloudinary...' : 'Upload Selected Images'}
-                    </button>
-                    {uploadedUrls.length > 0 && (
-                      <span className="badge bg-success">
-                        <i className="bi bi-check-circle-fill me-1"></i> {uploadedUrls.length} image(s) uploaded!
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="col-md-4">
-                  <label className="form-label small fw-bold">Total Quantity *</label>
-                  <input 
-                    type="number" 
-                    className="form-control" 
-                    required 
-                    value={newBatch.totalQuantity}
-                    onChange={e => setNewBatch({ ...newBatch, totalQuantity: Number(e.target.value) })}
-                  />
-                </div>
-
-                <div className="col-md-4">
-                  <label className="form-label small fw-bold">Initial Status</label>
-                  <input type="text" className="form-control" readOnly value={newBatch.status} />
-                </div>
-
-                <div className="col-md-4">
-                  <label className="form-label small fw-bold">Tagged Mother Tree(s) ({newBatch.parentPalmCodes.length})</label>
-                  <div className="form-control bg-light text-truncate" title={newBatch.parentPalmCodes.join(', ')}>
-                    <i className="bi bi-tree-fill text-success me-1"></i>
-                    {newBatch.parentPalmCodes.join(', ')}
-                  </div>
-                </div>
-
-                <div className="col-12">
-                  <label className="form-label small fw-bold">Batch Notes / Description</label>
-                  <textarea 
-                    className="form-control" 
-                    rows={2} 
-                    placeholder="Enter farm observations or notes for this batch"
-                    value={newBatch.description}
-                    onChange={e => setNewBatch({ ...newBatch, description: e.target.value })}
-                  ></textarea>
-                </div>
-
-                {/* Customer Visibility Toggle in Add Form */}
-                <div className="col-12 bg-light p-3 rounded-3 border d-flex flex-wrap justify-content-between align-items-center gap-2">
-                  <div>
-                    <label className="form-label small fw-bold text-dark mb-0 d-block">
-                      <i className="bi bi-eye-fill text-success me-1"></i> Customer Visibility
-                    </label>
-                    <small className="text-muted extra-small">
-                      Turn ON to make this batch visible to customers on the main page &amp; catalog immediately.
-                    </small>
-                  </div>
-                  <div className="form-check form-switch m-0 fs-5">
-                    <input 
-                      className="form-check-input" 
-                      type="checkbox" 
-                      role="switch" 
-                      id="newBatchVisibility" 
-                      checked={newBatch.isVisible !== false} 
-                      onChange={e => setNewBatch({ ...newBatch, isVisible: e.target.checked })} 
-                    />
-                    <label className="form-check-label small fw-bold ms-2" htmlFor="newBatchVisibility">
-                      {newBatch.isVisible !== false ? <span className="text-success">ON (Visible to Customers)</span> : <span className="text-secondary">OFF (Hidden from Customers)</span>}
-                    </label>
-                  </div>
-                </div>
-
-                <div className="col-12 text-end">
-                  <button type="submit" className="btn btn-success fw-bold px-4">
-                    <i className="bi bi-check-circle me-1"></i> Save & Add to Live Batches
+                <div className="col-md-6 text-md-end pt-md-4">
+                  <button
+                    type="submit"
+                    className="btn btn-success fw-bold px-4 py-2 shadow-sm"
+                    disabled={submitting || sourcesList.length === 0}
+                  >
+                    {submitting ? 'Confirming & Creating...' : 'Confirm & Create Batch'}
                   </button>
                 </div>
               </div>
             </form>
           </div>
 
-          {/* Batches Inventory Table with Visibility Filter & Edit Feature */}
-          <div className="card border-0 shadow-sm rounded-4 p-4 bg-white">
-            <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
-              <div>
-                <h4 className="fw-bold text-dark mb-1">
-                  Batches Inventory ({batches.filter(b => {
-                    if (visibilityFilter === 'VISIBLE') return b.isVisible !== false;
-                    if (visibilityFilter === 'HIDDEN') return b.isVisible === false;
-                    return true;
-                  }).length} of {batches.length})
-                </h4>
-                <small className="text-secondary">Toggle the visibility switch per batch to instantly show or hide from customer pages.</small>
+          {/* Batches Table & Visibility Controls */}
+          <div className="card border-0 shadow-sm rounded-4 p-3 mb-4 bg-white">
+            <div className="row g-2 align-items-center">
+              <div className="col-md-5">
+                <div className="input-group">
+                  <span className="input-group-text bg-light border-end-0">
+                    <i className="bi bi-search text-muted"></i>
+                  </span>
+                  <input
+                    type="text"
+                    className="form-control border-start-0"
+                    placeholder="Search by Batch ID, Name, or Farm..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
+                  {search && (
+                    <button className="btn btn-outline-secondary" onClick={() => setSearch('')}>
+                      <i className="bi bi-x"></i>
+                    </button>
+                  )}
+                </div>
               </div>
 
-              {/* Visibility Filter Tabs */}
-              <div className="d-flex align-items-center gap-1 bg-light p-1 rounded-pill border">
-                <button
-                  type="button"
-                  onClick={() => setVisibilityFilter('ALL')}
-                  className={`btn btn-sm fw-bold rounded-pill px-3 py-1 ${visibilityFilter === 'ALL' ? 'btn-dark text-white shadow-sm' : 'btn-light text-secondary border-0'}`}
+              <div className="col-md-3">
+                <select
+                  className="form-select"
+                  value={farmFilter}
+                  onChange={(e) => setFarmFilter(e.target.value)}
                 >
-                  All ({batches.length})
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setVisibilityFilter('VISIBLE')}
-                  className={`btn btn-sm fw-bold rounded-pill px-3 py-1 ${visibilityFilter === 'VISIBLE' ? 'btn-success text-white shadow-sm' : 'btn-light text-secondary border-0'}`}
+                  <option value="ALL">All Primary Farms</option>
+                  {farms.map(f => (
+                    <option key={f.farmCode} value={f.farmCode}>{f.farmCode} - {f.farmName}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="col-md-2">
+                <select
+                  className="form-select"
+                  value={visibilityFilter}
+                  onChange={(e) => setVisibilityFilter(e.target.value as any)}
                 >
-                  <i className="bi bi-eye-fill me-1"></i> Visible / ON ({batches.filter(b => b.isVisible !== false).length})
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setVisibilityFilter('HIDDEN')}
-                  className={`btn btn-sm fw-bold rounded-pill px-3 py-1 ${visibilityFilter === 'HIDDEN' ? 'btn-danger text-white shadow-sm' : 'btn-light text-secondary border-0'}`}
-                >
-                  <i className="bi bi-eye-slash-fill me-1"></i> Hidden / OFF ({batches.filter(b => b.isVisible === false).length})
-                </button>
+                  <option value="ALL">All Visibility</option>
+                  <option value="VISIBLE">Visible (ON) Only</option>
+                  <option value="HIDDEN">Hidden (OFF) Only</option>
+                </select>
+              </div>
+
+              <div className="col-md-2 text-md-end text-muted small">
+                Showing <strong>{filteredBatches.length}</strong> batch{filteredBatches.length !== 1 ? 'es' : ''}
               </div>
             </div>
-
-            {toastMessage && (
-              <div className="alert alert-success alert-dismissible py-2 px-3 small rounded-3 d-flex align-items-center gap-2 mb-3 shadow-sm">
-                <i className="bi bi-check-circle-fill fs-6"></i>
-                <span className="fw-semibold">{toastMessage}</span>
-              </div>
-            )}
-
-            {loading ? (
-              <div className="text-center py-4">Loading...</div>
-            ) : (
-              <div className="table-responsive">
-                <table className="table table-hover align-middle">
-                  <thead className="table-dark">
-                    <tr>
-                      <th style={{ width: '60px' }}>Photo</th>
-                      <th>Batch Code</th>
-                      <th>Batch Name</th>
-                      <th>Mother Tree(s)</th>
-                      <th>Dates (Cut / Seeded)</th>
-                      <th>Age / Height</th>
-                      <th>Total</th>
-                      <th>Booked</th>
-                      <th>Available</th>
-                      <th>Price</th>
-                      <th>Status</th>
-                      <th>Customer Visibility</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {batches
-                      .filter(b => {
-                        if (visibilityFilter === 'VISIBLE') return b.isVisible !== false;
-                        if (visibilityFilter === 'HIDDEN') return b.isVisible === false;
-                        return true;
-                      })
-                      .map(b => (
-                      <tr key={b.id} className={b.isVisible === false ? 'table-secondary opacity-75' : ''}>
-                        <td>
-                          <div 
-                            className="position-relative rounded-3 overflow-hidden border shadow-sm cursor-pointer hover-lift"
-                            style={{ width: '48px', height: '48px', cursor: 'pointer' }}
-                            onClick={() => setPreviewBatch(b)}
-                            title="Click to view full batch photos"
-                          >
-                            <img 
-                              src={(b.images && b.images.length > 0) ? b.images[0] : '/images/placeholder.png'} 
-                              alt={b.name} 
-                              className="w-100 h-100"
-                              style={{ objectFit: 'cover' }}
-                              onError={(e) => { (e.target as HTMLImageElement).src = '/images/placeholder.png'; }}
-                            />
-                            {b.images && b.images.length > 1 && (
-                              <span 
-                                className="position-absolute bottom-0 end-0 badge bg-dark bg-opacity-75 rounded-pill"
-                                style={{ fontSize: '0.65rem', padding: '1px 4px' }}
-                              >
-                                {b.images.length}
-                              </span>
-                            )}
-                          </div>
-                        </td>
-                        <td><strong className="text-success">{b.batchCode}</strong></td>
-                        <td><small className="fw-bold">{b.name}</small></td>
-                        <td>
-                          <div className="d-flex flex-wrap gap-1" style={{ maxWidth: '180px' }}>
-                            {(((b.parentPalmCodes && b.parentPalmCodes.length > 0) ? b.parentPalmCodes : [b.parentPalmCode]) as string[]).map((c: string) => (
-                              <Link 
-                                key={c}
-                                href={`/parent-palm/${c}`}
-                                className="badge bg-success-subtle text-success border border-success text-decoration-none extra-small"
-                                title="View Mother Tree Profile"
-                              >
-                                <i className="bi bi-tree-fill me-1"></i>{c}
-                              </Link>
-                            ))}
-                          </div>
-                        </td>
-                        <td className="small text-muted">
-                          <div>Cut: {b.harvestDate || 'N/A'}</div>
-                          <div>Seeded: {b.seededDate || 'N/A'}</div>
-                        </td>
-                        <td className="small"><span className="badge bg-success-subtle text-success border me-1">{b.age}</span> ({b.height})</td>
-                        <td><strong>{b.totalQuantity}</strong></td>
-                        <td className="text-primary"><strong>{b.bookedQuantity}</strong></td>
-                        <td className="text-success fs-6"><strong>{b.availableQuantity}</strong></td>
-                        <td><strong className="text-success fs-6">₹{b.price}</strong></td>
-                        <td>
-                          <span className={`badge ${b.status === 'AVAILABLE' ? 'bg-success' : 'bg-warning text-dark'}`}>
-                            {b.status}
-                          </span>
-                        </td>
-                        <td>
-                          <div className="d-flex flex-column align-items-start gap-1">
-                            <button
-                              type="button"
-                              disabled={togglingBatchCode === b.batchCode}
-                              onClick={() => handleToggleSingleBatchVisibility(b)}
-                              className={`btn btn-sm fw-bold d-inline-flex align-items-center gap-1 shadow-sm rounded-pill px-3 py-1 ${
-                                b.isVisible !== false 
-                                  ? 'btn-success text-white' 
-                                  : 'btn-outline-danger'
-                              }`}
-                              title={b.isVisible !== false ? 'Currently ON (visible to customers). Click to turn OFF & hide.' : 'Currently OFF (hidden from customers). Click to turn ON & show.'}
-                            >
-                              <i className={`bi ${b.isVisible !== false ? 'bi-toggle-on fs-6' : 'bi-toggle-off fs-6'}`}></i>
-                              <span>{togglingBatchCode === b.batchCode ? 'Saving...' : (b.isVisible !== false ? 'ON (Visible)' : 'OFF (Hidden)')}</span>
-                            </button>
-                            <small className="extra-small text-muted">
-                              {b.isVisible !== false ? 'Shown to Customers' : 'Hidden from Customers'}
-                            </small>
-                          </div>
-                        </td>
-                        <td>
-                          <div className="d-flex gap-1">
-                            <button 
-                              className="btn btn-sm btn-outline-primary"
-                              onClick={() => openEditModal(b)}
-                              title="Edit Price & Details"
-                            >
-                              <i className="bi bi-pencil-square me-1"></i> Edit
-                            </button>
-                            <button 
-                              className="btn btn-sm btn-outline-danger" 
-                              onClick={() => handleDeleteBatch(b.batchCode)}
-                              title="Remove Batch"
-                            >
-                              <i className="bi bi-trash"></i>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
           </div>
 
-          {/* Full Container Photo Preview Modal */}
-          {previewBatch && (
-            <div 
-              className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center p-3"
-              style={{ zIndex: 10500, backgroundColor: 'rgba(0, 0, 0, 0.85)', backdropFilter: 'blur(6px)' }}
-              onClick={() => setPreviewBatch(null)}
-            >
-              <div 
-                className="card bg-dark text-white border-secondary rounded-4 shadow-lg overflow-hidden w-100" 
-                style={{ maxWidth: '780px' }} 
-                onClick={e => e.stopPropagation()}
-              >
-                <div className="card-header bg-dark border-secondary d-flex justify-content-between align-items-center p-3">
-                  <div>
-                    <h5 className="fw-bold mb-0 text-white">{previewBatch.name}</h5>
-                    <small className="text-muted">Batch {previewBatch.batchCode} &bull; ₹{previewBatch.price} / sapling</small>
-                  </div>
-                  <button type="button" className="btn-close btn-close-white" onClick={() => setPreviewBatch(null)}></button>
-                </div>
-                <div className="card-body p-3 bg-black">
-                  <ImageCarousel 
-                    images={previewBatch.images || []} 
-                    title={previewBatch.name} 
-                    subtitle={`Batch ${previewBatch.batchCode} • ₹${previewBatch.price}`}
-                    carouselId={`admin-batch-preview-${previewBatch.batchCode}`}
-                    height="450px"
-                    showThumbnails={true}
-                    objectFit="cover"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* EDIT BATCH MODAL */}
-          {editingBatch && (
-            <div className="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center z-3">
-              <div className="card border-0 shadow-lg rounded-4 p-4 bg-white" style={{ maxWidth: '600px', width: '90%', maxHeight: '90vh', overflowY: 'auto' }}>
-                <div className="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
-                  <h4 className="fw-bold text-dark mb-0"><i className="bi bi-pencil-square text-primary me-2"></i> Edit Batch {editingBatch.batchCode}</h4>
-                  <button className="btn-close" onClick={() => setEditingBatch(null)}></button>
-                </div>
-
-                <div className="mb-3">
-                  <label className="form-label small fw-bold">Price per Sapling (₹) *</label>
-                  <input 
-                    type="number" 
-                    className="form-control fw-bold border-success fs-5 text-success" 
-                    value={editPrice}
-                    onChange={e => setEditPrice(Number(e.target.value))}
-                  />
-                  <small className="text-muted extra-small">Update selling price per sapling for batch {editingBatch.batchCode}.</small>
-                </div>
-
-                <div className="mb-3">
-                  <label className="form-label small fw-bold">Total Batch Quantity *</label>
-                  <input 
-                    type="number" 
-                    className="form-control" 
-                    value={editTotalQuantity}
-                    onChange={e => setEditTotalQuantity(Number(e.target.value))}
-                  />
-                </div>
-
-                <div className="mb-3">
-                  <label className="form-label small fw-bold">Batch Notes / Description</label>
-                  <textarea 
-                    className="form-control" 
-                    rows={2} 
-                    value={editDescription}
-                    onChange={e => setEditDescription(e.target.value)}
-                  ></textarea>
-                </div>
-
-                {/* Edit Batch Customer Visibility Switch */}
-                <div className="mb-3 p-3 bg-light rounded-3 border d-flex justify-content-between align-items-center">
-                  <div>
-                    <label className="form-label small fw-bold text-dark mb-0 d-block">
-                      <i className="bi bi-eye-fill text-success me-1"></i> Customer Visibility
-                    </label>
-                    <small className="text-muted extra-small">
-                      {editIsVisible ? 'This batch is currently VISIBLE to customers on main page & catalog.' : 'This batch is currently HIDDEN from customers.'}
-                    </small>
-                  </div>
-                  <div className="form-check form-switch m-0 fs-5">
-                    <input 
-                      className="form-check-input" 
-                      type="checkbox" 
-                      role="switch" 
-                      id="editBatchVisibility" 
-                      checked={editIsVisible} 
-                      onChange={e => setEditIsVisible(e.target.checked)} 
-                    />
-                    <label className="form-check-label small fw-bold ms-2" htmlFor="editBatchVisibility">
-                      {editIsVisible ? <span className="text-success">ON (Visible)</span> : <span className="text-secondary">OFF (Hidden)</span>}
-                    </label>
-                  </div>
-                </div>
-
-                {/* Edit Mother Trees Selection */}
-                <div className="mb-3 p-3 bg-light rounded-3 border">
-                  <div className="d-flex justify-content-between align-items-center mb-1">
-                    <label className="form-label small fw-bold text-dark mb-0">
-                      <i className="bi bi-tree-fill text-success me-1"></i> Tagged Mother Trees ({editParentPalmCodes.length}) *
-                    </label>
-                    <button 
-                      type="button" 
-                      className="btn btn-outline-success btn-sm py-0 px-2 extra-small"
-                      onClick={() => setEditParentPalmCodes(parentPalms.map(p => p.code))}
-                    >
-                      Select All
-                    </button>
-                  </div>
-                  <small className="text-muted d-block extra-small mb-2">Check or uncheck mother trees contributing to this batch.</small>
-
-                  {/* Selected badges */}
-                  <div className="d-flex flex-wrap gap-1 mb-2">
-                    {editParentPalmCodes.map(code => (
-                      <span key={code} className="badge bg-success-subtle text-success border border-success d-inline-flex align-items-center gap-1">
-                        <strong>{code}</strong>
-                        <button 
-                          type="button" 
-                          className="btn-close btn-close-sm" 
-                          style={{ fontSize: '0.6rem' }}
-                          onClick={() => toggleEditBatchTree(code)}
-                        ></button>
-                      </span>
-                    ))}
-                  </div>
-
-                  {/* Filter input */}
-                  <input 
-                    type="text" 
-                    className="form-control form-control-sm mb-2" 
-                    placeholder="Search trees..."
-                    value={editTreeSearchTerm}
-                    onChange={e => setEditTreeSearchTerm(e.target.value)}
-                  />
-
-                  {/* Options List */}
-                  <div className="border rounded p-2 bg-white overflow-y-auto" style={{ maxHeight: '140px' }}>
-                    <div className="d-flex flex-column gap-1">
-                      {parentPalms
-                        .filter(p => !editTreeSearchTerm || p.code.toLowerCase().includes(editTreeSearchTerm.toLowerCase()) || p.name.toLowerCase().includes(editTreeSearchTerm.toLowerCase()))
-                        .map(p => {
-                          const isSel = editParentPalmCodes.includes(p.code);
-                          return (
-                            <div 
-                              key={p.code} 
-                              className={`p-1 px-2 rounded border d-flex align-items-center justify-content-between ${isSel ? 'border-success bg-success-subtle' : 'bg-light'}`}
-                              style={{ cursor: 'pointer' }}
-                              onClick={() => toggleEditBatchTree(p.code)}
-                            >
-                              <div className="form-check m-0 d-flex align-items-center gap-2">
-                                <input 
-                                  type="checkbox" 
-                                  className="form-check-input" 
-                                  id={`edit-tree-${p.code}`}
-                                  checked={isSel} 
-                                  onChange={() => toggleEditBatchTree(p.code)}
-                                  onClick={e => e.stopPropagation()}
-                                />
-                                <label className="form-check-label extra-small" htmlFor={`edit-tree-${p.code}`} style={{ cursor: 'pointer' }}>
-                                  <strong>{p.code}</strong> - {p.name}
-                                </label>
-                              </div>
-                              <span className="badge bg-light text-dark border extra-small">{p.age} Yrs</span>
-                            </div>
-                          );
-                        })}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Batch Images — Gallery, URL Manager & Uploader */}
-                <div className="mb-3 p-3 bg-light rounded-3 border">
-                  <div className="d-flex justify-content-between align-items-center mb-2">
-                    <label className="form-label small fw-bold text-dark mb-0">
-                      <i className="bi bi-images me-1 text-success"></i> Batch Photo Gallery
-                      <span className="badge bg-success ms-2">{editImages.length} URLs in DB</span>
-                    </label>
-                    {editImages.length > 0 && (
-                      <button
-                        type="button"
-                        className="btn btn-sm btn-outline-danger py-0 px-2 extra-small"
-                        onClick={removeAllEditImages}
-                      >
-                        <i className="bi bi-trash me-1"></i> Clear All
-                      </button>
-                    )}
-                  </div>
-
-                  {/* URL list — editable inline */}
-                  {editImages.length > 0 ? (
-                    <div className="mb-2">
-                      {editImages.map((imgUrl, idx) => (
-                        <div key={idx} className="d-flex align-items-center gap-2 mb-1">
-                          <img
-                            src={imgUrl}
-                            alt={`Photo ${idx + 1}`}
-                            className="rounded border flex-shrink-0"
-                            style={{ width: '48px', height: '48px', objectFit: 'cover' }}
-                            onError={(e) => { (e.target as HTMLImageElement).src = '/images/placeholder.png'; }}
-                          />
-                          <input
-                            type="text"
-                            className="form-control form-control-sm font-monospace"
-                            value={imgUrl}
-                            onChange={e => updateImageUrl(idx, e.target.value)}
-                            placeholder="/images/batches/… or https://…"
-                          />
-                          <button
-                            type="button"
-                            className="btn btn-sm btn-outline-danger px-2"
-                            onClick={() => removeEditImage(idx)}
-                            title="Remove"
-                          >✕</button>
-                        </div>
-                      ))}
-                    </div>
+          {/* Batches Listing Table */}
+          <div className="card border-0 shadow-sm rounded-4 overflow-hidden bg-white mb-5">
+            <div className="table-responsive">
+              <table className="table table-hover align-middle mb-0 text-nowrap">
+                <thead className="table-dark">
+                  <tr>
+                    <th>Photo</th>
+                    <th>Batch ID</th>
+                    <th>Customer Display Name</th>
+                    <th>Primary Farm</th>
+                    <th className="text-center">Sources / Trees</th>
+                    <th>Harvest / Sown</th>
+                    <th className="text-center">Total Qty</th>
+                    <th className="text-center">Available</th>
+                    <th className="text-center">Booked</th>
+                    <th>Price</th>
+                    <th className="text-center">Status</th>
+                    <th className="text-center">Customer Visibility</th>
+                    <th className="text-end">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {loading ? (
+                    <tr>
+                      <td colSpan={13} className="text-center py-5">
+                        <div className="spinner-border text-success" role="status"></div>
+                        <p className="text-muted small mt-2 mb-0">Loading batches...</p>
+                      </td>
+                    </tr>
+                  ) : filteredBatches.length === 0 ? (
+                    <tr>
+                      <td colSpan={13} className="text-center py-5 text-muted">
+                        No batches found matching filters.
+                      </td>
+                    </tr>
                   ) : (
-                    <small className="text-muted d-block mb-2">No photo URLs stored for this batch yet.</small>
+                    filteredBatches.map(batch => {
+                      const metrics = getSaplingMetrics(batch.seededDate);
+                      return (
+                        <tr key={batch.batchCode}>
+                          <td style={{ width: '70px' }}>
+                            <div
+                              className="position-relative rounded-3 overflow-hidden shadow-sm cursor-pointer"
+                              style={{ width: '56px', height: '56px' }}
+                              onClick={() => setPreviewBatch(batch)}
+                              title="Click to view full image"
+                            >
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={batch.images?.[0] || '/images/placeholder.png'}
+                                alt={batch.name}
+                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                              />
+                            </div>
+                          </td>
+                          <td>
+                            <span className="badge bg-secondary-subtle text-secondary font-monospace fw-bold">
+                              {batch.batchCode}
+                            </span>
+                          </td>
+                          <td>
+                            <div className="fw-bold text-dark">{batch.name}</div>
+                            <small className="text-muted extra-small">
+                              Age: {metrics.age} &bull; Height: {metrics.height}
+                            </small>
+                          </td>
+                          <td>
+                            <span className="badge bg-light text-dark border font-monospace">
+                              {batch.primaryFarmCode || 'ETH-RA-F001'}
+                            </span>
+                          </td>
+                          <td className="text-center">
+                            <span className="badge bg-info-subtle text-info border border-info">
+                              {batch.sources?.length || batch.parentPalmCodes?.length || 1} Tree(s)
+                            </span>
+                          </td>
+                          <td>
+                            <small className="d-block text-muted">Cut: {batch.harvestDate}</small>
+                            <small className="d-block text-secondary">Sown: {batch.seededDate}</small>
+                          </td>
+                          <td className="text-center fw-semibold text-primary">{batch.totalQuantity}</td>
+                          <td className="text-center">
+                            <span className={`badge ${batch.availableQuantity > 0 ? 'bg-success' : 'bg-danger'}`}>
+                              {batch.availableQuantity ?? batch.totalQuantity}
+                            </span>
+                          </td>
+                          <td className="text-center fw-semibold text-warning">{batch.bookedQuantity ?? 0}</td>
+                          <td>
+                            <span className="fw-bold text-dark">₹{batch.price}</span>
+                          </td>
+                          <td className="text-center">
+                            <span className={`badge ${
+                              batch.status === 'AVAILABLE' ? 'bg-success' :
+                              batch.status === 'LIMITED' ? 'bg-warning text-dark' :
+                              batch.status === 'COMING_SOON' ? 'bg-info text-dark' : 'bg-secondary'
+                            }`}>
+                              {batch.status}
+                            </span>
+                          </td>
+                          <td className="text-center">
+                            <div className="form-check form-switch d-inline-block">
+                              <input
+                                className="form-check-input cursor-pointer"
+                                type="checkbox"
+                                role="switch"
+                                checked={batch.isVisible !== false}
+                                disabled={togglingBatchCode === batch.batchCode}
+                                onChange={() => handleToggleSingleBatchVisibility(batch)}
+                              />
+                              <label className="form-check-label extra-small fw-semibold ms-1">
+                                {batch.isVisible !== false ? (
+                                  <span className="text-success">ON</span>
+                                ) : (
+                                  <span className="text-secondary">OFF</span>
+                                )}
+                              </label>
+                            </div>
+                          </td>
+                          <td className="text-end">
+                            <div className="btn-group btn-group-sm">
+                              <button
+                                onClick={() => openEditModal(batch)}
+                                className="btn btn-outline-primary"
+                                title="Edit Batch"
+                              >
+                                <i className="bi bi-pencil"></i>
+                              </button>
+                              <Link
+                                href={`/admin/traceability?batchCode=${batch.batchCode}`}
+                                className="btn btn-outline-secondary"
+                                title="View Traceability"
+                              >
+                                <i className="bi bi-diagram-3"></i>
+                              </Link>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
                   )}
-
-                  {/* Add new URL */}
-                  <div className="d-flex gap-2 mb-3">
-                    <input
-                      type="text"
-                      className="form-control form-control-sm font-monospace"
-                      placeholder="Paste image URL: /images/batches/EM-0126-A/batch_1.jpg or https://…"
-                      value={newImageUrl}
-                      onChange={e => setNewImageUrl(e.target.value)}
-                      onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addImageUrl(); } }}
-                    />
-                    <button
-                      type="button"
-                      className="btn btn-sm btn-outline-success fw-bold text-nowrap"
-                      onClick={addImageUrl}
-                    >
-                      <i className="bi bi-plus-lg me-1"></i> Add URL
-                    </button>
-                  </div>
-
-                  {/* Save image URLs immediately to DB */}
-                  <button
-                    type="button"
-                    className="btn btn-primary btn-sm fw-bold w-100 mb-3"
-                    onClick={handleSaveImageUrls}
-                    disabled={savingImages}
-                  >
-                    {savingImages
-                      ? <><i className="bi bi-hourglass-split me-1"></i> Saving to DB…</>
-                      : <><i className="bi bi-cloud-check-fill me-1"></i> Save Image URLs to DB (All Pages Update Instantly)</>}
-                  </button>
-
-                  {/* File upload */}
-                  <div>
-                    <label className="form-label extra-small text-muted mb-1">
-                      {uploading ? 'Uploading…' : 'Or upload photos from device (auto-adds URL to list above):'}
-                    </label>
-                    <input
-                      type="file"
-                      className="form-control form-control-sm"
-                      multiple
-                      accept="image/*"
-                      disabled={uploading}
-                      onChange={handleAddEditFiles}
-                    />
-                  </div>
-                </div>
-
-                <div className="d-flex gap-2 justify-content-end mt-4">
-                  <button className="btn btn-outline-secondary" onClick={() => setEditingBatch(null)}>Cancel</button>
-                  <button 
-                    className="btn btn-success fw-bold"
-                    onClick={handleSaveEdit}
-                  >
-                    <i className="bi bi-check-circle me-1"></i> Save Changes
-                  </button>
-                </div>
-              </div>
+                </tbody>
+              </table>
             </div>
-          )}
+          </div>
 
         </div>
       </section>
+
+      {/* Edit Batch Modal */}
+      {editingBatch && (
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
+          <div className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div className="modal-content rounded-4 border-0 shadow">
+              <div className="modal-header bg-primary text-white">
+                <h5 className="modal-title fw-bold">
+                  <i className="bi bi-pencil-square me-2"></i> Edit Batch: {editingBatch.batchCode}
+                </h5>
+                <button type="button" className="btn-close btn-close-white" onClick={() => setEditingBatch(null)}></button>
+              </div>
+              <div className="modal-body p-4">
+                <div className="row g-3 mb-3">
+                  <div className="col-md-6">
+                    <label className="form-label fw-bold small text-secondary">Price per Sapling (₹)</label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      value={editPrice}
+                      onChange={(e) => setEditPrice(parseInt(e.target.value, 10) || 150)}
+                    />
+                  </div>
+                  <div className="col-md-6">
+                    <label className="form-label fw-bold small text-secondary">Total Quantity</label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      value={editTotalQuantity}
+                      onChange={(e) => setEditTotalQuantity(parseInt(e.target.value, 10) || 500)}
+                    />
+                  </div>
+                  <div className="col-12">
+                    <label className="form-label fw-bold small text-secondary">Description</label>
+                    <textarea
+                      className="form-control"
+                      rows={2}
+                      value={editDescription}
+                      onChange={(e) => setEditDescription(e.target.value)}
+                    ></textarea>
+                  </div>
+                </div>
+
+                {/* Photos Gallery Manager */}
+                <div className="p-3 bg-light rounded-3 mb-3">
+                  <h6 className="fw-bold text-dark mb-2">Photographs ({editImages.length})</h6>
+                  <div className="d-flex flex-wrap gap-2 mb-3">
+                    {editImages.map((imgUrl, idx) => (
+                      <div key={idx} className="position-relative border rounded overflow-hidden" style={{ width: '80px', height: '80px' }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={imgUrl} alt={`Photo ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <button
+                          type="button"
+                          className="btn btn-danger btn-sm p-0 position-absolute top-0 end-0 rounded-circle m-1 d-flex align-items-center justify-content-center"
+                          style={{ width: '20px', height: '20px', fontSize: '10px' }}
+                          onClick={() => setEditImages(prev => prev.filter((_, i) => i !== idx))}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="input-group">
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Add image URL or Cloudinary URL..."
+                      value={newImageUrl}
+                      onChange={(e) => setNewImageUrl(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      className="btn btn-outline-success"
+                      onClick={() => {
+                        if (newImageUrl.trim()) {
+                          setEditImages(prev => [...prev, newImageUrl.trim()]);
+                          setNewImageUrl('');
+                        }
+                      }}
+                    >
+                      Add URL
+                    </button>
+                  </div>
+                </div>
+
+                {/* Customer Visibility Toggle */}
+                <div className="form-check form-switch p-2 bg-light rounded">
+                  <input
+                    className="form-check-input ms-0 me-2"
+                    type="checkbox"
+                    role="switch"
+                    id="editBatchVisSwitch"
+                    checked={editIsVisible}
+                    onChange={(e) => setEditIsVisible(e.target.checked)}
+                  />
+                  <label className="form-check-label fw-semibold" htmlFor="editBatchVisSwitch">
+                    Visible to Customers on Public Site &amp; Batches Pages ({editIsVisible ? 'ON' : 'OFF'})
+                  </label>
+                </div>
+              </div>
+
+              <div className="modal-footer bg-light border-0">
+                <button type="button" className="btn btn-secondary" onClick={() => setEditingBatch(null)}>Cancel</button>
+                <button type="button" className="btn btn-primary fw-bold" onClick={handleSaveEdit} disabled={savingEdit}>
+                  {savingEdit ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Image Preview Popup */}
+      {previewBatch && (
+        <ImageCarousel
+          images={previewBatch.images || ['/images/placeholder.png']}
+          title={`${previewBatch.name} (${previewBatch.batchCode})`}
+          onClose={() => setPreviewBatch(null)}
+        />
+      )}
     </>
   );
 }

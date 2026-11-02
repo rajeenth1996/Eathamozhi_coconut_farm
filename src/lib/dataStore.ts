@@ -1,7 +1,11 @@
 import { connectToDatabase } from '@/lib/mongodb';
 import {
+  FarmModel,
+  MotherTreeModel,
   ParentPalmModel,
   BatchModel,
+  BatchSourceModel,
+  BatchInventoryModel,
   BookingModel,
   ReviewModel,
   FAQModel,
@@ -9,145 +13,46 @@ import {
   InventoryAdjustmentModel,
   SiteSettingsModel
 } from '@/lib/models';
-import { SiteSettings } from '@/lib/types';
+import {
+  Farm,
+  MotherTree,
+  ParentPalm,
+  Batch,
+  BatchSource,
+  BatchInventory,
+  Booking,
+  InventoryAdjustment,
+  Review,
+  FAQ,
+  Enquiry,
+  SiteSettings,
+  PageViewEvent,
+  VisitorJourney
+} from '@/lib/types';
+import {
+  generateFarmId,
+  generateMotherTreeId,
+  generateBatchId,
+  formatBatchDisplayName
+} from '@/lib/idGenerator';
 
-export interface ParentPalm {
-  id: string;
-  code: string;
-  name: string;
-  age: number;
-  location: string;
-  healthStatus: string;
-  yieldHistory: string;
-  description: string;
-  nutCharacteristics: string;
-  whySelected: string;
-  images: string[];
-  isVisible?: boolean;
-}
-
-export interface Batch {
-  id: string;
-  batchCode: string;
-  parentPalmId: string;
-  parentPalmCode: string;
-  parentPalmCodes?: string[];
-  name: string;
-  harvestDate: string; // Coconut Cut From Tree Date
-  seededDate: string; // Seeded On Date
-  age?: string;
-  height?: string;
-  totalQuantity: number;
-  bookedQuantity: number;
-  inventoryAdjustments: number;
-  availableQuantity?: number;
-  bookedPercentage?: number;
-  price: number;
-  status: 'AVAILABLE' | 'LIMITED' | 'SOLD_OUT' | 'COMING_SOON';
-  description: string;
-  viewsCount?: number; // Social proof view counter
-  images: string[];
-  isVisible?: boolean;
-}
-
-export interface InventoryAdjustment {
-  id: string;
-  batchCode: string;
-  quantityChange: number;
-  reason: string;
-  adminName: string;
-  createdAt: string;
-}
-
-export interface Booking {
-  id: string;
-  bookingId: string;
-  batchCode: string;
-  customerName: string;
-  mobile: string;
-  whatsapp: string;
-  address: string;
-  district: string;
-  state: string;
-  pinCode: string;
-  email?: string;
-  farmLocation?: string;
-  specialInstructions?: string;
-  expectedDeliveryDate?: string;
-  deliveryService?: string;
-  nearestHub?: string;
-  quantity: number;
-  subtotal: number;
-  deliveryCharge: number;
-  totalAmount: number;
-  orderType?: 'COMPLETE' | 'PRE_ORDER';
-  isPreOrder?: boolean;
-  paidAmount?: number;
-  advancePaid?: number;
-  balanceAmount?: number;
-  paymentStatus: 'PAID' | 'PENDING_VERIFICATION' | 'FAILED';
-  bookingStatus: 'Pre-order' | 'Payment review' | 'Confirmed' | 'Preparing' | 'Packed' | 'Dispatched' | 'Delivered' | 'Cancelled';
-  paymentScreenshotUrl?: string;
-  receiptUrl?: string;
-  courierName?: string;
-  trackingId?: string;
-  dispatchDate?: string;
-  createdAt: string;
-}
-
-export interface Review {
-  id: string;
-  customerName: string;
-  location: string;
-  batchCode: string;
-  quantity: number;
-  rating: number;
-  comment: string;
-  verified: boolean;
-  date: string;
-}
-
-export interface FAQ {
-  id: string;
-  question: string;
-  answer: string;
-  category: string;
-}
-
-export interface Enquiry {
-  id: string;
-  name: string;
-  mobile: string;
-  location?: string;
-  message: string;
-  status: 'NEW' | 'CONTACTED' | 'RESOLVED';
-  createdAt: string;
-}
-
-export interface PageViewEvent {
-  id: string;
-  sessionId: string;
-  path: string;
-  title?: string;
-  referrer?: string;
-  referrerSource: string;
-  device: 'mobile' | 'tablet' | 'desktop';
-  screenSize?: string;
-  timestamp: string;
-}
-
-export interface VisitorJourney {
-  sessionId: string;
-  startedAt: string;
-  lastActiveAt: string;
-  device: 'mobile' | 'tablet' | 'desktop';
-  referrerSource: string;
-  pathCount: number;
-  steps: string[];
-  convertedToOrder: boolean;
-  orderId?: string;
-}
-
+// Re-export types for backward compatibility
+export type {
+  Farm,
+  MotherTree,
+  ParentPalm,
+  Batch,
+  BatchSource,
+  BatchInventory,
+  Booking,
+  InventoryAdjustment,
+  Review,
+  FAQ,
+  Enquiry,
+  SiteSettings,
+  PageViewEvent,
+  VisitorJourney
+};
 
 // Helper to compute age & height dynamically from Seeded Date
 export function getSaplingMetrics(seededDateStr: string) {
@@ -198,8 +103,11 @@ export function getDynamicBatchStatus(availableQuantity: number, seededDateStr: 
 }
 
 // Global Store State
-let parentPalms: ParentPalm[] = [];
+let farms: Farm[] = [];
+let parentPalms: MotherTree[] = [];
 let batches: Batch[] = [];
+let batchSources: BatchSource[] = [];
+let batchInventory: BatchInventory[] = [];
 let bookings: Booking[] = [];
 let adjustments: InventoryAdjustment[] = [];
 let reviews: Review[] = [];
@@ -251,27 +159,21 @@ const TMP_DB_FILE = pathModule && typeof process !== 'undefined'
 
 function loadFromDb() {
   if (!fsModule) return;
+
   try {
-    let raw: string | null = null;
-    // Prefer /tmp file if runtime mutations occurred in this serverless container
-    if (TMP_DB_FILE && fsModule.existsSync(TMP_DB_FILE)) {
-      try { raw = fsModule.readFileSync(TMP_DB_FILE, 'utf-8'); } catch {}
-    }
-    if (!raw && DB_FILE && fsModule.existsSync(DB_FILE)) {
-      try { raw = fsModule.readFileSync(DB_FILE, 'utf-8'); } catch {}
+    let filePath = DB_FILE;
+    if (filePath && !fsModule.existsSync(filePath)) {
+      filePath = TMP_DB_FILE;
     }
 
-    if (raw) {
+    if (filePath && fsModule.existsSync(filePath)) {
+      const raw = fsModule.readFileSync(filePath, 'utf-8');
       const data = JSON.parse(raw);
+      if (Array.isArray(data.farms)) farms = data.farms;
       if (Array.isArray(data.parentPalms)) parentPalms = data.parentPalms;
-      if (Array.isArray(data.batches)) {
-        batches = data.batches.map((b: any) => ({
-          ...b,
-          parentPalmCodes: (Array.isArray(b.parentPalmCodes) && b.parentPalmCodes.length > 0)
-            ? b.parentPalmCodes
-            : [b.parentPalmCode || 'EM-MP-001']
-        }));
-      }
+      if (Array.isArray(data.batches)) batches = data.batches;
+      if (Array.isArray(data.batchSources)) batchSources = data.batchSources;
+      if (Array.isArray(data.batchInventory)) batchInventory = data.batchInventory;
       if (Array.isArray(data.bookings)) bookings = data.bookings;
       if (Array.isArray(data.adjustments)) adjustments = data.adjustments;
       if (Array.isArray(data.enquiries)) enquiries = data.enquiries;
@@ -279,24 +181,23 @@ function loadFromDb() {
       if (Array.isArray(data.faqs)) faqs = data.faqs;
       if (Array.isArray(data.pageViews)) pageViews = data.pageViews;
       if (Array.isArray(data.visitorJourneys)) visitorJourneys = data.visitorJourneys;
-      if (data.siteSettings && typeof data.siteSettings === 'object') {
-        siteSettings = {
-          showBatchesOnMainPage: data.siteSettings.showBatchesOnMainPage !== false,
-          showMotherTreesOnMainPage: data.siteSettings.showMotherTreesOnMainPage !== false,
-        };
-      }
+      if (data.siteSettings) siteSettings = data.siteSettings;
     }
   } catch (err) {
-    // Non-fatal fallback to initial data
+    console.error('Failed to load local DB:', err);
   }
 }
 
 function saveToDb() {
   if (!fsModule || !pathModule) return;
+
   try {
     const payload = {
+      farms,
       parentPalms,
       batches,
+      batchSources,
+      batchInventory,
       bookings,
       adjustments,
       enquiries,
@@ -309,7 +210,6 @@ function saveToDb() {
     const jsonStr = JSON.stringify(payload, null, 2);
 
     let saved = false;
-    // Try saving to DB_FILE first (local dev / persistent storage)
     if (DB_FILE) {
       try {
         const dir = pathModule.dirname(DB_FILE);
@@ -318,95 +218,30 @@ function saveToDb() {
         }
         fsModule.writeFileSync(DB_FILE, jsonStr, 'utf-8');
         saved = true;
-      } catch {
-        // Read-only filesystem in serverless production
-      }
+      } catch {}
     }
 
-    // In serverless environments (e.g. Vercel), fall back to writable /tmp
     if (!saved && TMP_DB_FILE) {
       try {
         fsModule.writeFileSync(TMP_DB_FILE, jsonStr, 'utf-8');
       } catch {}
     }
-  } catch (err) {
-    // Silently continue with in-memory state if filesystem is strictly read-only
-  }
+  } catch (err) {}
 }
 
-// Auto-scan to ensure newly uploaded or existing photos on disk are never missed
-function syncDiskImages() { return;
-  if (!fsModule || !pathModule || typeof process === 'undefined') return;
-  try {
-    const batchesBase = pathModule.join(process.cwd(), 'public', 'images', 'batches');
-    const palmsBase = pathModule.join(process.cwd(), 'public', 'images', 'parent-palms');
-
-    // Sync batches
-    if (fsModule.existsSync(batchesBase)) {
-      batches.forEach(b => {
-        const folder = pathModule.join(batchesBase, b.batchCode);
-        if (fsModule.existsSync(folder)) {
-          const files = fsModule.readdirSync(folder).filter((f: string) => /\.(jpe?g|png|webp)$/i.test(f));
-          if (files.length > 0) {
-            const diskUrls: string[] = files.map((f: string) => `/images/batches/${b.batchCode}/${f}`);
-            const validCurrent: string[] = (b.images || []).filter((img: string) => {
-              if (img.startsWith('/images/')) {
-                const diskPath = pathModule.join(process.cwd(), 'public', img.replace(/^\//, ''));
-                return fsModule.existsSync(diskPath);
-              }
-              return true;
-            });
-            if (validCurrent.length === 0) {
-              b.images = diskUrls;
-            } else {
-              b.images = validCurrent;
-            }
-          }
-        }
-      });
-    }
-
-    // Sync parent palms
-    if (fsModule.existsSync(palmsBase)) {
-      parentPalms.forEach(p => {
-        const folder = pathModule.join(palmsBase, p.code);
-        if (fsModule.existsSync(folder)) {
-          const files = fsModule.readdirSync(folder).filter((f: string) => /\.(jpe?g|png|webp)$/i.test(f));
-          if (files.length > 0) {
-            const diskUrls: string[] = files.map((f: string) => `/images/parent-palms/${p.code}/${f}`);
-            const validCurrent: string[] = (p.images || []).filter((img: string) => {
-              if (img.startsWith('/images/')) {
-                const diskPath = pathModule.join(process.cwd(), 'public', img.replace(/^\//, ''));
-                return fsModule.existsSync(diskPath);
-              }
-              return true;
-            });
-            if (validCurrent.length === 0) {
-              p.images = diskUrls;
-            } else {
-              p.images = validCurrent;
-            }
-          }
-        }
-      });
-    }
-  } catch (e) {
-    console.error('Error syncing disk images:', e);
-  }
+function syncDiskImages() {
+  return;
 }
 
-// Initial hydration from DB and sync with disk
+// Initial hydration from DB
 if (typeof window === 'undefined') {
   loadFromDb();
-  syncDiskImages();
   saveToDb();
 }
 
-// Helper Functions
-
 let mongoSyncPromise: Promise<void> | null = null;
 let lastMongoSyncTime = 0;
-const MONGO_SYNC_TTL = 3000; // 3 seconds in-memory cache TTL between syncs
+const MONGO_SYNC_TTL = 3000;
 
 async function syncFromMongo(force = false): Promise<void> {
   const now = Date.now();
@@ -422,9 +257,12 @@ async function syncFromMongo(force = false): Promise<void> {
       const conn = await connectToDatabase();
       if (!conn) return;
 
-      const [mPalms, mBatches, mBookings, mEnquiries, mReviews, mAdjustments, mFaqs, mSettings] = await Promise.all([
+      const [mFarms, mPalms, mBatches, mSources, mInventory, mBookings, mEnquiries, mReviews, mAdjustments, mFaqs, mSettings] = await Promise.all([
+        FarmModel.find({}).lean(),
         ParentPalmModel.find({}).lean(),
         BatchModel.find({}).lean(),
+        BatchSourceModel.find({}).lean(),
+        BatchInventoryModel.find({}).lean(),
         BookingModel.find({}).lean(),
         EnquiryModel.find({}).lean(),
         ReviewModel.find({}).lean(),
@@ -433,20 +271,47 @@ async function syncFromMongo(force = false): Promise<void> {
         SiteSettingsModel.findOne({ id: 'site_settings' }).lean(),
       ]);
 
+      if (Array.isArray(mFarms) && mFarms.length > 0) {
+        farms = mFarms.map((f: any) => ({
+          id: f.id || `farm-${f.farmCode?.toLowerCase() || Date.now()}`,
+          farmCode: f.farmCode,
+          farmName: f.farmName,
+          ownerName: f.ownerName,
+          ownerCode: f.ownerCode,
+          locationCode: f.locationCode,
+          location: f.location,
+          status: f.status || 'Active',
+          notes: f.notes || '',
+          createdAt: f.createdAt || new Date().toISOString(),
+          updatedAt: f.updatedAt || new Date().toISOString()
+        }));
+      }
+
       if (Array.isArray(mPalms) && mPalms.length > 0) {
         parentPalms = mPalms.map((p: any) => ({
           id: p.id || `mp-${Date.now()}`,
-          code: p.code,
+          motherTreeCode: p.motherTreeCode || p.code || 'ETH-RA-F001-MT001',
+          code: p.code || p.motherTreeCode || 'ETH-RA-F001-MT001',
+          farmId: p.farmId || (farms[0]?.id || 'farm-eth-ra-f001'),
+          farmCode: p.farmCode || (farms[0]?.farmCode || 'ETH-RA-F001'),
+          farmName: p.farmName || (farms[0]?.farmName || 'Eathamozhi Ancestral Heritage Coconut Farm'),
           name: p.name,
+          variety: p.variety || 'West Coast Tall (Eathamozhi Tall)',
           age: Number(p.age) || 40,
-          location: p.location || 'Eathamozhi Farm',
+          location: p.location || 'Heritage Grove',
           healthStatus: p.healthStatus || 'Excellent',
           yieldHistory: p.yieldHistory || '',
           description: p.description || '',
           nutCharacteristics: p.nutCharacteristics || '',
           whySelected: p.whySelected || '',
           images: Array.isArray(p.images) ? p.images : [],
-          isVisible: p.isVisible !== false
+          selectionStatus: p.selectionStatus || 'Selected',
+          verificationStatus: p.verificationStatus || 'Verified',
+          productionStatus: p.productionStatus || 'Active for Production',
+          notes: p.notes || '',
+          isVisible: p.isVisible !== false,
+          createdAt: p.createdAt || new Date().toISOString(),
+          updatedAt: p.updatedAt || new Date().toISOString()
         }));
       }
 
@@ -454,6 +319,13 @@ async function syncFromMongo(force = false): Promise<void> {
         batches = mBatches.map((b: any) => ({
           id: b.id || `b-${Date.now()}`,
           batchCode: b.batchCode,
+          primaryFarmId: b.primaryFarmId || (farms[0]?.id || 'farm-eth-ra-f001'),
+          primaryFarmCode: b.primaryFarmCode || (farms[0]?.farmCode || 'ETH-RA-F001'),
+          batchMonth: Number(b.batchMonth) || 11,
+          batchYear: Number(b.batchYear) || 2026,
+          batchNumber: Number(b.batchNumber) || 1,
+          totalCoconuts: Number(b.totalCoconuts) || 0,
+          totalSeedlings: Number(b.totalSeedlings) || 0,
           parentPalmId: b.parentPalmId || 'mp-1',
           parentPalmCode: b.parentPalmCode || 'EM-MP-001',
           parentPalmCodes: (Array.isArray(b.parentPalmCodes) && b.parentPalmCodes.length > 0) ? b.parentPalmCodes : [b.parentPalmCode || 'EM-MP-001'],
@@ -470,10 +342,18 @@ async function syncFromMongo(force = false): Promise<void> {
           description: b.description || '',
           viewsCount: Number(b.viewsCount) || 0,
           images: Array.isArray(b.images) ? b.images : [],
-          isVisible: b.isVisible !== false
+          isVisible: b.isVisible !== false,
+          createdAt: b.createdAt || new Date().toISOString(),
+          updatedAt: b.updatedAt || new Date().toISOString()
         }));
       }
 
+      if (Array.isArray(mSources) && mSources.length > 0) {
+        batchSources = mSources.map((s: any) => ({ ...s }));
+      }
+      if (Array.isArray(mInventory) && mInventory.length > 0) {
+        batchInventory = mInventory.map((i: any) => ({ ...i }));
+      }
       if (Array.isArray(mBookings) && mBookings.length > 0) {
         bookings = mBookings.map((b: any) => ({ ...b }));
       }
@@ -509,601 +389,328 @@ async function syncFromMongo(force = false): Promise<void> {
 }
 
 export const DataStore = {
-  getBatches: () => {
+  // ─── Farm Registry & Farm-Wise Dashboard ────────────────────────────────────
+  getFarms: (): Farm[] => {
     loadFromDb();
-    return batches.map(b => {
-      // Dynamically sum active (non-cancelled) bookings for this batch
-      const activeBookings = bookings.filter(
-        bk => bk.batchCode.toLowerCase() === b.batchCode.toLowerCase() && bk.bookingStatus !== 'Cancelled'
+    return farms.map(f => {
+      const farmTrees = parentPalms.filter(p => p.farmId === f.id || p.farmCode === f.farmCode);
+      const totalMotherTrees = farmTrees.length;
+      const selectedMotherTrees = farmTrees.filter(p => p.selectionStatus === 'Selected').length;
+
+      const fSources = batchSources.filter(s => s.farmId === f.id || s.farmCode === f.farmCode);
+      const usedTreeIds = new Set(fSources.map(s => s.motherTreeCode || s.motherTreeId));
+      const treesUsedInBatches = usedTreeIds.size;
+
+      const activeBatchCodes = new Set(
+        fSources.map(s => s.batchCode).filter(code => {
+          const b = batches.find(bt => bt.batchCode.toLowerCase() === code.toLowerCase());
+          return b && b.status !== 'SOLD_OUT';
+        })
       );
-      const computedBookedQuantity = activeBookings.reduce((sum, bk) => sum + bk.quantity, 0);
-      const netStock = Math.max(0, b.totalQuantity + (b.inventoryAdjustments || 0));
-      const available = Math.max(0, netStock - computedBookedQuantity);
-      const metrics = getSaplingMetrics(b.seededDate);
-      const computedStatus = getDynamicBatchStatus(available, b.seededDate);
+      const activeBatches = activeBatchCodes.size;
+
+      const fInv = batchInventory.filter(i => i.farmId === f.id || i.farmCode === f.farmCode);
+      const totalCoconutsCollected = fSources.reduce((sum, s) => sum + (Number(s.coconutQuantity) || 0), 0);
+      const totalSeedlingsProduced = fInv.reduce((sum, i) => sum + (Number(i.seedlingsProduced) || 0), 0);
+      const availableSeedlings = fInv.reduce((sum, i) => sum + (Number(i.availableQuantity) || 0), 0);
+      const bookedSeedlings = fInv.reduce((sum, i) => sum + (Number(i.bookedQuantity) || 0), 0);
+      const dispatchedSeedlings = fInv.reduce((sum, i) => sum + (Number(i.dispatchedQuantity) || 0), 0);
+      const damagedSeedlings = fInv.reduce((sum, i) => sum + (Number(i.damagedQuantity) || 0), 0);
+      const rejectedSeedlings = fInv.reduce((sum, i) => sum + (Number(i.rejectedQuantity) || 0), 0);
 
       return {
-        ...b,
-        bookedQuantity: computedBookedQuantity,
-        inventoryAdjustments: b.inventoryAdjustments || 0,
-        age: metrics.age,
-        height: metrics.height,
-        availableQuantity: available,
-        status: computedStatus,
-        bookedPercentage: netStock > 0 ? Number(((computedBookedQuantity / netStock) * 100).toFixed(1)) : 0,
-        isVisible: b.isVisible !== false
+        ...f,
+        totalMotherTrees,
+        selectedMotherTrees,
+        treesUsedInBatches,
+        activeBatches,
+        totalCoconutsCollected,
+        totalSeedlingsProduced,
+        availableSeedlings,
+        bookedSeedlings,
+        dispatchedSeedlings,
+        damagedSeedlings,
+        rejectedSeedlings
       };
     });
   },
 
-  getOldestAvailableBatch: () => {
+  getFarmsAsync: async (): Promise<Farm[]> => {
     loadFromDb();
-    const all = DataStore.getBatches();
-    const readyAvailable = all.filter(b => b.availableQuantity > 0 && b.status !== 'COMING_SOON');
-    readyAvailable.sort((a, b) => new Date(a.seededDate).getTime() - new Date(b.seededDate).getTime());
-    return readyAvailable[0] || all.find(b => b.availableQuantity > 0) || all[0];
+    await syncFromMongo();
+    return DataStore.getFarms();
   },
 
-  getBatchByCode: (code: string) => {
-    loadFromDb();
-    const all = DataStore.getBatches();
-    const b = all.find(x => x.batchCode.toLowerCase() === code.toLowerCase());
-    if (!b) return null;
-    const realBatch = batches.find(x => x.batchCode.toLowerCase() === code.toLowerCase());
-    if (realBatch) {
-      realBatch.viewsCount = (realBatch.viewsCount || 0) + 1;
-      saveToDb();
-    }
-    return b;
+  getFarmByCode: (code: string): Farm | undefined => {
+    const list = DataStore.getFarms();
+    return list.find(f => f.farmCode.toLowerCase() === code.toLowerCase() || f.id === code);
   },
 
-  addBatch: (newBatchData: any) => {
+  getFarmByCodeAsync: async (code: string): Promise<Farm | undefined> => {
     loadFromDb();
-    const combinedName = newBatchData.name.includes(newBatchData.batchCode) 
-      ? newBatchData.name 
-      : `${newBatchData.name} (${newBatchData.batchCode})`;
-
-    const defaultFolderImages = ['/images/placeholder.png'];
-
-    // Multi-Mother tree support
-    let codes: string[] = [];
-    if (Array.isArray(newBatchData.parentPalmCodes) && newBatchData.parentPalmCodes.length > 0) {
-      codes = newBatchData.parentPalmCodes;
-    } else if (newBatchData.parentPalmCode) {
-      codes = [newBatchData.parentPalmCode];
-    } else {
-      codes = ['EM-MP-001'];
-    }
-    const primaryCode = codes[0];
-    const parent = parentPalms.find(p => p.code.toLowerCase() === primaryCode.toLowerCase());
-
-    const created: Batch = {
-      id: `b-${Date.now()}`,
-      batchCode: newBatchData.batchCode,
-      parentPalmId: parent ? parent.id : (newBatchData.parentPalmId || 'mp-1'),
-      parentPalmCode: primaryCode,
-      parentPalmCodes: codes,
-      name: combinedName,
-      harvestDate: newBatchData.harvestDate,
-      seededDate: newBatchData.seededDate,
-      totalQuantity: Number(newBatchData.totalQuantity),
-      bookedQuantity: 0,
-      inventoryAdjustments: 0,
-      price: Number(newBatchData.price),
-      status: 'AVAILABLE',
-      description: newBatchData.description || '',
-      viewsCount: 15,
-      images: newBatchData.images && newBatchData.images.length > 0 ? newBatchData.images : defaultFolderImages,
-      isVisible: newBatchData.isVisible !== undefined ? Boolean(newBatchData.isVisible) : true
-    };
-
-    batches.unshift(created);
-    saveToDb();
-    return DataStore.getBatchByCode(created.batchCode);
+    await syncFromMongo();
+    return DataStore.getFarmByCode(code);
   },
 
-  updateBatch: (code: string, updatedFields: Partial<Batch> & { parentPalmCodes?: string[] }) => {
+  getFarmDetails: (code: string): any => {
+    const farm = DataStore.getFarmByCode(code);
+    if (!farm) return null;
+
     loadFromDb();
-    const target = batches.find(b => b.batchCode.toLowerCase() === code.toLowerCase());
-    if (!target) throw new Error('Batch not found');
+    const trees = parentPalms.filter(p => p.farmId === farm.id || p.farmCode === farm.farmCode);
+    const selectedTrees = trees.filter(p => p.selectionStatus === 'Selected');
+    const fSources = batchSources.filter(s => s.farmId === farm.id || s.farmCode === farm.farmCode);
+    const usedTreeCodes = new Set(fSources.map(s => s.motherTreeCode));
+    const usedTrees = trees.filter(p => usedTreeCodes.has(p.motherTreeCode || p.code));
 
-    if (updatedFields.isVisible !== undefined) target.isVisible = Boolean(updatedFields.isVisible);
-    if (updatedFields.price !== undefined) target.price = Number(updatedFields.price);
-    if (updatedFields.totalQuantity !== undefined) target.totalQuantity = Number(updatedFields.totalQuantity);
-    if (updatedFields.harvestDate) target.harvestDate = updatedFields.harvestDate;
-    if (updatedFields.seededDate) target.seededDate = updatedFields.seededDate;
-    if (updatedFields.description) target.description = updatedFields.description;
-    if (updatedFields.name) {
-      target.name = updatedFields.name.includes(target.batchCode) ? updatedFields.name : `${updatedFields.name} (${target.batchCode})`;
-    }
-    if (updatedFields.images) {
-      target.images = updatedFields.images;
-    }
-    if (updatedFields.parentPalmCodes && Array.isArray(updatedFields.parentPalmCodes) && updatedFields.parentPalmCodes.length > 0) {
-      target.parentPalmCodes = updatedFields.parentPalmCodes;
-      target.parentPalmCode = updatedFields.parentPalmCodes[0];
-      const parent = parentPalms.find(p => p.code.toLowerCase() === target.parentPalmCode.toLowerCase());
-      if (parent) target.parentPalmId = parent.id;
-    } else if (updatedFields.parentPalmCode) {
-      target.parentPalmCode = updatedFields.parentPalmCode;
-      target.parentPalmCodes = [updatedFields.parentPalmCode];
-      const parent = parentPalms.find(p => p.code.toLowerCase() === updatedFields.parentPalmCode?.toLowerCase());
-      if (parent) target.parentPalmId = parent.id;
-    }
-
-    saveToDb();
-    return DataStore.getBatchByCode(code);
-  },
-
-  deleteBatch: (code: string) => {
-    loadFromDb();
-    batches = batches.filter(b => b.batchCode.toLowerCase() !== code.toLowerCase());
-    saveToDb();
-    return true;
-  },
-
-  getParentPalms: () => {
-    loadFromDb();
-    return parentPalms.map(p => ({ ...p, isVisible: p.isVisible !== false }));
-  },
-
-  getParentPalmByCode: (code: string) => {
-    loadFromDb();
-    const palm = parentPalms.find(p => p.code.toLowerCase() === code.toLowerCase());
-    if (!palm) return null;
-    return { ...palm, isVisible: palm.isVisible !== false };
-  },
-
-  addParentPalm: (data: Omit<ParentPalm, 'id'>) => {
-    loadFromDb();
-    const defaultTreeImages = ['/images/placeholder.png'];
-    const created: ParentPalm = {
-      ...data,
-      id: `mp-${Date.now()}`,
-      images: data.images && data.images.length > 0 ? data.images : defaultTreeImages
-    };
-    parentPalms.unshift(created);
-    saveToDb();
-    return created;
-  },
-
-  updateParentPalm: (identifier: string, updatedFields: Partial<ParentPalm>) => {
-    loadFromDb();
-    const target = parentPalms.find(p => 
-      p.id === identifier || 
-      p.code.toLowerCase() === identifier.toLowerCase()
+    const farmBatchCodes = new Set(fSources.map(s => s.batchCode));
+    const associatedBatches = batches.filter(
+      b => farmBatchCodes.has(b.batchCode) || b.primaryFarmCode === farm.farmCode || b.primaryFarmId === farm.id
     );
-    if (!target) throw new Error('Parent palm mother tree not found');
-    if (updatedFields.images && Array.isArray(updatedFields.images)) {
-      target.images = [...updatedFields.images];
-    }
-    Object.assign(target, updatedFields);
-    saveToDb();
-    return target;
-  },
-
-  deleteParentPalm: (codeOrId: string) => {
-    loadFromDb();
-    parentPalms = parentPalms.filter(p => p.id !== codeOrId && p.code.toLowerCase() !== codeOrId.toLowerCase());
-    saveToDb();
-    return true;
-  },
-
-  getEnquiries: () => {
-    loadFromDb();
-    return enquiries;
-  },
-
-  addEnquiry: (data: Omit<Enquiry, 'id' | 'status' | 'createdAt'>) => {
-    loadFromDb();
-    const created: Enquiry = {
-      ...data,
-      id: `enq-${Date.now()}`,
-      status: 'NEW',
-      createdAt: new Date().toISOString()
-    };
-    enquiries.unshift(created);
-    saveToDb();
-    return created;
-  },
-
-  updateEnquiryStatus: (id: string, status: 'NEW' | 'CONTACTED' | 'RESOLVED') => {
-    loadFromDb();
-    const target = enquiries.find(e => e.id === id);
-    if (target) target.status = status;
-    saveToDb();
-    return target;
-  },
-
-  getBookings: () => {
-    loadFromDb();
-    return bookings;
-  },
-
-  // Orders API (alias for bookings)
-  getOrders: () => {
-    loadFromDb();
-    return bookings;
-  },
-
-  // Update an order (booking) by ID
-  updateOrder: (orderId: string, changes: Partial<Booking>) => {
-    loadFromDb();
-    const target = bookings.find(b => b.id === orderId || b.bookingId === orderId);
-    if (!target) throw new Error('Order not found');
-    Object.assign(target, changes);
-    saveToDb();
-    return target;
-  },
-
-  // Placeholder for generic image reference handling
-  addImageReference: (type: string, url: string) => {
-    // Currently no-op; can be extended to store references per type.
-    return true;
-  },
-
-  getBookingsByMobile: (mobile: string) => {
-    loadFromDb();
-    const cleanMob = mobile.trim();
-    if (!cleanMob) return [];
-    return bookings.filter(b => 
-      b.mobile.includes(cleanMob) || 
-      b.whatsapp.includes(cleanMob) ||
-      b.bookingId.toLowerCase().includes(cleanMob.toLowerCase())
-    );
-  },
-
-  getBookingById: (bookingId: string, mobile?: string) => {
-    loadFromDb();
-    const cleanId = bookingId.trim().toUpperCase();
-    return bookings.find(b => {
-      const matchId = b.bookingId.toUpperCase() === cleanId;
-      if (mobile) {
-        return matchId && b.mobile.includes(mobile.trim());
-      }
-      return matchId;
-    }) || null;
-  },
-
-  createBooking: (data: Omit<Booking, 'id' | 'bookingId' | 'createdAt' | 'paymentStatus' | 'bookingStatus'> & { paymentScreenshotUrl?: string; bookingStatus?: string }) => {
-    loadFromDb();
-    const batch = DataStore.getBatchByCode(data.batchCode);
-    if (!batch || batch.availableQuantity < data.quantity) {
-      throw new Error('Requested quantity exceeds available stock.');
-    }
-
-    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-    const bookingId = `${data.batchCode}-${randomSuffix}`;
-    
-    const resolvedAddress = data.address?.trim()
-      ? data.address.trim()
-      : `${data.district}, ${data.state} - ${data.pinCode}`;
-    const resolvedWhatsapp = data.whatsapp?.trim() || data.mobile;
-    const resolvedCourier = data.deliveryService?.trim() || 'MSS Parcel Service';
-
-    const isPreOrder = Boolean(data.isPreOrder || data.orderType === 'PRE_ORDER' || (data as any).bookingStatus === 'Pre-order');
-    const orderType = isPreOrder ? 'PRE_ORDER' : 'COMPLETE';
-    const totalAmount = Number(data.totalAmount) || 0;
-    const paidAmount = isPreOrder ? (Number(data.paidAmount) || Number(data.advancePaid) || Math.round(totalAmount / 2)) : totalAmount;
-    const balanceAmount = isPreOrder ? Math.max(0, totalAmount - paidAmount) : 0;
-    const initialStatus = isPreOrder ? 'Pre-order' : 'Payment review';
-
-    const newBooking: Booking = {
-      ...data,
-      address: resolvedAddress,
-      whatsapp: resolvedWhatsapp,
-      deliveryService: resolvedCourier,
-      orderType,
-      isPreOrder,
-      paidAmount,
-      advancePaid: isPreOrder ? paidAmount : undefined,
-      balanceAmount,
-      id: `bk-${Date.now()}`,
-      bookingId,
-      paymentStatus: 'PENDING_VERIFICATION',
-      bookingStatus: (data.bookingStatus as any) || initialStatus,
-      createdAt: new Date().toISOString()
-    };
-
-    bookings.unshift(newBooking);
-    saveToDb();
-    return newBooking;
-  },
-
-  updateBookingStatus: (bookingId: string, status: Booking['bookingStatus'], courierName?: string, trackingId?: string) => {
-    loadFromDb();
-    const bk = bookings.find(b => b.bookingId === bookingId);
-    if (!bk) return null;
-    bk.bookingStatus = status;
-    if (status === 'Confirmed' || status === 'Preparing' || status === 'Dispatched' || status === 'Delivered') {
-      bk.paymentStatus = 'PAID';
-    }
-    if (courierName) bk.courierName = courierName;
-    if (trackingId) bk.trackingId = trackingId;
-    if (status === 'Dispatched') bk.dispatchDate = new Date().toISOString().split('T')[0];
-    saveToDb();
-    return bk;
-  },
-
-  adjustInventory: (batchCode: string, change: number, reason: string, adminName: string) => {
-    loadFromDb();
-    const targetBatch = batches.find(b => b.batchCode.toLowerCase() === batchCode.toLowerCase());
-    if (!targetBatch) throw new Error('Batch not found');
-    
-    targetBatch.inventoryAdjustments = (targetBatch.inventoryAdjustments || 0) + change;
-    
-    const newAdj: InventoryAdjustment = {
-      id: `adj-${Date.now()}`,
-      batchCode: targetBatch.batchCode,
-      quantityChange: change,
-      reason,
-      adminName,
-      createdAt: new Date().toISOString()
-    };
-    
-    adjustments.unshift(newAdj);
-    saveToDb();
-    return newAdj;
-  },
-
-  syncImagesWithDisk: () => {
-    syncDiskImages();
-    saveToDb();
-    return true;
-  },
-
-  getAdjustments: () => {
-    loadFromDb();
-    return adjustments;
-  },
-  getReviews: () => {
-    loadFromDb();
-    return reviews;
-  },
-  getReviewById: (id: string) => {
-    loadFromDb();
-    return reviews.find(r => r.id === id) || null;
-  },
-  addReview: (reviewData: Partial<Review>) => {
-    loadFromDb();
-    const newReview: Review = {
-      id: reviewData.id || `rev-${Date.now()}`,
-      customerName: (reviewData.customerName || 'Verified Farmer').trim(),
-      location: (reviewData.location || 'Tamil Nadu').trim(),
-      batchCode: (reviewData.batchCode || 'EM-0126-A').trim(),
-      quantity: Math.max(1, Number(reviewData.quantity) || 1),
-      rating: Math.min(5, Math.max(1, Number(reviewData.rating) || 5)),
-      comment: (reviewData.comment || '').trim(),
-      verified: reviewData.verified !== undefined ? Boolean(reviewData.verified) : true,
-      date: reviewData.date || new Date().toISOString().split('T')[0]
-    };
-    reviews.unshift(newReview);
-    saveToDb();
-    return newReview;
-  },
-  updateReview: (id: string, updatedFields: Partial<Review>) => {
-    loadFromDb();
-    const index = reviews.findIndex(r => r.id === id);
-    if (index === -1) {
-      throw new Error(`Review with id ${id} not found`);
-    }
-    const current = reviews[index];
-    const updatedReview: Review = {
-      ...current,
-      customerName: updatedFields.customerName !== undefined ? updatedFields.customerName.trim() : current.customerName,
-      location: updatedFields.location !== undefined ? updatedFields.location.trim() : current.location,
-      batchCode: updatedFields.batchCode !== undefined ? updatedFields.batchCode.trim() : current.batchCode,
-      quantity: updatedFields.quantity !== undefined ? Math.max(1, Number(updatedFields.quantity) || 1) : current.quantity,
-      rating: updatedFields.rating !== undefined ? Math.min(5, Math.max(1, Number(updatedFields.rating) || 5)) : current.rating,
-      comment: updatedFields.comment !== undefined ? updatedFields.comment.trim() : current.comment,
-      verified: updatedFields.verified !== undefined ? Boolean(updatedFields.verified) : current.verified,
-      date: updatedFields.date !== undefined ? updatedFields.date.trim() : current.date
-    };
-    reviews[index] = updatedReview;
-    saveToDb();
-    return updatedReview;
-  },
-  deleteReview: (id: string) => {
-    loadFromDb();
-    const beforeCount = reviews.length;
-    reviews = reviews.filter(r => r.id !== id);
-    saveToDb();
-    return reviews.length < beforeCount;
-  },
-  getFaqs: () => {
-    loadFromDb();
-    return faqs;
-  },
-
-  recordPageView: (event: {
-    sessionId: string;
-    path: string;
-    title?: string;
-    referrer?: string;
-    referrerSource?: string;
-    device?: 'mobile' | 'tablet' | 'desktop';
-    screenSize?: string;
-    orderId?: string;
-  }) => {
-    loadFromDb();
-    const timestamp = new Date().toISOString();
-    const id = `pv-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-
-    const pageView: PageViewEvent = {
-      id,
-      sessionId: event.sessionId,
-      path: event.path,
-      title: event.title,
-      referrer: event.referrer,
-      referrerSource: event.referrerSource || 'Direct / Bookmark',
-      device: event.device || 'desktop',
-      screenSize: event.screenSize,
-      timestamp,
-    };
-
-    pageViews.unshift(pageView);
-    if (pageViews.length > 1000) pageViews.pop();
-
-    // Update or create Visitor Journey
-    let journey = visitorJourneys.find(j => j.sessionId === event.sessionId);
-    if (!journey) {
-      journey = {
-        sessionId: event.sessionId,
-        startedAt: timestamp,
-        lastActiveAt: timestamp,
-        device: event.device || 'desktop',
-        referrerSource: event.referrerSource || 'Direct / Bookmark',
-        pathCount: 1,
-        steps: [event.path],
-        convertedToOrder: Boolean(event.orderId || event.path.startsWith('/confirmation')),
-        orderId: event.orderId,
-      };
-      visitorJourneys.unshift(journey);
-    } else {
-      journey.lastActiveAt = timestamp;
-      journey.pathCount = (journey.pathCount || 0) + 1;
-      if (!journey.steps.includes(event.path)) {
-        journey.steps.push(event.path);
-      }
-      if (event.orderId || event.path.startsWith('/confirmation')) {
-        journey.convertedToOrder = true;
-        if (event.orderId) journey.orderId = event.orderId;
-      }
-    }
-
-    if (visitorJourneys.length > 500) visitorJourneys.pop();
-    saveToDb();
-    return pageView;
-  },
-
-  getAnalyticsSummary: () => {
-    loadFromDb();
-    const now = new Date();
-    const todayStr = now.toISOString().split('T')[0];
-    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
-
-    const totalViews = pageViews.length;
-    const viewsToday = pageViews.filter(pv => pv.timestamp.startsWith(todayStr)).length;
-    const views7d = pageViews.filter(pv => pv.timestamp >= sevenDaysAgo).length;
-
-    const uniqueSessions = visitorJourneys.length;
-    const sessionsToday = visitorJourneys.filter(j => j.startedAt.startsWith(todayStr)).length;
-    const convertedSessions = visitorJourneys.filter(j => j.convertedToOrder).length;
-
-    // Top Pages
-    const pageCounts: { [path: string]: number } = {};
-    for (const pv of pageViews) {
-      pageCounts[pv.path] = (pageCounts[pv.path] || 0) + 1;
-    }
-    const topPages = Object.entries(pageCounts)
-      .map(([path, count]) => ({ path, count }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 10);
-
-    // Traffic Sources
-    const sourceCounts: { [src: string]: number } = {};
-    for (const j of visitorJourneys) {
-      const src = j.referrerSource || 'Direct / Bookmark';
-      sourceCounts[src] = (sourceCounts[src] || 0) + 1;
-    }
-
-    // Devices
-    const deviceCounts: { [dev: string]: number } = { mobile: 0, desktop: 0, tablet: 0 };
-    for (const j of visitorJourneys) {
-      const dev = j.device || 'desktop';
-      deviceCounts[dev] = (deviceCounts[dev] || 0) + 1;
-    }
-
-    // Funnel
-    const funnel = {
-      home: visitorJourneys.filter(j => j.steps.some(s => s === '/')).length,
-      motherTrees: visitorJourneys.filter(j => j.steps.some(s => s.startsWith('/farm') || s.startsWith('/parent-palm'))).length,
-      batches: visitorJourneys.filter(j => j.steps.some(s => s.startsWith('/batches'))).length,
-      checkout: visitorJourneys.filter(j => j.steps.some(s => s.startsWith('/book'))).length,
-      converted: convertedSessions,
-    };
 
     return {
-      kpis: {
-        totalViews,
-        viewsToday,
-        views7d,
-        uniqueSessions,
-        sessionsToday,
-        convertedSessions,
-        conversionRate: uniqueSessions > 0 ? ((convertedSessions / uniqueSessions) * 100).toFixed(1) : '0',
-      },
-      topPages,
-      trafficSources: sourceCounts,
-      devices: deviceCounts,
-      funnel,
-      recentJourneys: visitorJourneys.slice(0, 20),
+      farm,
+      motherTrees: trees,
+      selectedMotherTrees: selectedTrees,
+      treesUsedInBatches: usedTrees,
+      batches: associatedBatches,
+      sources: fSources,
+      totalCoconutsCollected: farm.totalCoconutsCollected,
+      totalSeedlingsProduced: farm.totalSeedlingsProduced,
+      availableSeedlings: farm.availableSeedlings,
+      bookedSeedlings: farm.bookedSeedlings,
+      dispatchedSeedlings: farm.dispatchedSeedlings
     };
   },
 
-  // ─── Async MongoDB Synchronized Methods ─────────────────────────────
-  syncFromMongo: async () => {
-    await syncFromMongo(true);
-  },
-
-  getParentPalmsAsync: async (): Promise<ParentPalm[]> => {
+  getFarmDetailsAsync: async (code: string): Promise<any> => {
     loadFromDb();
     await syncFromMongo();
-    return DataStore.getParentPalms();
+    return DataStore.getFarmDetails(code);
   },
 
-  getParentPalmByCodeAsync: async (code: string): Promise<ParentPalm | null> => {
+  addFarm: (data: Partial<Farm>): Farm => {
     loadFromDb();
-    await syncFromMongo();
-    return DataStore.getParentPalmByCode(code);
-  },
+    const existingCodes = farms.map(f => f.farmCode);
+    let farmCode = data.farmCode;
+    let locationCode = data.locationCode;
+    let ownerCode = data.ownerCode;
 
-  addParentPalmAsync: async (data: Omit<ParentPalm, 'id'>): Promise<ParentPalm> => {
-    const created = DataStore.addParentPalm(data);
-    try {
-      const conn = await connectToDatabase();
-      if (conn) {
-        await ParentPalmModel.findOneAndUpdate({ code: created.code }, created, { upsert: true, new: true });
-        lastMongoSyncTime = 0;
+    if (!farmCode) {
+      const loc = data.location || 'Eathamozhi';
+      const owner = data.ownerName || 'Farm Owner';
+      const cleanLoc = loc.replace(/[^a-zA-Z]/g, '').toUpperCase();
+      locationCode = (cleanLoc.startsWith('EATH') || cleanLoc.startsWith('ETH')) ? 'ETH' : cleanLoc.slice(0, 3).padEnd(3, 'X');
+      
+      const distinct: string[] = [];
+      const cleanOwner = owner.replace(/[^a-zA-Z]/g, '').toUpperCase();
+      for (const char of cleanOwner) {
+        if (!distinct.includes(char)) {
+          distinct.push(char);
+          if (distinct.length === 2) break;
+        }
       }
-    } catch (err) {
-      console.error('Failed to persist ParentPalm to MongoDB:', err);
+      ownerCode = distinct.length === 1 ? distinct[0] + 'X' : (distinct.length >= 2 ? distinct.join('') : 'OW');
+
+      const prefix = `${locationCode}-${ownerCode}`;
+      let maxNum = 0;
+      for (const ec of existingCodes) {
+        if (ec.startsWith(prefix + '-F')) {
+          const num = parseInt(ec.split('-F')[1], 10);
+          if (!isNaN(num) && num > maxNum) maxNum = num;
+        }
+      }
+      farmCode = `${prefix}-F${String(maxNum + 1).padStart(3, '0')}`;
     }
-    return created;
+
+    const newFarm: Farm = {
+      id: `farm-${farmCode.toLowerCase()}`,
+      farmCode,
+      farmName: data.farmName || 'New Coconut Farm',
+      ownerName: data.ownerName || 'Farm Owner',
+      ownerCode: ownerCode || 'OW',
+      locationCode: locationCode || 'ETH',
+      location: data.location || 'Eathamozhi',
+      status: data.status || 'Active',
+      notes: data.notes || '',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    farms.unshift(newFarm);
+    saveToDb();
+    return DataStore.getFarmByCode(newFarm.farmCode)!;
   },
 
-  updateParentPalmAsync: async (identifier: string, updatedFields: Partial<ParentPalm>): Promise<ParentPalm> => {
-    const updated = DataStore.updateParentPalm(identifier, updatedFields);
+  addFarmAsync: async (data: Partial<Farm>): Promise<Farm> => {
+    loadFromDb();
+    await syncFromMongo();
+    const existingCodes = farms.map(f => f.farmCode);
+    const idGen = await generateFarmId(data.location || 'Eathamozhi', data.ownerName || 'Owner', existingCodes);
+    const farmCode = data.farmCode || idGen.farmId;
+
+    const newFarm: Farm = {
+      id: `farm-${farmCode.toLowerCase()}`,
+      farmCode,
+      farmName: data.farmName || 'New Coconut Farm',
+      ownerName: data.ownerName || 'Farm Owner',
+      ownerCode: idGen.ownerCode,
+      locationCode: idGen.locationCode,
+      location: data.location || 'Eathamozhi',
+      status: data.status || 'Active',
+      notes: data.notes || '',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    farms.unshift(newFarm);
+    saveToDb();
+
     try {
       const conn = await connectToDatabase();
       if (conn) {
-        await ParentPalmModel.findOneAndUpdate(
-          { $or: [{ id: identifier }, { code: new RegExp('^' + identifier + '$', 'i') }] },
-          { $set: updated },
-          { new: true }
-        );
+        await FarmModel.findOneAndUpdate({ farmCode: newFarm.farmCode }, newFarm, { upsert: true, new: true });
         lastMongoSyncTime = 0;
       }
     } catch (err) {
-      console.error('Failed to update ParentPalm in MongoDB:', err);
+      console.error('Failed to persist Farm to MongoDB:', err);
+    }
+    return DataStore.getFarmByCode(newFarm.farmCode)!;
+  },
+
+  updateFarm: (code: string, data: Partial<Farm>): Farm | null => {
+    loadFromDb();
+    const farm = farms.find(f => f.farmCode.toLowerCase() === code.toLowerCase() || f.id === code);
+    if (!farm) return null;
+
+    if (data.farmName !== undefined) farm.farmName = data.farmName;
+    if (data.ownerName !== undefined) farm.ownerName = data.ownerName;
+    if (data.location !== undefined) farm.location = data.location;
+    if (data.status !== undefined) farm.status = data.status;
+    if (data.notes !== undefined) farm.notes = data.notes;
+    farm.updatedAt = new Date().toISOString();
+
+    saveToDb();
+    return DataStore.getFarmByCode(farm.farmCode) || null;
+  },
+
+  updateFarmAsync: async (code: string, data: Partial<Farm>): Promise<Farm | null> => {
+    const updated = DataStore.updateFarm(code, data);
+    if (updated) {
+      try {
+        const conn = await connectToDatabase();
+        if (conn) {
+          await FarmModel.findOneAndUpdate(
+            { farmCode: updated.farmCode },
+            { $set: updated },
+            { new: true }
+          );
+          lastMongoSyncTime = 0;
+        }
+      } catch (err) {
+        console.error('Failed to update Farm in MongoDB:', err);
+      }
     }
     return updated;
   },
 
-  deleteParentPalmAsync: async (codeOrId: string): Promise<boolean> => {
-    DataStore.deleteParentPalm(codeOrId);
-    try {
-      const conn = await connectToDatabase();
-      if (conn) {
-        await ParentPalmModel.deleteOne({
-          $or: [{ id: codeOrId }, { code: new RegExp('^' + codeOrId + '$', 'i') }]
-        });
-        lastMongoSyncTime = 0;
-      }
-    } catch (err) {
-      console.error('Failed to delete ParentPalm from MongoDB:', err);
-    }
+  deleteFarm: (code: string): boolean => {
+    loadFromDb();
+    const idx = farms.findIndex(f => f.farmCode.toLowerCase() === code.toLowerCase() || f.id === code);
+    if (idx === -1) return false;
+    farms.splice(idx, 1);
+    saveToDb();
     return true;
+  },
+
+  deleteFarmAsync: async (code: string): Promise<boolean> => {
+    const success = DataStore.deleteFarm(code);
+    if (success) {
+      try {
+        const conn = await connectToDatabase();
+        if (conn) {
+          await FarmModel.findOneAndDelete({ farmCode: code });
+          lastMongoSyncTime = 0;
+        }
+      } catch (err) {
+        console.error('Failed to delete Farm in MongoDB:', err);
+      }
+    }
+    return success;
+  },
+
+  getFarmDashboardSummary: (): any => {
+    const allFarms = DataStore.getFarms();
+    loadFromDb();
+
+    const totalFarms = allFarms.length;
+    const totalMotherTrees = parentPalms.length;
+    const totalSelectedMotherTrees = parentPalms.filter(p => p.selectionStatus === 'Selected').length;
+
+    const usedTreeCodes = new Set(batchSources.map(s => s.motherTreeCode || s.motherTreeId));
+    const totalMotherTreesUsedInBatches = usedTreeCodes.size;
+
+    const activeBatches = batches.filter(b => b.status !== 'SOLD_OUT').length;
+    const totalCoconutsCollected = batchSources.reduce((sum, s) => sum + (Number(s.coconutQuantity) || 0), 0);
+    const totalSeedlingsProduced = batchInventory.reduce((sum, i) => sum + (Number(i.seedlingsProduced) || 0), 0);
+    const totalAvailableSeedlings = batchInventory.reduce((sum, i) => sum + (Number(i.availableQuantity) || 0), 0);
+    const totalBookedSeedlings = batchInventory.reduce((sum, i) => sum + (Number(i.bookedQuantity) || 0), 0);
+    const totalDispatchedSeedlings = batchInventory.reduce((sum, i) => sum + (Number(i.dispatchedQuantity) || 0), 0);
+
+    return {
+      totalFarms,
+      totalMotherTrees,
+      totalSelectedMotherTrees,
+      totalMotherTreesUsedInBatches,
+      totalActiveBatches: activeBatches,
+      totalCoconutsCollected,
+      totalSeedlingsProduced,
+      totalAvailableSeedlings,
+      totalBookedSeedlings,
+      totalDispatchedSeedlings,
+      farms: allFarms
+    };
+  },
+
+  getFarmDashboardSummaryAsync: async (): Promise<any> => {
+    loadFromDb();
+    await syncFromMongo();
+    return DataStore.getFarmDashboardSummary();
+  },
+
+  // ─── Batches ────────────────────────────────────────────────────────────────
+  getBatches: (): Batch[] => {
+    loadFromDb();
+    return batches.map(b => {
+      const bSources = batchSources.filter(s => s.batchCode.toLowerCase() === b.batchCode.toLowerCase() || s.batchId === b.id);
+      const bInventory = batchInventory.filter(i => i.batchCode.toLowerCase() === b.batchCode.toLowerCase() || i.batchId === b.id);
+
+      const activeBookings = bookings.filter(
+        bk => bk.batchCode.toLowerCase() === b.batchCode.toLowerCase() && bk.bookingStatus !== 'Cancelled'
+      );
+      const computedBookedQuantity = activeBookings.reduce((sum, bk) => sum + bk.quantity, 0);
+
+      let availableQuantity = 0;
+      const netStock = Math.max(0, b.totalQuantity + (b.inventoryAdjustments || 0));
+      if (bInventory.length > 0) {
+        availableQuantity = bInventory.reduce((sum, i) => sum + (Number(i.availableQuantity) || 0), 0);
+      } else {
+        availableQuantity = Math.max(0, netStock - computedBookedQuantity);
+      }
+
+      const bookedPercentage = netStock > 0 ? Math.min(100, Math.round((computedBookedQuantity / netStock) * 100)) : 100;
+      const dynamicStatus = getDynamicBatchStatus(availableQuantity, b.seededDate);
+
+      return {
+        ...b,
+        bookedQuantity: computedBookedQuantity,
+        availableQuantity,
+        bookedPercentage,
+        status: (b.status === 'COMING_SOON' && dynamicStatus === 'COMING_SOON') ? 'COMING_SOON' : (availableQuantity <= 0 ? 'SOLD_OUT' : (availableQuantity < 50 ? 'LIMITED' : 'AVAILABLE')),
+        sources: bSources,
+        inventory: bInventory
+      };
+    });
   },
 
   getBatchesAsync: async (): Promise<Batch[]> => {
@@ -1112,40 +719,248 @@ export const DataStore = {
     return DataStore.getBatches();
   },
 
+  getOldestAvailableBatch: (): Batch | undefined => {
+    const list = DataStore.getBatches();
+    const available = list.filter(b => (b.status === 'AVAILABLE' || b.status === 'LIMITED') && b.isVisible !== false);
+    if (available.length === 0) return undefined;
+    return available.sort((a, b) => new Date(a.seededDate).getTime() - new Date(b.seededDate).getTime())[0];
+  },
+
   getOldestAvailableBatchAsync: async (): Promise<Batch | undefined> => {
     loadFromDb();
     await syncFromMongo();
     return DataStore.getOldestAvailableBatch();
   },
 
+  getBatchByCode: (batchCode: string): Batch | null => {
+    const list = DataStore.getBatches();
+    return list.find(b => b.batchCode.toLowerCase() === batchCode.toLowerCase()) || null;
+  },
+
   getBatchByCodeAsync: async (code: string): Promise<Batch | null> => {
     loadFromDb();
     await syncFromMongo();
-    const batch = DataStore.getBatchByCode(code);
-    if (batch) {
-      try {
-        const conn = await connectToDatabase();
-        if (conn) {
-          const updateOp: any = { $inc: { viewsCount: 1 } };
-          await BatchModel.updateOne({ batchCode: new RegExp("^" + code + "$", "i") }, updateOp);
+    return DataStore.getBatchByCode(code);
+  },
+
+  addBatch: (newBatchData: any): Batch | null => {
+    loadFromDb();
+    const primaryFarmCode = newBatchData.primaryFarmCode || (farms[0]?.farmCode || 'ETH-RA-F001');
+    const primaryFarm = farms.find(f => f.farmCode.toLowerCase() === primaryFarmCode.toLowerCase()) || farms[0];
+    const seededDate = newBatchData.seededDate || new Date().toISOString().split('T')[0];
+    const harvestDate = newBatchData.harvestDate || seededDate;
+
+    const seededDateObj = new Date(seededDate);
+    const monthNum = seededDateObj.getMonth() + 1;
+    const yearNum = seededDateObj.getFullYear();
+
+    let batchCode = newBatchData.batchCode;
+    if (!batchCode) {
+      const monthStr = String(monthNum).padStart(2, '0');
+      const yearStr = String(yearNum);
+      const prefix = `${primaryFarmCode}-${monthStr}${yearStr}`;
+      let maxSeq = 0;
+      for (const b of batches) {
+        if (b.batchCode.startsWith(prefix + '-B')) {
+          const num = parseInt(b.batchCode.split('-B')[1], 10);
+          if (!isNaN(num) && num > maxSeq) maxSeq = num;
         }
-      } catch (err) {}
+      }
+      batchCode = `${prefix}-B${String(maxSeq + 1).padStart(3, '0')}`;
     }
-    return batch;
+
+    const defaultFolderImages = ['/images/placeholder.png'];
+
+    let codes: string[] = [];
+    if (Array.isArray(newBatchData.parentPalmCodes) && newBatchData.parentPalmCodes.length > 0) {
+      codes = newBatchData.parentPalmCodes;
+    } else if (newBatchData.parentPalmCode) {
+      codes = [newBatchData.parentPalmCode];
+    } else {
+      codes = [parentPalms[0]?.code || 'ETH-RA-F001-MT001'];
+    }
+    const primaryCode = codes[0];
+    const parent = parentPalms.find(p => (p.code && p.code.toLowerCase() === primaryCode.toLowerCase()) || (p.motherTreeCode && p.motherTreeCode.toLowerCase() === primaryCode.toLowerCase()));
+
+    const batchName = newBatchData.name || formatBatchDisplayName(primaryFarmCode, batchCode, monthNum, yearNum);
+
+    const created: Batch = {
+      id: `b-${Date.now()}`,
+      batchCode,
+      primaryFarmId: primaryFarm?.id || 'farm-eth-ra-f001',
+      primaryFarmCode,
+      batchMonth: monthNum,
+      batchYear: yearNum,
+      batchNumber: parseInt(batchCode.split('-B')[1], 10) || 1,
+      totalCoconuts: Number(newBatchData.totalCoconuts) || Number(newBatchData.totalQuantity) || 500,
+      totalSeedlings: Number(newBatchData.totalQuantity) || 500,
+      parentPalmId: parent ? parent.id : (newBatchData.parentPalmId || 'mp-1'),
+      parentPalmCode: primaryCode,
+      parentPalmCodes: codes,
+      name: batchName,
+      harvestDate,
+      seededDate,
+      totalQuantity: Number(newBatchData.totalQuantity) || 500,
+      bookedQuantity: 0,
+      inventoryAdjustments: 0,
+      price: Number(newBatchData.price) || 150,
+      status: 'AVAILABLE',
+      description: newBatchData.description || '',
+      viewsCount: 15,
+      images: newBatchData.images && newBatchData.images.length > 0 ? newBatchData.images : defaultFolderImages,
+      isVisible: newBatchData.isVisible !== undefined ? Boolean(newBatchData.isVisible) : true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    batches.unshift(created);
+
+    const sourcesInput: any[] = Array.isArray(newBatchData.sources) && newBatchData.sources.length > 0
+      ? newBatchData.sources
+      : codes.map(c => {
+          const tree = parentPalms.find(p => p.code === c || p.motherTreeCode === c);
+          const tFarm = farms.find(f => f.farmCode === (tree?.farmCode || primaryFarmCode)) || primaryFarm;
+          const shareQty = Math.round(created.totalQuantity / codes.length);
+          return {
+            farmId: tFarm?.id || primaryFarm?.id || 'farm-eth-ra-f001',
+            farmCode: tFarm?.farmCode || primaryFarmCode,
+            farmName: tFarm?.farmName || primaryFarm?.farmName || 'Primary Farm',
+            motherTreeId: tree?.id || `tree-${c}`,
+            motherTreeCode: tree?.motherTreeCode || c,
+            motherTreeName: tree?.name || c,
+            coconutQuantity: shareQty,
+            coconutsSown: shareQty,
+            collectionDate: harvestDate,
+            collectionStatus: 'Verified',
+            germinatedQuantity: shareQty,
+            rejectedQuantity: 0,
+            notes: 'Batch initial seed nut allocation.'
+          };
+        });
+
+    let totalCoconuts = 0;
+    sourcesInput.forEach(s => {
+      const sourceId = `bs-${created.batchCode}-${s.motherTreeCode}`;
+      const batchSourceRecord: BatchSource = {
+        id: sourceId,
+        batchId: created.id,
+        batchCode: created.batchCode,
+        farmId: s.farmId || primaryFarm?.id || 'farm-eth-ra-f001',
+        farmCode: s.farmCode || primaryFarmCode,
+        farmName: s.farmName || primaryFarm?.farmName || 'Primary Farm',
+        motherTreeId: s.motherTreeId,
+        motherTreeCode: s.motherTreeCode,
+        motherTreeName: s.motherTreeName,
+        coconutQuantity: Number(s.coconutQuantity) || 100,
+        coconutsSown: Number(s.coconutsSown) || Number(s.coconutQuantity) || 100,
+        collectionDate: s.collectionDate || harvestDate,
+        collectionStatus: s.collectionStatus || 'Verified',
+        germinatedQuantity: Number(s.germinatedQuantity) || Number(s.coconutQuantity) || 100,
+        rejectedQuantity: Number(s.rejectedQuantity) || 0,
+        notes: s.notes || '',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      batchSources.push(batchSourceRecord);
+      totalCoconuts += batchSourceRecord.coconutQuantity;
+
+      const produced = batchSourceRecord.germinatedQuantity || batchSourceRecord.coconutQuantity;
+      const batchInvRecord: BatchInventory = {
+        id: `bi-${sourceId}`,
+        batchId: created.id,
+        batchCode: created.batchCode,
+        batchSourceId: sourceId,
+        farmId: batchSourceRecord.farmId,
+        farmCode: batchSourceRecord.farmCode,
+        motherTreeId: batchSourceRecord.motherTreeId,
+        motherTreeCode: batchSourceRecord.motherTreeCode,
+        seedlingsProduced: produced,
+        availableQuantity: produced,
+        bookedQuantity: 0,
+        dispatchedQuantity: 0,
+        damagedQuantity: 0,
+        rejectedQuantity: 0,
+        updatedAt: new Date().toISOString()
+      };
+      batchInventory.push(batchInvRecord);
+    });
+
+    created.totalCoconuts = totalCoconuts;
+    saveToDb();
+    return DataStore.getBatchByCode(created.batchCode);
   },
 
   addBatchAsync: async (newBatchData: any): Promise<Batch | null> => {
-    const created = DataStore.addBatch(newBatchData);
+    loadFromDb();
+    await syncFromMongo();
+
+    const existingCodes = batches.map(b => b.batchCode);
+    const primaryFarmCode = newBatchData.primaryFarmCode || (farms[0]?.farmCode || 'ETH-RA-F001');
+    const seededDate = newBatchData.seededDate || new Date().toISOString().split('T')[0];
+
+    let batchCode = newBatchData.batchCode;
+    let monthNum = 11;
+    let yearNum = 2026;
+    if (!batchCode) {
+      const generated = await generateBatchId(primaryFarmCode, seededDate, existingCodes);
+      batchCode = generated.batchId;
+      monthNum = generated.monthNum;
+      yearNum = generated.yearNum;
+    } else {
+      const d = new Date(seededDate);
+      monthNum = d.getMonth() + 1;
+      yearNum = d.getFullYear();
+    }
+
+    const payload = {
+      ...newBatchData,
+      batchCode,
+      name: newBatchData.name || formatBatchDisplayName(primaryFarmCode, batchCode, monthNum, yearNum)
+    };
+
+    const created = DataStore.addBatch(payload);
     try {
       const conn = await connectToDatabase();
       if (conn && created) {
         await BatchModel.findOneAndUpdate({ batchCode: created.batchCode }, created, { upsert: true, new: true });
+        
+        const sources = batchSources.filter(s => s.batchCode === created.batchCode);
+        for (const s of sources) {
+          await BatchSourceModel.findOneAndUpdate({ id: s.id }, s, { upsert: true, new: true });
+        }
+        const invs = batchInventory.filter(i => i.batchCode === created.batchCode);
+        for (const i of invs) {
+          await BatchInventoryModel.findOneAndUpdate({ id: i.id }, i, { upsert: true, new: true });
+        }
         lastMongoSyncTime = 0;
       }
     } catch (err) {
       console.error('Failed to persist Batch to MongoDB:', err);
     }
     return created;
+  },
+
+  updateBatch: (code: string, updatedFields: Partial<Batch> & { parentPalmCodes?: string[] }): Batch | null => {
+    loadFromDb();
+    const target = batches.find(b => b.batchCode.toLowerCase() === code.toLowerCase());
+    if (!target) return null;
+
+    if (updatedFields.isVisible !== undefined) target.isVisible = Boolean(updatedFields.isVisible);
+    if (updatedFields.price !== undefined) target.price = Number(updatedFields.price);
+    if (updatedFields.totalQuantity !== undefined) target.totalQuantity = Number(updatedFields.totalQuantity);
+    if (updatedFields.harvestDate) target.harvestDate = updatedFields.harvestDate;
+    if (updatedFields.seededDate) target.seededDate = updatedFields.seededDate;
+    if (updatedFields.description !== undefined) target.description = updatedFields.description;
+    if (updatedFields.name) target.name = updatedFields.name;
+    if (updatedFields.images) target.images = updatedFields.images;
+    if (Array.isArray(updatedFields.parentPalmCodes) && updatedFields.parentPalmCodes.length > 0) {
+      target.parentPalmCodes = updatedFields.parentPalmCodes;
+      target.parentPalmCode = updatedFields.parentPalmCodes[0];
+    }
+    target.updatedAt = new Date().toISOString();
+
+    saveToDb();
+    return DataStore.getBatchByCode(target.batchCode);
   },
 
   updateBatchAsync: async (code: string, updatedFields: any): Promise<Batch | null> => {
@@ -1166,18 +981,365 @@ export const DataStore = {
     return updated;
   },
 
+  deleteBatch: (code: string): boolean => {
+    loadFromDb();
+    const idx = batches.findIndex(b => b.batchCode.toLowerCase() === code.toLowerCase());
+    if (idx === -1) return false;
+    batches.splice(idx, 1);
+    batchSources = batchSources.filter(s => s.batchCode.toLowerCase() !== code.toLowerCase());
+    batchInventory = batchInventory.filter(i => i.batchCode.toLowerCase() !== code.toLowerCase());
+    saveToDb();
+    return true;
+  },
+
   deleteBatchAsync: async (code: string): Promise<boolean> => {
-    DataStore.deleteBatch(code);
+    const success = DataStore.deleteBatch(code);
     try {
       const conn = await connectToDatabase();
       if (conn) {
-        await BatchModel.deleteOne({ batchCode: new RegExp('^' + code + '$', 'i') });
+        await Promise.all([
+          BatchModel.findOneAndDelete({ batchCode: new RegExp('^' + code + '$', 'i') }),
+          BatchSourceModel.deleteMany({ batchCode: new RegExp('^' + code + '$', 'i') }),
+          BatchInventoryModel.deleteMany({ batchCode: new RegExp('^' + code + '$', 'i') })
+        ]);
         lastMongoSyncTime = 0;
       }
     } catch (err) {
       console.error('Failed to delete Batch from MongoDB:', err);
     }
+    return success;
+  },
+
+  // ─── Mother Tree / Parent Palm Registry ─────────────────────────────────────
+  getParentPalms: (): MotherTree[] => {
+    loadFromDb();
+    return parentPalms.map(p => {
+      const pCode = p.code || p.motherTreeCode || 'ETH-RA-F001-MT001';
+      const mCode = p.motherTreeCode || p.code || 'ETH-RA-F001-MT001';
+      const pSources = batchSources.filter(
+        s => (s.motherTreeCode && s.motherTreeCode.toLowerCase() === mCode.toLowerCase()) || s.motherTreeId === p.id
+      );
+      const usedBatchCodes = new Set(pSources.map(s => s.batchCode));
+      const batchesUsedCount = usedBatchCodes.size;
+      const totalCoconutsCollected = pSources.reduce((sum, s) => sum + (Number(s.coconutQuantity) || 0), 0);
+
+      const pInv = batchInventory.filter(
+        i => (i.motherTreeCode && i.motherTreeCode.toLowerCase() === mCode.toLowerCase()) || i.motherTreeId === p.id
+      );
+      const totalSeedlingsProduced = pInv.reduce((sum, i) => sum + (Number(i.seedlingsProduced) || 0), 0);
+
+      return {
+        ...p,
+        code: pCode,
+        motherTreeCode: mCode,
+        batchesUsedCount,
+        totalCoconutsCollected,
+        totalSeedlingsProduced
+      };
+    });
+  },
+
+  getParentPalmsAsync: async (): Promise<MotherTree[]> => {
+    loadFromDb();
+    await syncFromMongo();
+    return DataStore.getParentPalms();
+  },
+
+  getParentPalmByCode: (code: string): MotherTree | null => {
+    const list = DataStore.getParentPalms();
+    return list.find(p => (p.code && p.code.toLowerCase() === code.toLowerCase()) || (p.motherTreeCode && p.motherTreeCode.toLowerCase() === code.toLowerCase()) || p.id === code) || null;
+  },
+
+  getParentPalmByCodeAsync: async (code: string): Promise<MotherTree | null> => {
+    loadFromDb();
+    await syncFromMongo();
+    return DataStore.getParentPalmByCode(code);
+  },
+
+  getParentPalmsByFarm: (farmCode: string): MotherTree[] => {
+    const list = DataStore.getParentPalms();
+    return list.filter(p => (p.farmCode && p.farmCode.toLowerCase() === farmCode.toLowerCase()) || p.farmId === farmCode);
+  },
+
+  getParentPalmsByFarmAsync: async (farmCode: string): Promise<MotherTree[]> => {
+    loadFromDb();
+    await syncFromMongo();
+    return DataStore.getParentPalmsByFarm(farmCode);
+  },
+
+  addParentPalm: (data: any): MotherTree => {
+    loadFromDb();
+    const farmCode = data.farmCode || (farms[0]?.farmCode || 'ETH-RA-F001');
+    const farm = farms.find(f => f.farmCode.toLowerCase() === farmCode.toLowerCase()) || farms[0];
+    const existingCodes = parentPalms.map(p => p.motherTreeCode || p.code);
+
+    let motherTreeCode = data.motherTreeCode;
+    if (!motherTreeCode) {
+      const prefix = `${farmCode}-MT`;
+      let maxNum = 0;
+      for (const ec of existingCodes) {
+        if (ec && ec.startsWith(prefix)) {
+          const num = parseInt(ec.split('-MT')[1], 10);
+          if (!isNaN(num) && num > maxNum) maxNum = num;
+        }
+      }
+      motherTreeCode = `${prefix}${String(maxNum + 1).padStart(3, '0')}`;
+    }
+
+    const code = data.code || motherTreeCode;
+    const newTree: MotherTree = {
+      id: `mp-${Date.now()}`,
+      motherTreeCode,
+      code,
+      farmId: farm?.id || 'farm-eth-ra-f001',
+      farmCode: farm?.farmCode || farmCode,
+      farmName: farm?.farmName || 'Eathamozhi Ancestral Heritage Coconut Farm',
+      name: data.name || `Mother Palm ${motherTreeCode}`,
+      variety: data.variety || 'West Coast Tall (Eathamozhi Tall)',
+      age: Number(data.age) || 40,
+      location: data.location || farm?.location || 'Heritage Grove',
+      healthStatus: data.healthStatus || 'Excellent',
+      yieldHistory: data.yieldHistory || 'High-yielding verified genetic stock.',
+      description: data.description || '',
+      nutCharacteristics: data.nutCharacteristics || 'Large spherical nuts with high copra yield.',
+      whySelected: data.whySelected || 'Verified vigorous ancestral genetics.',
+      images: Array.isArray(data.images) ? data.images : [],
+      selectionStatus: data.selectionStatus || 'Selected',
+      verificationStatus: data.verificationStatus || 'Verified',
+      productionStatus: data.productionStatus || 'Active for Production',
+      notes: data.notes || '',
+      isVisible: data.isVisible !== undefined ? Boolean(data.isVisible) : true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    parentPalms.unshift(newTree);
+    saveToDb();
+    return DataStore.getParentPalmByCode(newTree.code)!;
+  },
+
+  addParentPalmAsync: async (data: any): Promise<MotherTree> => {
+    loadFromDb();
+    await syncFromMongo();
+    const farmCode = data.farmCode || (farms[0]?.farmCode || 'ETH-RA-F001');
+    const existingCodes = parentPalms.map(p => p.motherTreeCode || p.code).filter(Boolean);
+    const motherTreeCode = data.motherTreeCode || await generateMotherTreeId(farmCode, existingCodes);
+
+    const payload = {
+      ...data,
+      farmCode,
+      motherTreeCode,
+      code: data.code || motherTreeCode
+    };
+
+    const created = DataStore.addParentPalm(payload);
+    try {
+      const conn = await connectToDatabase();
+      if (conn && created) {
+        await MotherTreeModel.findOneAndUpdate({ code: created.code }, created, { upsert: true, new: true });
+        lastMongoSyncTime = 0;
+      }
+    } catch (err) {
+      console.error('Failed to persist MotherTree to MongoDB:', err);
+    }
+    return created;
+  },
+
+  updateParentPalm: (code: string, updatedFields: any): MotherTree | null => {
+    loadFromDb();
+    const palm = parentPalms.find(p => (p.code && p.code.toLowerCase() === code.toLowerCase()) || (p.motherTreeCode && p.motherTreeCode.toLowerCase() === code.toLowerCase()) || p.id === code);
+    if (!palm) return null;
+
+    if (updatedFields.name) palm.name = updatedFields.name;
+    if (updatedFields.age !== undefined) palm.age = Number(updatedFields.age);
+    if (updatedFields.variety) palm.variety = updatedFields.variety;
+    if (updatedFields.location) palm.location = updatedFields.location;
+    if (updatedFields.healthStatus) palm.healthStatus = updatedFields.healthStatus;
+    if (updatedFields.yieldHistory) palm.yieldHistory = updatedFields.yieldHistory;
+    if (updatedFields.description !== undefined) palm.description = updatedFields.description;
+    if (updatedFields.nutCharacteristics !== undefined) palm.nutCharacteristics = updatedFields.nutCharacteristics;
+    if (updatedFields.whySelected !== undefined) palm.whySelected = updatedFields.whySelected;
+    if (updatedFields.images) palm.images = updatedFields.images;
+    if (updatedFields.isVisible !== undefined) palm.isVisible = Boolean(updatedFields.isVisible);
+    if (updatedFields.selectionStatus) palm.selectionStatus = updatedFields.selectionStatus;
+    if (updatedFields.verificationStatus) palm.verificationStatus = updatedFields.verificationStatus;
+    if (updatedFields.productionStatus) palm.productionStatus = updatedFields.productionStatus;
+    if (updatedFields.notes !== undefined) palm.notes = updatedFields.notes;
+    palm.updatedAt = new Date().toISOString();
+
+    saveToDb();
+    return DataStore.getParentPalmByCode(palm.code) || null;
+  },
+
+  updateParentPalmAsync: async (code: string, updatedFields: any): Promise<MotherTree | null> => {
+    const updated = DataStore.updateParentPalm(code, updatedFields);
+    try {
+      const conn = await connectToDatabase();
+      if (conn && updated) {
+        await MotherTreeModel.findOneAndUpdate(
+          { $or: [{ code: new RegExp('^' + code + '$', 'i') }, { id: code }, { motherTreeCode: code }] },
+          { $set: updated },
+          { new: true }
+        );
+        lastMongoSyncTime = 0;
+      }
+    } catch (err) {
+      console.error('Failed to update MotherTree in MongoDB:', err);
+    }
+    return updated;
+  },
+
+  deleteParentPalm: (code: string): boolean => {
+    loadFromDb();
+    const idx = parentPalms.findIndex(p => (p.code && p.code.toLowerCase() === code.toLowerCase()) || (p.motherTreeCode && p.motherTreeCode.toLowerCase() === code.toLowerCase()) || p.id === code);
+    if (idx === -1) return false;
+    parentPalms.splice(idx, 1);
+    saveToDb();
     return true;
+  },
+
+  deleteParentPalmAsync: async (code: string): Promise<boolean> => {
+    const success = DataStore.deleteParentPalm(code);
+    try {
+      const conn = await connectToDatabase();
+      if (conn) {
+        await MotherTreeModel.findOneAndDelete({
+          $or: [{ code: new RegExp('^' + code + '$', 'i') }, { id: code }, { motherTreeCode: code }]
+        });
+        lastMongoSyncTime = 0;
+      }
+    } catch (err) {
+      console.error('Failed to delete MotherTree from MongoDB:', err);
+    }
+    return success;
+  },
+
+  // ─── Germination & Seedling Inventory Tracking ──────────────────────────────
+  getBatchSources: (batchCode?: string): BatchSource[] => {
+    loadFromDb();
+    if (!batchCode) return batchSources;
+    return batchSources.filter(s => s.batchCode.toLowerCase() === batchCode.toLowerCase());
+  },
+
+  getBatchSourcesAsync: async (batchCode?: string): Promise<BatchSource[]> => {
+    loadFromDb();
+    await syncFromMongo();
+    return DataStore.getBatchSources(batchCode);
+  },
+
+  getBatchInventory: (batchCode?: string): BatchInventory[] => {
+    loadFromDb();
+    if (!batchCode) return batchInventory;
+    return batchInventory.filter(i => i.batchCode.toLowerCase() === batchCode.toLowerCase());
+  },
+
+  getBatchInventoryAsync: async (batchCode?: string): Promise<BatchInventory[]> => {
+    loadFromDb();
+    await syncFromMongo();
+    return DataStore.getBatchInventory(batchCode);
+  },
+
+  updateGermination: (sourceId: string, data: any): BatchSource | null => {
+    loadFromDb();
+    const source = batchSources.find(s => s.id === sourceId);
+    if (!source) return null;
+
+    if (data.coconutsSown !== undefined) source.coconutsSown = Number(data.coconutsSown);
+    if (data.germinatedQuantity !== undefined) source.germinatedQuantity = Number(data.germinatedQuantity);
+    if (data.rejectedQuantity !== undefined) source.rejectedQuantity = Number(data.rejectedQuantity);
+    if (source.coconutsSown && source.coconutsSown > 0) {
+      source.germinationRate = `${Math.round(((source.germinatedQuantity || 0) / source.coconutsSown) * 100)}%`;
+    }
+    if (data.collectionStatus) source.collectionStatus = data.collectionStatus;
+    if (data.germinationStartDate) source.germinationStartDate = data.germinationStartDate;
+    if (data.germinationEndDate) source.germinationEndDate = data.germinationEndDate;
+    if (data.notes !== undefined) source.notes = data.notes;
+    source.updatedAt = new Date().toISOString();
+
+    const inv = batchInventory.find(i => i.batchSourceId === source.id);
+    if (inv) {
+      inv.seedlingsProduced = source.germinatedQuantity;
+      inv.rejectedQuantity = source.rejectedQuantity;
+      inv.availableQuantity = Math.max(
+        0,
+        inv.seedlingsProduced - inv.bookedQuantity - inv.dispatchedQuantity - inv.damagedQuantity - inv.rejectedQuantity
+      );
+      inv.updatedAt = new Date().toISOString();
+    }
+
+    const b = batches.find(bt => bt.batchCode.toLowerCase() === source.batchCode.toLowerCase());
+    if (b) {
+      const bInvs = batchInventory.filter(i => i.batchCode.toLowerCase() === b.batchCode.toLowerCase());
+      b.totalQuantity = bInvs.reduce((sum, i) => sum + (Number(i.seedlingsProduced) || 0), 0);
+    }
+
+    saveToDb();
+    return source;
+  },
+
+  updateGerminationAsync: async (sourceId: string, data: any): Promise<BatchSource | null> => {
+    const updated = DataStore.updateGermination(sourceId, data);
+    if (updated) {
+      try {
+        const conn = await connectToDatabase();
+        if (conn) {
+          await BatchSourceModel.findOneAndUpdate({ id: sourceId }, { $set: updated }, { new: true });
+          const inv = batchInventory.find(i => i.batchSourceId === sourceId);
+          if (inv) {
+            await BatchInventoryModel.findOneAndUpdate({ id: inv.id }, { $set: inv }, { new: true });
+          }
+          const b = batches.find(bt => bt.batchCode.toLowerCase() === updated.batchCode.toLowerCase());
+          if (b) {
+            await BatchModel.findOneAndUpdate({ batchCode: b.batchCode }, { $set: { totalQuantity: b.totalQuantity } });
+          }
+          lastMongoSyncTime = 0;
+        }
+      } catch (err) {
+        console.error('Failed to update Germination in MongoDB:', err);
+      }
+    }
+    return updated;
+  },
+
+  adjustSourceInventory: (sourceId: string, changes: any): BatchInventory | null => {
+    loadFromDb();
+    const inv = batchInventory.find(i => i.batchSourceId === sourceId || i.id === sourceId);
+    if (!inv) return null;
+
+    if (changes.damagedQuantity !== undefined) inv.damagedQuantity = Number(changes.damagedQuantity);
+    if (changes.rejectedQuantity !== undefined) inv.rejectedQuantity = Number(changes.rejectedQuantity);
+    if (changes.availableQuantity !== undefined) inv.availableQuantity = Number(changes.availableQuantity);
+
+    inv.availableQuantity = Math.max(
+      0,
+      inv.seedlingsProduced - inv.bookedQuantity - inv.dispatchedQuantity - inv.damagedQuantity - inv.rejectedQuantity
+    );
+    inv.updatedAt = new Date().toISOString();
+
+    saveToDb();
+    return inv;
+  },
+
+  adjustSourceInventoryAsync: async (sourceId: string, changes: any): Promise<BatchInventory | null> => {
+    const updated = DataStore.adjustSourceInventory(sourceId, changes);
+    if (updated) {
+      try {
+        const conn = await connectToDatabase();
+        if (conn) {
+          await BatchInventoryModel.findOneAndUpdate({ id: updated.id }, { $set: updated }, { new: true });
+          lastMongoSyncTime = 0;
+        }
+      } catch (err) {
+        console.error('Failed to update BatchInventory in MongoDB:', err);
+      }
+    }
+    return updated;
+  },
+
+  // ─── Customer Orders & Traceability ─────────────────────────────────────────
+  getBookings: (): Booking[] => {
+    loadFromDb();
+    return bookings.map(b => ({ ...b }));
   },
 
   getBookingsAsync: async (): Promise<Booking[]> => {
@@ -1186,10 +1348,14 @@ export const DataStore = {
     return DataStore.getBookings();
   },
 
-  getBookingByIdAsync: async (bookingId: string, mobile?: string): Promise<Booking | null> => {
+  getOrders: (): Booking[] => {
+    return DataStore.getBookings();
+  },
+
+  getBookingsByMobile: (mobile: string): Booking[] => {
     loadFromDb();
-    await syncFromMongo();
-    return DataStore.getBookingById(bookingId, mobile);
+    const cleanMobile = mobile.replace(/[^0-9]/g, '');
+    return bookings.filter(b => b.mobile && b.mobile.replace(/[^0-9]/g, '').endsWith(cleanMobile));
   },
 
   getBookingsByMobileAsync: async (mobile: string): Promise<Booking[]> => {
@@ -1198,18 +1364,116 @@ export const DataStore = {
     return DataStore.getBookingsByMobile(mobile);
   },
 
+  getBookingById: (id: string, mobile?: string): Booking | null => {
+    loadFromDb();
+    const b = bookings.find(item => item.id === id || item.bookingId === id);
+    if (!b) return null;
+    if (mobile) {
+      const cleanInput = mobile.replace(/[^0-9]/g, '');
+      const cleanStored = b.mobile ? b.mobile.replace(/[^0-9]/g, '') : '';
+      if (!cleanStored.endsWith(cleanInput)) return null;
+    }
+    return { ...b };
+  },
+
+  getBookingByIdAsync: async (bookingId: string, mobile?: string): Promise<Booking | null> => {
+    loadFromDb();
+    await syncFromMongo();
+    return DataStore.getBookingById(bookingId, mobile);
+  },
+
+  createBooking: (data: Omit<Booking, 'id' | 'bookingId' | 'createdAt' | 'paymentStatus' | 'bookingStatus'> & { paymentScreenshotUrl?: string; bookingStatus?: string }): Booking => {
+    loadFromDb();
+    const batch = DataStore.getBatchByCode(data.batchCode);
+    if (!batch || (batch.availableQuantity !== undefined && batch.availableQuantity < data.quantity)) {
+      throw new Error('Requested quantity exceeds available stock.');
+    }
+
+    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+    const bookingId = `${data.batchCode}-${randomSuffix}`;
+
+    const resolvedAddress = data.address?.trim()
+      ? data.address.trim()
+      : `${data.district}, ${data.state} - ${data.pinCode}`;
+    const resolvedWhatsapp = data.whatsapp?.trim() || data.mobile;
+    const resolvedCourier = data.deliveryService?.trim() || 'MSS Parcel Service';
+
+    const isPreOrder = Boolean(data.isPreOrder || data.orderType === 'PRE_ORDER' || (data as any).bookingStatus === 'Pre-order');
+    const orderType = isPreOrder ? 'PRE_ORDER' : 'COMPLETE';
+    const totalAmount = Number(data.totalAmount) || 0;
+    const paidAmount = isPreOrder ? (Number(data.paidAmount) || Number(data.advancePaid) || Math.round(totalAmount / 2)) : totalAmount;
+    const balanceAmount = isPreOrder ? Math.max(0, totalAmount - paidAmount) : 0;
+    const initialStatus = isPreOrder ? 'Pre-order' : 'Payment review';
+
+    const bInvs = batchInventory.filter(i => i.batchCode.toLowerCase() === data.batchCode.toLowerCase());
+    const allocations: any[] = [];
+    let remainingToAllocate = data.quantity;
+
+    for (const inv of bInvs) {
+      if (remainingToAllocate <= 0) break;
+      const alloc = Math.min(inv.availableQuantity, remainingToAllocate);
+      if (alloc > 0) {
+        inv.bookedQuantity += alloc;
+        inv.availableQuantity = Math.max(0, inv.availableQuantity - alloc);
+        inv.updatedAt = new Date().toISOString();
+        allocations.push({
+          batchSourceId: inv.batchSourceId,
+          farmId: inv.farmId,
+          farmCode: inv.farmCode,
+          motherTreeId: inv.motherTreeId,
+          motherTreeCode: inv.motherTreeCode,
+          quantity: alloc
+        });
+        remainingToAllocate -= alloc;
+      }
+    }
+
+    const sourceFarmCodes = Array.from(new Set(allocations.map(a => a.farmCode)));
+    const isMixedSource = sourceFarmCodes.length > 1 || (allocations.length > 1);
+
+    const newBooking: Booking = {
+      ...data,
+      address: resolvedAddress,
+      whatsapp: resolvedWhatsapp,
+      deliveryService: resolvedCourier,
+      orderType,
+      isPreOrder,
+      paidAmount,
+      advancePaid: isPreOrder ? paidAmount : undefined,
+      balanceAmount,
+      id: `bk-${Date.now()}`,
+      bookingId,
+      paymentStatus: 'PENDING_VERIFICATION',
+      bookingStatus: (data.bookingStatus as any) || initialStatus,
+      createdAt: new Date().toISOString(),
+      allocations,
+      sourceFarmCode: sourceFarmCodes[0] || (batch.primaryFarmCode || 'ETH-RA-F001'),
+      sourceMotherTreeCode: allocations[0]?.motherTreeCode || batch.parentPalmCode,
+      isMixedSource
+    };
+
+    bookings.unshift(newBooking);
+    saveToDb();
+    return newBooking;
+  },
+
   createBookingAsync: async (data: any): Promise<Booking> => {
+    loadFromDb();
+    await syncFromMongo();
     const created = DataStore.createBooking(data);
+
     try {
       const conn = await connectToDatabase();
       if (conn) {
         await BookingModel.findOneAndUpdate({ bookingId: created.bookingId }, created, { upsert: true, new: true });
-        const batch = DataStore.getBatchByCode(data.batchCode);
-        if (batch) {
-          await BatchModel.findOneAndUpdate(
-            { batchCode: new RegExp('^' + batch.batchCode + '$', 'i') },
-            { $set: { bookedQuantity: batch.bookedQuantity } }
-          );
+        
+        if (created.allocations && created.allocations.length > 0) {
+          for (const a of created.allocations) {
+            const inv = batchInventory.find(i => i.batchSourceId === a.batchSourceId);
+            if (inv) {
+              await BatchInventoryModel.findOneAndUpdate({ id: inv.id }, { $set: inv }, { new: true });
+            }
+          }
         }
         lastMongoSyncTime = 0;
       }
@@ -1217,6 +1481,93 @@ export const DataStore = {
       console.error('Failed to persist Booking to MongoDB:', err);
     }
     return created;
+  },
+
+  updateBookingStatus: (bookingId: string, status: Booking['bookingStatus'], courierName?: string, trackingId?: string): Booking | null => {
+    loadFromDb();
+    const bk = bookings.find(b => b.bookingId === bookingId || b.id === bookingId);
+    if (!bk) return null;
+
+    const prevStatus = bk.bookingStatus;
+    bk.bookingStatus = status;
+
+    if (status === 'Confirmed' || status === 'Preparing' || status === 'Dispatched' || status === 'Delivered') {
+      bk.paymentStatus = 'PAID';
+    }
+    if (courierName) bk.courierName = courierName;
+    if (trackingId) bk.trackingId = trackingId;
+    if (status === 'Dispatched') bk.dispatchDate = new Date().toISOString().split('T')[0];
+
+    // Source level inventory transitions (avoid double subtraction!)
+    if (status === 'Dispatched' && prevStatus !== 'Dispatched' && prevStatus !== 'Delivered') {
+      if (Array.isArray(bk.allocations) && bk.allocations.length > 0) {
+        for (const alloc of bk.allocations) {
+          const inv = batchInventory.find(i => i.batchSourceId === alloc.batchSourceId);
+          if (inv) {
+            inv.bookedQuantity = Math.max(0, inv.bookedQuantity - alloc.quantity);
+            inv.dispatchedQuantity += alloc.quantity;
+            inv.updatedAt = new Date().toISOString();
+          }
+        }
+      } else {
+        const bInvs = batchInventory.filter(i => i.batchCode.toLowerCase() === bk.batchCode.toLowerCase());
+        if (bInvs.length > 0) {
+          const share = Math.round(bk.quantity / bInvs.length);
+          for (const inv of bInvs) {
+            inv.bookedQuantity = Math.max(0, inv.bookedQuantity - share);
+            inv.dispatchedQuantity += share;
+            inv.updatedAt = new Date().toISOString();
+          }
+        }
+      }
+    } else if (status === 'Cancelled' && prevStatus !== 'Cancelled') {
+      if (Array.isArray(bk.allocations) && bk.allocations.length > 0) {
+        for (const alloc of bk.allocations) {
+          const inv = batchInventory.find(i => i.batchSourceId === alloc.batchSourceId);
+          if (inv) {
+            inv.bookedQuantity = Math.max(0, inv.bookedQuantity - alloc.quantity);
+            inv.availableQuantity += alloc.quantity;
+            inv.updatedAt = new Date().toISOString();
+          }
+        }
+      }
+    }
+
+    saveToDb();
+    return bk;
+  },
+
+  updateBookingStatusAsync: async (bookingId: string, status: any, courierName?: string, trackingId?: string): Promise<Booking | null> => {
+    const updated = DataStore.updateBookingStatus(bookingId, status, courierName, trackingId);
+    if (updated) {
+      try {
+        const conn = await connectToDatabase();
+        if (conn) {
+          await BookingModel.findOneAndUpdate(
+            { $or: [{ id: bookingId }, { bookingId }] },
+            { $set: updated },
+            { new: true }
+          );
+          const bInvs = batchInventory.filter(i => i.batchCode.toLowerCase() === updated.batchCode.toLowerCase());
+          for (const inv of bInvs) {
+            await BatchInventoryModel.findOneAndUpdate({ id: inv.id }, { $set: inv }, { new: true });
+          }
+          lastMongoSyncTime = 0;
+        }
+      } catch (err) {
+        console.error('Failed to update Booking status in MongoDB:', err);
+      }
+    }
+    return updated;
+  },
+
+  updateOrder: (orderId: string, changes: Partial<Booking>): Booking => {
+    loadFromDb();
+    const bk = bookings.find(b => b.id === orderId || b.bookingId === orderId);
+    if (!bk) throw new Error('Order not found');
+    Object.assign(bk, changes);
+    saveToDb();
+    return bk;
   },
 
   updateOrderAsync: async (orderId: string, changes: Partial<Booking>): Promise<Booking> => {
@@ -1237,30 +1588,373 @@ export const DataStore = {
     return updated;
   },
 
-  updateBookingStatusAsync: async (bookingId: string, status: any, courierName?: string, trackingId?: string): Promise<Booking | null> => {
-    const updated = DataStore.updateBookingStatus(bookingId, status, courierName, trackingId);
-    if (updated) {
-      try {
-        const conn = await connectToDatabase();
-        if (conn) {
-          await BookingModel.findOneAndUpdate(
-            { $or: [{ id: bookingId }, { bookingId: bookingId }] },
-            { $set: updated },
-            { new: true }
-          );
-          lastMongoSyncTime = 0;
-        }
-      } catch (err) {
-        console.error('Failed to update Booking status in MongoDB:', err);
+  // ─── Traceability Lookups ───────────────────────────────────────────────────
+  getBatchTraceability: (batchCode: string): any => {
+    loadFromDb();
+    const batch = DataStore.getBatchByCode(batchCode);
+    if (!batch) return null;
+
+    const sources = batchSources.filter(s => s.batchCode.toLowerCase() === batchCode.toLowerCase() || s.batchId === batch.id);
+    const inventory = batchInventory.filter(i => i.batchCode.toLowerCase() === batchCode.toLowerCase() || i.batchId === batch.id);
+
+    const contributingFarms = Array.from(new Set(sources.map(s => s.farmCode))).map(fCode => {
+      return farms.find(f => f.farmCode === fCode) || { farmCode: fCode, farmName: fCode };
+    });
+
+    const motherTreeList = sources.map(s => {
+      const tree = parentPalms.find(p => p.motherTreeCode === s.motherTreeCode || p.code === s.motherTreeCode);
+      const inv = inventory.find(i => i.batchSourceId === s.id);
+      return {
+        sourceId: s.id,
+        farmId: s.farmId,
+        farmCode: s.farmCode,
+        farmName: s.farmName,
+        motherTreeId: s.motherTreeId,
+        motherTreeCode: s.motherTreeCode,
+        motherTreeName: s.motherTreeName || tree?.name,
+        variety: tree?.variety || 'West Coast Tall (Eathamozhi Tall)',
+        age: tree?.age,
+        coconutQuantity: s.coconutQuantity,
+        coconutsSown: s.coconutsSown,
+        collectionDate: s.collectionDate,
+        collectionStatus: s.collectionStatus,
+        seedlingsProduced: inv?.seedlingsProduced || s.germinatedQuantity || 0,
+        availableQuantity: inv?.availableQuantity || 0,
+        bookedQuantity: inv?.bookedQuantity || 0,
+        dispatchedQuantity: inv?.dispatchedQuantity || 0
+      };
+    });
+
+    return {
+      batchCode: batch.batchCode,
+      batchName: batch.name,
+      primaryFarmCode: batch.primaryFarmCode,
+      harvestDate: batch.harvestDate,
+      seededDate: batch.seededDate,
+      totalQuantity: batch.totalQuantity,
+      availableQuantity: batch.availableQuantity,
+      bookedQuantity: batch.bookedQuantity,
+      isMixedSource: contributingFarms.length > 1 || motherTreeList.length > 1,
+      contributingFarmsCount: contributingFarms.length,
+      contributingFarms,
+      motherTreesCount: motherTreeList.length,
+      sources: motherTreeList
+    };
+  },
+
+  getBatchTraceabilityAsync: async (batchCode: string): Promise<any> => {
+    loadFromDb();
+    await syncFromMongo();
+    return DataStore.getBatchTraceability(batchCode);
+  },
+
+  getOrderTraceability: (bookingId: string): any => {
+    loadFromDb();
+    const bk = bookings.find(b => b.bookingId === bookingId || b.id === bookingId);
+    if (!bk) return null;
+
+    const batchTrace = DataStore.getBatchTraceability(bk.batchCode);
+    return {
+      bookingId: bk.bookingId,
+      customerName: bk.customerName,
+      quantity: bk.quantity,
+      bookingStatus: bk.bookingStatus,
+      paymentStatus: bk.paymentStatus,
+      createdAt: bk.createdAt,
+      dispatchDate: bk.dispatchDate,
+      courierName: bk.courierName,
+      trackingId: bk.trackingId,
+      allocations: bk.allocations || [],
+      isMixedSource: bk.isMixedSource || (batchTrace ? batchTrace.isMixedSource : false),
+      batch: batchTrace
+    };
+  },
+
+  getOrderTraceabilityAsync: async (bookingId: string): Promise<any> => {
+    loadFromDb();
+    await syncFromMongo();
+    return DataStore.getOrderTraceability(bookingId);
+  },
+
+  // ─── Module 9: Reports and Analytics ────────────────────────────────────────
+  getReports: (reportType: string, startDate?: string, endDate?: string): any => {
+    loadFromDb();
+    const filterByDate = (dateStr: string) => {
+      if (!dateStr) return true;
+      const d = dateStr.slice(0, 10);
+      if (startDate && d < startDate) return false;
+      if (endDate && d > endDate) return false;
+      return true;
+    };
+
+    switch (reportType) {
+      case 'farm-mother-trees':
+        return farms.map(f => {
+          const trees = parentPalms.filter(p => p.farmId === f.id || p.farmCode === f.farmCode);
+          return {
+            farmCode: f.farmCode,
+            farmName: f.farmName,
+            location: f.location,
+            totalTrees: trees.length,
+            selectedTrees: trees.filter(t => t.selectionStatus === 'Selected').length,
+            verifiedTrees: trees.filter(t => t.verificationStatus === 'Verified').length,
+            activeProductionTrees: trees.filter(t => t.productionStatus === 'Active for Production').length,
+            trees: trees.map(t => ({
+              motherTreeCode: t.motherTreeCode || t.code,
+              name: t.name,
+              variety: t.variety,
+              age: t.age,
+              selectionStatus: t.selectionStatus,
+              verificationStatus: t.verificationStatus
+            }))
+          };
+        });
+
+      case 'farm-coconut-collection': {
+        const filteredSources = batchSources.filter(s => filterByDate(s.collectionDate));
+        return farms.map(f => {
+          const sources = filteredSources.filter(s => s.farmId === f.id || s.farmCode === f.farmCode);
+          const totalCoconuts = sources.reduce((sum, s) => sum + (Number(s.coconutQuantity) || 0), 0);
+          return {
+            farmCode: f.farmCode,
+            farmName: f.farmName,
+            totalCoconutsCollected: totalCoconuts,
+            batchesCount: new Set(sources.map(s => s.batchCode)).size,
+            collections: sources.map(s => ({
+              batchCode: s.batchCode,
+              motherTreeCode: s.motherTreeCode,
+              coconutQuantity: s.coconutQuantity,
+              collectionDate: s.collectionDate,
+              collectionStatus: s.collectionStatus
+            }))
+          };
+        });
       }
+
+      case 'farm-batch-contribution':
+        return batches.map(b => {
+          const sources = batchSources.filter(s => s.batchCode === b.batchCode);
+          return {
+            batchCode: b.batchCode,
+            batchName: b.name,
+            harvestDate: b.harvestDate,
+            totalSeedlings: b.totalQuantity,
+            contributingFarms: Array.from(new Set(sources.map(s => s.farmCode))).map(fc => {
+              const fSources = sources.filter(s => s.farmCode === fc);
+              const fQty = fSources.reduce((sum, s) => sum + (Number(s.coconutQuantity) || 0), 0);
+              return {
+                farmCode: fc,
+                coconutsContributed: fQty,
+                motherTreesCount: fSources.length
+              };
+            })
+          };
+        });
+
+      case 'farm-seedling-production':
+        return farms.map(f => {
+          const invs = batchInventory.filter(i => i.farmId === f.id || i.farmCode === f.farmCode);
+          const produced = invs.reduce((sum, i) => sum + (Number(i.seedlingsProduced) || 0), 0);
+          const germinated = batchSources.filter(s => s.farmCode === f.farmCode).reduce((sum, s) => sum + (Number(s.germinatedQuantity) || 0), 0);
+          return {
+            farmCode: f.farmCode,
+            farmName: f.farmName,
+            totalSeedlingsProduced: produced,
+            totalGerminated: germinated,
+            activeBatches: new Set(invs.map(i => i.batchCode)).size
+          };
+        });
+
+      case 'farm-available-inventory':
+        return farms.map(f => {
+          const invs = batchInventory.filter(i => i.farmId === f.id || i.farmCode === f.farmCode);
+          return {
+            farmCode: f.farmCode,
+            farmName: f.farmName,
+            produced: invs.reduce((sum, i) => sum + (Number(i.seedlingsProduced) || 0), 0),
+            available: invs.reduce((sum, i) => sum + (Number(i.availableQuantity) || 0), 0),
+            booked: invs.reduce((sum, i) => sum + (Number(i.bookedQuantity) || 0), 0),
+            dispatched: invs.reduce((sum, i) => sum + (Number(i.dispatchedQuantity) || 0), 0),
+            damaged: invs.reduce((sum, i) => sum + (Number(i.damagedQuantity) || 0), 0),
+            rejected: invs.reduce((sum, i) => sum + (Number(i.rejectedQuantity) || 0), 0)
+          };
+        });
+
+      case 'batch-germination':
+        return batches.map(b => {
+          const sources = batchSources.filter(s => s.batchCode === b.batchCode);
+          const totalCoconuts = sources.reduce((sum, s) => sum + (Number(s.coconutQuantity) || 0), 0);
+          const totalSown = sources.reduce((sum, s) => sum + (Number(s.coconutsSown) || 0), 0);
+          const totalGerminated = sources.reduce((sum, s) => sum + (Number(s.germinatedQuantity) || 0), 0);
+          const rate = totalSown > 0 ? Math.round((totalGerminated / totalSown) * 100) : 0;
+          return {
+            batchCode: b.batchCode,
+            batchName: b.name,
+            harvestDate: b.harvestDate,
+            seededDate: b.seededDate,
+            totalCoconuts,
+            totalSown,
+            totalGerminated,
+            germinationRate: `${rate}%`,
+            sources: sources.map(s => ({
+              farmCode: s.farmCode,
+              motherTreeCode: s.motherTreeCode,
+              sown: s.coconutsSown,
+              germinated: s.germinatedQuantity,
+              rejected: s.rejectedQuantity
+            }))
+          };
+        });
+
+      case 'mother-tree-history':
+        return parentPalms.map(p => {
+          const sources = batchSources.filter(s => s.motherTreeCode === (p.motherTreeCode || p.code) || s.motherTreeId === p.id);
+          const totalCoconuts = sources.reduce((sum, s) => sum + (Number(s.coconutQuantity) || 0), 0);
+          return {
+            motherTreeCode: p.motherTreeCode || p.code,
+            name: p.name,
+            farmCode: p.farmCode,
+            age: p.age,
+            batchesCount: sources.length,
+            totalCoconutsCollected: totalCoconuts,
+            batches: sources.map(s => ({
+              batchCode: s.batchCode,
+              quantity: s.coconutQuantity,
+              collectionDate: s.collectionDate
+            }))
+          };
+        });
+
+      case 'batch-dispatch': {
+        const filteredBookings = bookings.filter(b => b.bookingStatus === 'Dispatched' && filterByDate(b.dispatchDate || b.createdAt));
+        return batches.map(b => {
+          const batchDispatches = filteredBookings.filter(bk => bk.batchCode.toLowerCase() === b.batchCode.toLowerCase());
+          const totalDispatched = batchDispatches.reduce((sum, bk) => sum + bk.quantity, 0);
+          return {
+            batchCode: b.batchCode,
+            batchName: b.name,
+            ordersDispatchedCount: batchDispatches.length,
+            seedlingsDispatched: totalDispatched,
+            orders: batchDispatches.map(bk => ({
+              bookingId: bk.bookingId,
+              customerName: bk.customerName,
+              quantity: bk.quantity,
+              courierName: bk.courierName,
+              trackingId: bk.trackingId,
+              dispatchDate: bk.dispatchDate
+            }))
+          };
+        });
+      }
+
+      case 'farm-customer-allocation':
+        return farms.map(f => {
+          const farmAllocOrders = bookings.filter(bk => bk.sourceFarmCode === f.farmCode);
+          return {
+            farmCode: f.farmCode,
+            farmName: f.farmName,
+            totalAllocatedOrders: farmAllocOrders.length,
+            totalAllocatedSeedlings: farmAllocOrders.reduce((sum, bk) => sum + bk.quantity, 0),
+            orders: farmAllocOrders.map(bk => ({
+              bookingId: bk.bookingId,
+              customerName: bk.customerName,
+              quantity: bk.quantity,
+              bookingStatus: bk.bookingStatus,
+              isMixedSource: bk.isMixedSource
+            }))
+          };
+        });
+
+      default:
+        return [];
     }
-    return updated;
+  },
+
+  getReportsAsync: async (reportType: string, startDate?: string, endDate?: string): Promise<any> => {
+    loadFromDb();
+    await syncFromMongo();
+    return DataStore.getReports(reportType, startDate, endDate);
+  },
+
+  // ─── Inventory Adjustments, Enquiries, Reviews, FAQs, Analytics ─────────────
+  adjustInventory: (batchCode: string, change: number, reason: string, adminName: string): InventoryAdjustment => {
+    loadFromDb();
+    const targetBatch = batches.find(b => b.batchCode.toLowerCase() === batchCode.toLowerCase());
+    if (!targetBatch) throw new Error('Batch not found');
+    
+    targetBatch.inventoryAdjustments = (targetBatch.inventoryAdjustments || 0) + change;
+    
+    const newAdj: InventoryAdjustment = {
+      id: `adj-${Date.now()}`,
+      batchCode: targetBatch.batchCode,
+      quantityChange: change,
+      reason,
+      adminName,
+      createdAt: new Date().toISOString()
+    };
+    
+    adjustments.unshift(newAdj);
+    saveToDb();
+    return newAdj;
+  },
+
+  adjustInventoryAsync: async (batchCode: string, change: number, reason: string, adminName: string): Promise<InventoryAdjustment> => {
+    const adj = DataStore.adjustInventory(batchCode, change, reason, adminName);
+    try {
+      const conn = await connectToDatabase();
+      if (conn) {
+        await InventoryAdjustmentModel.findOneAndUpdate({ id: adj.id }, adj, { upsert: true, new: true });
+        const batch = DataStore.getBatchByCode(batchCode);
+        if (batch) {
+          await BatchModel.findOneAndUpdate(
+            { batchCode: new RegExp('^' + batch.batchCode + '$', 'i') },
+            { $set: { inventoryAdjustments: batch.inventoryAdjustments } }
+          );
+        }
+        lastMongoSyncTime = 0;
+      }
+    } catch (err) {
+      console.error('Failed to persist InventoryAdjustment to MongoDB:', err);
+    }
+    return adj;
+  },
+
+  getAdjustments: (): InventoryAdjustment[] => {
+    loadFromDb();
+    return adjustments;
+  },
+
+  getAdjustmentsAsync: async (): Promise<InventoryAdjustment[]> => {
+    loadFromDb();
+    await syncFromMongo();
+    return DataStore.getAdjustments();
+  },
+
+  getEnquiries: (): Enquiry[] => {
+    loadFromDb();
+    return enquiries;
   },
 
   getEnquiriesAsync: async (): Promise<Enquiry[]> => {
     loadFromDb();
     await syncFromMongo();
     return DataStore.getEnquiries();
+  },
+
+  addEnquiry: (data: any): Enquiry => {
+    loadFromDb();
+    const created: Enquiry = {
+      id: `enq-${Date.now()}`,
+      name: data.name,
+      mobile: data.mobile,
+      location: data.location || '',
+      message: data.message,
+      status: 'NEW',
+      createdAt: new Date().toISOString()
+    };
+    enquiries.unshift(created);
+    saveToDb();
+    return created;
   },
 
   addEnquiryAsync: async (data: any): Promise<Enquiry> => {
@@ -1277,24 +1971,61 @@ export const DataStore = {
     return created;
   },
 
+  updateEnquiryStatus: (id: string, status: any): Enquiry | undefined => {
+    loadFromDb();
+    const target = enquiries.find(e => e.id === id);
+    if (!target) return undefined;
+    target.status = status;
+    saveToDb();
+    return target;
+  },
+
   updateEnquiryStatusAsync: async (id: string, status: any): Promise<Enquiry | undefined> => {
     const updated = DataStore.updateEnquiryStatus(id, status);
     try {
       const conn = await connectToDatabase();
-      if (conn) {
-        await EnquiryModel.findOneAndUpdate({ id }, { $set: { status } });
+      if (conn && updated) {
+        await EnquiryModel.findOneAndUpdate({ id }, { $set: { status } }, { new: true });
         lastMongoSyncTime = 0;
       }
     } catch (err) {
-      console.error('Failed to update Enquiry status in MongoDB:', err);
+      console.error('Failed to update Enquiry in MongoDB:', err);
     }
     return updated;
+  },
+
+  getReviews: (): Review[] => {
+    loadFromDb();
+    return reviews;
   },
 
   getReviewsAsync: async (): Promise<Review[]> => {
     loadFromDb();
     await syncFromMongo();
     return DataStore.getReviews();
+  },
+
+  getReviewById: (id: string): Review | undefined => {
+    loadFromDb();
+    return reviews.find(r => r.id === id);
+  },
+
+  addReview: (data: any): Review => {
+    loadFromDb();
+    const created: Review = {
+      id: `rev-${Date.now()}`,
+      customerName: data.customerName,
+      location: data.location,
+      batchCode: data.batchCode,
+      quantity: Number(data.quantity) || 10,
+      rating: Number(data.rating) || 5,
+      comment: data.comment,
+      verified: data.verified !== undefined ? Boolean(data.verified) : true,
+      date: data.date || new Date().toISOString().split('T')[0]
+    };
+    reviews.unshift(created);
+    saveToDb();
+    return created;
   },
 
   addReviewAsync: async (data: any): Promise<Review> => {
@@ -1311,11 +2042,26 @@ export const DataStore = {
     return created;
   },
 
-  updateReviewAsync: async (id: string, updatedFields: Partial<Review>): Promise<Review> => {
-    const updated = DataStore.updateReview(id, updatedFields);
+  updateReview: (id: string, data: any): Review | null => {
+    loadFromDb();
+    const target = reviews.find(r => r.id === id);
+    if (!target) return null;
+    if (data.customerName) target.customerName = data.customerName;
+    if (data.location) target.location = data.location;
+    if (data.batchCode) target.batchCode = data.batchCode;
+    if (data.quantity !== undefined) target.quantity = Number(data.quantity);
+    if (data.rating !== undefined) target.rating = Number(data.rating);
+    if (data.comment) target.comment = data.comment;
+    if (data.verified !== undefined) target.verified = Boolean(data.verified);
+    saveToDb();
+    return target;
+  },
+
+  updateReviewAsync: async (id: string, data: any): Promise<Review | null> => {
+    const updated = DataStore.updateReview(id, data);
     try {
       const conn = await connectToDatabase();
-      if (conn) {
+      if (conn && updated) {
         await ReviewModel.findOneAndUpdate({ id }, { $set: updated }, { new: true });
         lastMongoSyncTime = 0;
       }
@@ -1325,86 +2071,124 @@ export const DataStore = {
     return updated;
   },
 
+  deleteReview: (id: string): boolean => {
+    loadFromDb();
+    const idx = reviews.findIndex(r => r.id === id);
+    if (idx === -1) return false;
+    reviews.splice(idx, 1);
+    saveToDb();
+    return true;
+  },
+
   deleteReviewAsync: async (id: string): Promise<boolean> => {
-    const deleted = DataStore.deleteReview(id);
+    const success = DataStore.deleteReview(id);
     try {
       const conn = await connectToDatabase();
       if (conn) {
-        await ReviewModel.deleteOne({ id });
+        await ReviewModel.findOneAndDelete({ id });
         lastMongoSyncTime = 0;
       }
     } catch (err) {
-      console.error('Failed to delete Review in MongoDB:', err);
+      console.error('Failed to delete Review from MongoDB:', err);
     }
-    return deleted;
+    return success;
   },
 
-  getAdjustmentsAsync: async (): Promise<InventoryAdjustment[]> => {
+  getFaqs: (): FAQ[] => {
     loadFromDb();
-    await syncFromMongo();
-    return DataStore.getAdjustments();
+    return faqs;
   },
 
-  
   getSiteSettings: (): SiteSettings => {
     loadFromDb();
-    return { ...siteSettings };
-  },
-
-  updateSiteSettings: (newSettings: Partial<SiteSettings>): SiteSettings => {
-    loadFromDb();
-    siteSettings = {
-      ...siteSettings,
-      ...newSettings,
-    };
-    saveToDb();
-    return { ...siteSettings };
+    return siteSettings;
   },
 
   getSiteSettingsAsync: async (): Promise<SiteSettings> => {
     loadFromDb();
     await syncFromMongo();
-    return DataStore.getSiteSettings();
+    return siteSettings;
   },
 
-  updateSiteSettingsAsync: async (newSettings: Partial<SiteSettings>): Promise<SiteSettings> => {
-    const updated = DataStore.updateSiteSettings(newSettings);
+  updateSiteSettings: (settings: Partial<SiteSettings>): SiteSettings => {
+    loadFromDb();
+    siteSettings = {
+      ...siteSettings,
+      ...settings,
+    };
+    saveToDb();
+    return siteSettings;
+  },
+
+  updateSiteSettingsAsync: async (settings: Partial<SiteSettings>): Promise<SiteSettings> => {
+    const updated = DataStore.updateSiteSettings(settings);
     try {
       const conn = await connectToDatabase();
       if (conn) {
         await SiteSettingsModel.findOneAndUpdate(
           { id: 'site_settings' },
-          { $set: { id: 'site_settings', ...updated } },
+          { $set: updated },
           { upsert: true, new: true }
         );
         lastMongoSyncTime = 0;
       }
     } catch (err) {
-      console.error('Failed to update SiteSettings in MongoDB:', err);
+      console.error('Failed to persist SiteSettings to MongoDB:', err);
     }
     return updated;
   },
 
-  adjustInventoryAsync: async (batchCode: string, change: number, reason: string, adminName: string): Promise<InventoryAdjustment> => {
-    const log = DataStore.adjustInventory(batchCode, change, reason, adminName);
-    try {
-      const conn = await connectToDatabase();
-      if (conn) {
-        await InventoryAdjustmentModel.create(log);
-        const batch = DataStore.getBatchByCode(batchCode);
-        if (batch) {
-          await BatchModel.findOneAndUpdate(
-            { batchCode: new RegExp('^' + batch.batchCode + '$', 'i') },
-            { $set: { inventoryAdjustments: batch.inventoryAdjustments } }
-          );
-        }
-        lastMongoSyncTime = 0;
-      }
-    } catch (err) {
-      console.error('Failed to persist InventoryAdjustment to MongoDB:', err);
-    }
-    return log;
+  recordPageView: (event: any): PageViewEvent => {
+    loadFromDb();
+    const created: PageViewEvent = {
+      id: `pv-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      sessionId: event.sessionId || 'anonymous',
+      path: event.path || '/',
+      title: event.title,
+      referrer: event.referrer,
+      referrerSource: event.referrerSource || 'Direct / Bookmark',
+      device: event.device || 'desktop',
+      screenSize: event.screenSize,
+      timestamp: event.timestamp || new Date().toISOString()
+    };
+    pageViews.unshift(created);
+    saveToDb();
+    return created;
   },
 
-};
+  getAnalyticsSummary: (): any => {
+    loadFromDb();
+    return {
+      totalViews: pageViews.length,
+      recentViews: pageViews.slice(0, 50),
+      totalJourneys: visitorJourneys.length
+    };
+  },
 
+  syncImagesWithDisk: () => {
+    syncDiskImages();
+  },
+
+  addImageReference: (code: string, imageUrl: string) => {
+    loadFromDb();
+    const batch = batches.find(b => b.batchCode.toLowerCase() === code.toLowerCase());
+    if (batch) {
+      if (!batch.images) batch.images = [];
+      if (!batch.images.includes(imageUrl)) {
+        batch.images.push(imageUrl);
+        saveToDb();
+      }
+      return batch;
+    }
+    const palm = parentPalms.find(p => (p.code && p.code.toLowerCase() === code.toLowerCase()) || (p.motherTreeCode && p.motherTreeCode.toLowerCase() === code.toLowerCase()));
+    if (palm) {
+      if (!palm.images) palm.images = [];
+      if (!palm.images.includes(imageUrl)) {
+        palm.images.push(imageUrl);
+        saveToDb();
+      }
+      return palm;
+    }
+    return null;
+  }
+};

@@ -2,27 +2,48 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import AdminNav from '@/components/AdminNav';
+import AdminLogoutButton from '@/components/AdminLogoutButton';
 import ImageCarousel from '@/components/ImageCarousel';
 
 export default function AdminMotherTreesPage() {
   const [palms, setPalms] = useState<any[]>([]);
+  const [farms, setFarms] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Filters
+  const [search, setSearch] = useState('');
+  const [farmFilter, setFarmFilter] = useState('ALL');
+  const [selectionFilter, setSelectionFilter] = useState('ALL');
+  const [verificationFilter, setVerificationFilter] = useState('ALL');
   const [visibilityFilter, setVisibilityFilter] = useState<'ALL' | 'VISIBLE' | 'HIDDEN'>('ALL');
+
+  // Selected mother trees for batch creation
+  const [selectedTreeCodes, setSelectedTreeCodes] = useState<string[]>([]);
+
+  // Toggling & Toast
   const [togglingPalmCode, setTogglingPalmCode] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
   const [previewTree, setPreviewTree] = useState<any | null>(null);
 
   // New Mother Tree Form State
+  const [selectedFarmCode, setSelectedFarmCode] = useState('ETH-RA-F001');
   const [newTree, setNewTree] = useState({
-    code: 'EM-MP-020',
-    name: 'Plot C Selected Mother Tree #20',
+    code: '',
+    motherTreeCode: '',
+    name: '',
+    variety: 'West Coast Tall (Eathamozhi Tall)',
     age: 45,
-    location: 'Coastal Plot C, Eathamozhi Farm',
+    location: 'Heritage Grove',
     healthStatus: 'Excellent (100% Disease Resistant)',
-    yieldHistory: 'Consistently high year-round seed nut yield',
+    yieldHistory: 'Consistently 160–180 high-weight seed nuts per year over 25 monitored years.',
     description: 'Selected for heavy canopy, disease immunity, and large copra content.',
     nutCharacteristics: 'Large spherical nuts with high coconut water volume and thick kernel.',
-    whySelected: 'Consistently high yield for over 40 years without dropping premature buttons.',
+    whySelected: 'Consistently high yield with exceptional seedling germination rate (>94%).',
+    selectionStatus: 'Selected' as 'Selected' | 'Registered',
+    verificationStatus: 'Verified' as 'Verified' | 'Pending',
+    productionStatus: 'Active for Production' as 'Active for Production' | 'Inactive' | 'Retired',
+    notes: '',
     images: [] as string[],
     isVisible: true
   });
@@ -30,59 +51,62 @@ export default function AdminMotherTreesPage() {
   const [treeFiles, setTreeFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
 
-  // Edit Modal State (mirrors batches architecture with dedicated images array)
+  // Edit Modal State
   const [editingTree, setEditingTree] = useState<any | null>(null);
   const [editTreeImages, setEditTreeImages] = useState<string[]>([]);
   const [newTreeImageUrl, setNewTreeImageUrl] = useState('');
   const [savingImages, setSavingImages] = useState(false);
-  const [makePrimaryOnUpload, setMakePrimaryOnUpload] = useState(true);
 
-  const fetchPalms = async () => {
+  const fetchInitialData = async () => {
     try {
-      const res = await fetch(`/api/parent-palms?all=true&_t=${Date.now()}`, { cache: 'no-store' });
-      const data = await res.json();
-      setPalms(Array.isArray(data) ? data : []);
+      const [palmsRes, farmsRes] = await Promise.all([
+        fetch(`/api/parent-palms?all=true&_t=${Date.now()}`, { cache: 'no-store' }),
+        fetch('/api/farms')
+      ]);
+      const palmsData = await palmsRes.json();
+      const farmsData = await farmsRes.json();
+
+      setPalms(Array.isArray(palmsData) ? palmsData : []);
+      if (Array.isArray(farmsData) && farmsData.length > 0) {
+        setFarms(farmsData);
+        if (!selectedFarmCode && farmsData[0]) {
+          setSelectedFarmCode(farmsData[0].farmCode);
+        }
+      }
     } catch (err) {
-      console.error('Failed to fetch parent palms:', err);
+      console.error('Failed to fetch mother trees or farms:', err);
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => {
+    fetchInitialData();
+  }, []);
+
   const handleToggleSinglePalmVisibility = async (palm: any) => {
+    const targetCode = palm.code || palm.motherTreeCode;
     const nextVal = palm.isVisible === false ? true : false;
-    setTogglingPalmCode(palm.code);
-    setPalms(prev => prev.map(p => p.code === palm.code ? { ...p, isVisible: nextVal } : p));
+    setTogglingPalmCode(targetCode);
+    setPalms(prev => prev.map(p => (p.code === targetCode || p.motherTreeCode === targetCode) ? { ...p, isVisible: nextVal } : p));
     try {
       const res = await fetch('/api/parent-palms', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code: palm.code, isVisible: nextVal })
+        body: JSON.stringify({ code: targetCode, isVisible: nextVal })
       });
       if (res.ok) {
-        setToastMessage(`✓ Mother Tree ${palm.code} is now ${nextVal ? 'VISIBLE (ON) to customers' : 'HIDDEN (OFF) from customers'}.`);
+        setToastMessage(`✓ Mother Tree ${targetCode} is now ${nextVal ? 'VISIBLE (ON) to customers' : 'HIDDEN (OFF) from customers'}.`);
         setTimeout(() => setToastMessage(null), 4000);
       } else {
         throw new Error('Update failed');
       }
     } catch (e: any) {
       alert('Error updating visibility: ' + e.message);
-      fetchPalms();
+      fetchInitialData();
     } finally {
       setTogglingPalmCode(null);
     }
-  };
-
-  useEffect(() => {
-    fetchPalms();
-  }, []);
-
-  // Open Edit Modal with dedicated image state copy
-  const openEditModal = (tree: any) => {
-    setEditingTree({ ...tree });
-    setEditTreeImages(tree.images && Array.isArray(tree.images) ? [...tree.images] : []);
-    setNewTreeImageUrl('');
-    setMakePrimaryOnUpload(true);
   };
 
   const handleTreeFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -91,18 +115,19 @@ export default function AdminMotherTreesPage() {
     }
   };
 
-  // Create Tree Handler
   const handleCreateTree = async (e: React.FormEvent) => {
     e.preventDefault();
     let finalImages: string[] = [];
 
-    // Auto upload selected files to dedicated folder public/images/parent-palms/${newTree.code}/
+    const activeFarm = farms.find(f => f.farmCode === selectedFarmCode) || farms[0];
+    const treeLabel = newTree.name.trim() || `Mother Palm (${selectedFarmCode})`;
+
     if (treeFiles.length > 0) {
       setUploading(true);
       const formData = new FormData();
       treeFiles.forEach(f => formData.append('files', f));
       formData.append('category', 'parent-palms');
-      formData.append('tag', newTree.code);
+      formData.append('tag', selectedFarmCode);
 
       try {
         const uploadRes = await fetch('/api/upload', {
@@ -114,7 +139,7 @@ export default function AdminMotherTreesPage() {
           finalImages = uploadData.urls;
         }
       } catch (err) {
-        console.error('Auto upload error during mother tree creation');
+        console.error('Upload error during tree creation');
       } finally {
         setUploading(false);
       }
@@ -130,24 +155,35 @@ export default function AdminMotherTreesPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...newTree,
+          farmId: activeFarm?.id,
+          farmCode: activeFarm?.farmCode || selectedFarmCode,
+          farmName: activeFarm?.farmName,
+          name: treeLabel,
           images: finalImages
         })
       });
+
       if (res.ok) {
-        alert(`Mother Tree ${newTree.code} added successfully!`);
-        fetchPalms();
+        const createdTree = await res.json();
+        alert(`✅ Mother Tree ${createdTree.motherTreeCode || createdTree.code} registered under ${selectedFarmCode}!`);
+        fetchInitialData();
         setTreeFiles([]);
-        const nextNum = Math.floor(25 + Math.random() * 50);
         setNewTree({
-          code: `EM-MP-0${nextNum}`,
-          name: `Plot C Selected Mother Tree #${nextNum}`,
-          age: 40,
-          location: 'Eathamozhi Main Grove',
-          healthStatus: 'Excellent (Vigorous Nut Producer)',
-          yieldHistory: 'Consistently high year-round seed nut yield',
-          description: 'High-yielding mother tree selected for mother seed nut production.',
+          code: '',
+          motherTreeCode: '',
+          name: '',
+          variety: 'West Coast Tall (Eathamozhi Tall)',
+          age: 45,
+          location: activeFarm?.location || 'Heritage Grove',
+          healthStatus: 'Excellent (100% Disease Resistant)',
+          yieldHistory: 'Consistently 160–180 high-weight seed nuts per year over 25 monitored years.',
+          description: 'Selected for heavy canopy, disease immunity, and large copra content.',
           nutCharacteristics: 'Large spherical nuts with high coconut water volume and thick kernel.',
-          whySelected: 'Consistently high yield with exceptional seedling germination rate.',
+          whySelected: 'Consistently high yield with exceptional seedling germination rate (>94%).',
+          selectionStatus: 'Selected',
+          verificationStatus: 'Verified',
+          productionStatus: 'Active for Production',
+          notes: '',
           images: [],
           isVisible: true
         });
@@ -160,172 +196,38 @@ export default function AdminMotherTreesPage() {
     }
   };
 
-  // Upload Photos inside Edit Modal
-  const handleUploadTreeFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0 || !editingTree) return;
-    const files = Array.from(e.target.files);
-    setUploading(true);
-    const formData = new FormData();
-    files.forEach(f => formData.append('files', f));
-    formData.append('category', 'parent-palms');
-    formData.append('tag', editingTree.code);
-
-    try {
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData
-      });
-      const data = await res.json();
-      const uploadedUrls: string[] = data.urls || (data.url ? [data.url] : []);
-
-      if (res.ok && uploadedUrls.length > 0) {
-        const newImages = makePrimaryOnUpload
-          ? [...uploadedUrls, ...editTreeImages]
-          : [...editTreeImages, ...uploadedUrls];
-        setEditTreeImages(newImages);
-
-        // Auto-save updated photos immediately to DB so they persist across all pages
-        try {
-          await fetch(`/api/parent-palms/${editingTree.code}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ images: newImages })
-          });
-          setPalms(prev => prev.map(p => 
-            (p.id === editingTree.id || p.code === editingTree.code) 
-              ? { ...p, images: newImages } 
-              : p
-          ));
-          fetchPalms();
-        } catch (saveErr) {
-          console.error('Error auto-persisting uploaded images:', saveErr);
-        }
-
-        alert(`Successfully uploaded ${uploadedUrls.length} photo(s) to Cloudinary! ${makePrimaryOnUpload ? 'Set as new primary cover photo.' : 'Added to gallery.'}\nAll pages now reflect the updated image.`);
-      } else {
-        alert(data.error || 'Failed to upload images to cloud storage');
-      }
-    } catch (err) {
-      alert('Network error while uploading images to cloud storage');
-    } finally {
-      setUploading(false);
-      e.target.value = '';
-    }
-  };
-
-  // Add custom URL
-  const addTreeImageUrl = () => {
-    const url = newTreeImageUrl.trim();
-    if (!url) return;
-    if (editTreeImages.includes(url)) {
-      alert('This URL is already in the photo list.');
-      return;
-    }
-    setEditTreeImages(prev => [...prev, url]);
+  const openEditModal = (tree: any) => {
+    setEditingTree({ ...tree });
+    setEditTreeImages(tree.images && Array.isArray(tree.images) ? [...tree.images] : []);
     setNewTreeImageUrl('');
   };
 
-  // Update specific URL
-  const updateTreeImageUrl = (idx: number, val: string) => {
-    setEditTreeImages(prev => prev.map((u, i) => i === idx ? val : u));
-  };
-
-  // Set any photo as the primary cover photo (index 0)
-  const setAsPrimaryImage = async (idx: number) => {
-    if (idx === 0 || !editingTree) return;
-    const selected = editTreeImages[idx];
-    const remaining = editTreeImages.filter((_, i) => i !== idx);
-    const newImages = [selected, ...remaining];
-    setEditTreeImages(newImages);
-
-    // Auto-save new primary cover
-    try {
-      await fetch(`/api/parent-palms/${editingTree.code}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ images: newImages })
-      });
-      setPalms(prev => prev.map(p => 
-        (p.id === editingTree.id || p.code === editingTree.code) 
-          ? { ...p, images: newImages } 
-          : p
-      ));
-      fetchPalms();
-    } catch {}
-  };
-
-  // Remove photo
-  const removeTreeImage = async (idxToRemove: number) => {
-    if (!editingTree) return;
-    const targetUrl = editTreeImages[idxToRemove];
-    const newImages = editTreeImages.filter((_, idx) => idx !== idxToRemove);
-    setEditTreeImages(newImages);
-
-    if (targetUrl && targetUrl.startsWith('/images/')) {
-      try {
-        await fetch(`/api/upload?path=${encodeURIComponent(targetUrl)}`, { method: 'DELETE' });
-      } catch (e) {
-        console.error('Failed to unlink deleted tree image:', e);
-      }
-    }
-
-    // Auto-save removal to DB
-    try {
-      await fetch(`/api/parent-palms/${editingTree.code}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ images: newImages })
-      });
-      setPalms(prev => prev.map(p => 
-        (p.id === editingTree.id || p.code === editingTree.code) 
-          ? { ...p, images: newImages } 
-          : p
-      ));
-      fetchPalms();
-    } catch {}
-  };
-
-  // Clear all photos
-  const removeAllTreeImages = async () => {
-    if (!confirm('Are you sure you want to clear all photos for this mother tree?') || !editingTree) return;
-    const toDelete = [...editTreeImages];
-    setEditTreeImages([]);
-
-    for (const imgUrl of toDelete) {
-      if (imgUrl && imgUrl.startsWith('/images/')) {
-        try {
-          await fetch(`/api/upload?path=${encodeURIComponent(imgUrl)}`, { method: 'DELETE' });
-        } catch (e) {}
-      }
-    }
-
-    // Auto-save empty images array
-    try {
-      await fetch(`/api/parent-palms/${editingTree.code}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ images: [] })
-      });
-      setPalms(prev => prev.map(p => 
-        (p.id === editingTree.id || p.code === editingTree.code) 
-          ? { ...p, images: [] } 
-          : p
-      ));
-      fetchPalms();
-    } catch {}
-  };
-
-  // Save changes (both metadata and photos)
-  const handleUpdateTree = async () => {
+  const handleSaveTreeEdits = async () => {
     if (!editingTree) return;
     setSavingImages(true);
 
-    const payload = {
-      ...editingTree,
-      images: editTreeImages
-    };
-
     try {
+      const payload = {
+        code: editingTree.code,
+        motherTreeCode: editingTree.motherTreeCode,
+        farmCode: editingTree.farmCode,
+        name: editingTree.name,
+        variety: editingTree.variety,
+        age: Number(editingTree.age),
+        location: editingTree.location,
+        healthStatus: editingTree.healthStatus,
+        yieldHistory: editingTree.yieldHistory,
+        description: editingTree.description,
+        nutCharacteristics: editingTree.nutCharacteristics,
+        whySelected: editingTree.whySelected,
+        selectionStatus: editingTree.selectionStatus,
+        verificationStatus: editingTree.verificationStatus,
+        productionStatus: editingTree.productionStatus,
+        notes: editingTree.notes,
+        images: editTreeImages,
+        isVisible: editingTree.isVisible
+      };
+
       const res = await fetch('/api/parent-palms', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -333,765 +235,608 @@ export default function AdminMotherTreesPage() {
       });
 
       if (res.ok) {
-        // Immediately update local state so table updates visually without waiting
-        setPalms(prev => prev.map(p => 
-          (p.id === editingTree.id || p.code === editingTree.code) 
-            ? { ...p, ...payload, images: editTreeImages } 
-            : p
-        ));
-        alert(`✅ Mother Tree ${editingTree.code} photos & details updated successfully!`);
+        alert('✅ Mother Tree details and photos updated successfully!');
         setEditingTree(null);
-        fetchPalms();
+        fetchInitialData();
       } else {
-        const errData = await res.json();
-        alert(errData.error || 'Failed to update mother tree');
+        throw new Error('Update failed');
       }
-    } catch (err) {
-      alert('Error updating mother tree');
+    } catch (e: any) {
+      alert('Failed to save changes: ' + e.message);
     } finally {
       setSavingImages(false);
     }
   };
 
-  // Quick-save images only
-  const handleSaveTreeImageUrls = async () => {
-    if (!editingTree) return;
-    setSavingImages(true);
-    try {
-      const res = await fetch(`/api/parent-palms/${editingTree.code}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ images: editTreeImages })
-      });
-      if (res.ok) {
-        setPalms(prev => prev.map(p => 
-          (p.id === editingTree.id || p.code === editingTree.code) 
-            ? { ...p, images: editTreeImages } 
-            : p
-        ));
-        alert(`✅ Image URLs saved for Mother Tree ${editingTree.code}! All pages now show the updated photos.`);
-        fetchPalms();
-      } else {
-        const err = await res.json();
-        alert(err.error || 'Failed to save image URLs');
-      }
-    } catch (e) {
-      alert('Network error saving image URLs');
-    } finally {
-      setSavingImages(false);
-    }
+  const toggleSelectTree = (code: string) => {
+    setSelectedTreeCodes(prev =>
+      prev.includes(code) ? prev.filter(c => c !== code) : [...prev, code]
+    );
   };
 
-  // Delete Tree
-  const handleDeleteTree = async (code: string) => {
-    if (!confirm(`Are you sure you want to delete Mother Tree ${code}?`)) return;
-    try {
-      const res = await fetch(`/api/parent-palms?code=${encodeURIComponent(code)}`, {
-        method: 'DELETE'
-      });
-      if (res.ok) {
-        alert(`Mother Tree ${code} deleted.`);
-        fetchPalms();
-      } else {
-        alert('Failed to delete mother tree');
-      }
-    } catch (err) {
-      alert('Error deleting mother tree');
-    }
+  const selectAllFiltered = () => {
+    const codes = filteredPalms.map(p => p.motherTreeCode || p.code);
+    setSelectedTreeCodes(codes);
   };
+
+  const clearSelection = () => {
+    setSelectedTreeCodes([]);
+  };
+
+  // Filtered Mother Trees
+  const filteredPalms = palms.filter(p => {
+    const pCode = p.motherTreeCode || p.code || '';
+    const matchSearch = !search ||
+      p.name?.toLowerCase().includes(search.toLowerCase()) ||
+      pCode.toLowerCase().includes(search.toLowerCase()) ||
+      p.variety?.toLowerCase().includes(search.toLowerCase()) ||
+      p.farmCode?.toLowerCase().includes(search.toLowerCase());
+
+    const matchFarm = farmFilter === 'ALL' || p.farmCode === farmFilter;
+    const matchSelection = selectionFilter === 'ALL' || p.selectionStatus === selectionFilter;
+    const matchVerification = verificationFilter === 'ALL' || p.verificationStatus === verificationFilter;
+
+    const isVis = p.isVisible !== false;
+    const matchVis = visibilityFilter === 'ALL'
+      ? true
+      : visibilityFilter === 'VISIBLE'
+        ? isVis
+        : !isVis;
+
+    return matchSearch && matchFarm && matchSelection && matchVerification && matchVis;
+  });
 
   return (
     <>
       <section className="bg-dark text-white py-3 border-bottom border-success border-3">
-        <div className="container d-flex justify-content-between align-items-center flex-wrap gap-2">
-          <div>
-            <span className="badge bg-success me-2">MOTHER TREE GENETICS</span>
-            <h3 className="fw-bold mb-0 text-light d-inline align-middle">Mother Tree &amp; Ancestral Palm Registry</h3>
-          </div>
-          <div className="d-flex gap-2 align-items-center flex-wrap">
-            <Link href="/farm" target="_blank" className="btn btn-outline-warning btn-sm text-warning">
-              <i className="bi bi-box-arrow-up-right me-1"></i> Customer Farm View
-            </Link>
-            <a 
-              href="/api/admin/export?type=trees" 
-              download 
-              className="btn btn-outline-success btn-sm text-light border-success"
-              title="Download Mother Trees in Excel"
-            >
-              <i className="bi bi-file-earmark-excel me-1"></i> Export (.xlsx)
-            </a>
-            <Link href="/admin" className="btn btn-outline-secondary btn-sm text-light">
-              <i className="bi bi-arrow-left me-1"></i> Dashboard
-            </Link>
+        <div className="container">
+          <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+              <span className="badge bg-success mb-1">MODULE 3: MOTHER TREE REGISTRY</span>
+              <h2 className="fw-bold mb-0 text-light">Mother Tree &amp; Ancestral Palm Registry</h2>
+            </div>
+            <div className="d-flex align-items-center gap-2">
+              {selectedTreeCodes.length > 0 && (
+                <Link
+                  href={`/admin/batches?selectedTrees=${encodeURIComponent(selectedTreeCodes.join(','))}`}
+                  className="btn btn-warning fw-bold btn-sm text-dark d-inline-flex align-items-center gap-1 shadow-sm"
+                >
+                  <i className="bi bi-plus-square-fill"></i>
+                  <span>Create Batch ({selectedTreeCodes.length} Trees)</span>
+                </Link>
+              )}
+              <Link href="/admin" className="btn btn-outline-light btn-sm">
+                <i className="bi bi-arrow-left me-1"></i> Admin Hub
+              </Link>
+              <AdminLogoutButton />
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="py-5 bg-light min-vh-100">
+      <AdminNav />
+
+      {toastMessage && (
+        <div className="alert alert-success border-0 rounded-0 py-2 text-center fw-semibold mb-0 shadow-sm">
+          <i className="bi bi-check-circle-fill me-2"></i>
+          {toastMessage}
+        </div>
+      )}
+
+      <section className="py-4 bg-light min-vh-100">
         <div className="container">
-          
-          {/* Add New Tree Form */}
-          <div className="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
-            <h4 className="fw-bold text-dark mb-3"><i className="bi bi-plus-circle text-success me-2"></i> Add New Mother Tree (Parent Palm)</h4>
-            
+
+          {/* Module 3.3 Filters */}
+          <div className="card border-0 shadow-sm rounded-4 p-3 mb-4 bg-white">
+            <div className="row g-2 align-items-center">
+              <div className="col-md-4">
+                <div className="input-group">
+                  <span className="input-group-text bg-light border-end-0">
+                    <i className="bi bi-search text-muted"></i>
+                  </span>
+                  <input
+                    type="text"
+                    className="form-control border-start-0"
+                    placeholder="Search by Tree ID, Name, Variety..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
+                  {search && (
+                    <button className="btn btn-outline-secondary" onClick={() => setSearch('')}>
+                      <i className="bi bi-x"></i>
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              <div className="col-md-2">
+                <select
+                  className="form-select"
+                  value={farmFilter}
+                  onChange={(e) => setFarmFilter(e.target.value)}
+                >
+                  <option value="ALL">All Farms</option>
+                  {farms.map(f => (
+                    <option key={f.farmCode} value={f.farmCode}>{f.farmCode} - {f.farmName}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="col-md-2">
+                <select
+                  className="form-select"
+                  value={selectionFilter}
+                  onChange={(e) => setSelectionFilter(e.target.value)}
+                >
+                  <option value="ALL">All Selection Statuses</option>
+                  <option value="Selected">Selected Only</option>
+                  <option value="Registered">Registered Only</option>
+                </select>
+              </div>
+
+              <div className="col-md-2">
+                <select
+                  className="form-select"
+                  value={verificationFilter}
+                  onChange={(e) => setVerificationFilter(e.target.value)}
+                >
+                  <option value="ALL">All Verifications</option>
+                  <option value="Verified">Verified Only</option>
+                  <option value="Pending">Pending Verification</option>
+                </select>
+              </div>
+
+              <div className="col-md-2">
+                <select
+                  className="form-select"
+                  value={visibilityFilter}
+                  onChange={(e) => setVisibilityFilter(e.target.value as any)}
+                >
+                  <option value="ALL">All Customer Visibility</option>
+                  <option value="VISIBLE">Visible (ON) Only</option>
+                  <option value="HIDDEN">Hidden (OFF) Only</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Selection action bar */}
+            <div className="d-flex justify-content-between align-items-center pt-2 mt-2 border-top flex-wrap gap-2">
+              <div className="small text-muted">
+                Showing <strong>{filteredPalms.length}</strong> mother tree{filteredPalms.length !== 1 ? 's' : ''}
+                {selectedTreeCodes.length > 0 && (
+                  <span className="ms-2 badge bg-primary">
+                    {selectedTreeCodes.length} selected for batch
+                  </span>
+                )}
+              </div>
+              <div className="d-flex gap-2">
+                <button onClick={selectAllFiltered} className="btn btn-sm btn-outline-secondary extra-small">
+                  Select All Filtered
+                </button>
+                {selectedTreeCodes.length > 0 && (
+                  <button onClick={clearSelection} className="btn btn-sm btn-outline-danger extra-small">
+                    Clear Selection
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Mother Tree Table */}
+          <div className="card border-0 shadow-sm rounded-4 overflow-hidden bg-white mb-5">
+            <div className="table-responsive">
+              <table className="table table-hover align-middle mb-0 text-nowrap">
+                <thead className="table-dark">
+                  <tr>
+                    <th style={{ width: '40px' }}>
+                      <input
+                        type="checkbox"
+                        className="form-check-input"
+                        checked={selectedTreeCodes.length > 0 && selectedTreeCodes.length === filteredPalms.length}
+                        onChange={(e) => e.target.checked ? selectAllFiltered() : clearSelection()}
+                      />
+                    </th>
+                    <th>Photo</th>
+                    <th>Mother Tree ID</th>
+                    <th>Farm ID</th>
+                    <th>Tree Name</th>
+                    <th>Variety</th>
+                    <th className="text-center">Age</th>
+                    <th className="text-center">Selection Status</th>
+                    <th className="text-center">Batches Used</th>
+                    <th className="text-center">Coconuts Collected</th>
+                    <th className="text-center">Seedlings Produced</th>
+                    <th className="text-center">Customer Visibility</th>
+                    <th className="text-end">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {loading ? (
+                    <tr>
+                      <td colSpan={13} className="text-center py-5">
+                        <div className="spinner-border text-success" role="status"></div>
+                        <p className="text-muted small mt-2 mb-0">Loading mother trees...</p>
+                      </td>
+                    </tr>
+                  ) : filteredPalms.length === 0 ? (
+                    <tr>
+                      <td colSpan={13} className="text-center py-5 text-muted">
+                        No mother trees found matching filters.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredPalms.map((palm) => {
+                      const tCode = palm.motherTreeCode || palm.code;
+                      const isSelected = selectedTreeCodes.includes(tCode);
+                      return (
+                        <tr key={tCode} className={isSelected ? 'table-warning' : ''}>
+                          <td>
+                            <input
+                              type="checkbox"
+                              className="form-check-input"
+                              checked={isSelected}
+                              onChange={() => toggleSelectTree(tCode)}
+                            />
+                          </td>
+                          <td style={{ width: '70px' }}>
+                            <div
+                              className="position-relative rounded-3 overflow-hidden shadow-sm cursor-pointer"
+                              style={{ width: '56px', height: '56px' }}
+                              onClick={() => setPreviewTree(palm)}
+                              title="Click to view full image"
+                            >
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={palm.images?.[0] || '/images/placeholder.png'}
+                                alt={palm.name}
+                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                              />
+                            </div>
+                          </td>
+                          <td>
+                            <span className="badge bg-secondary-subtle text-secondary font-monospace fw-bold">
+                              {tCode}
+                            </span>
+                          </td>
+                          <td>
+                            <span className="badge bg-light text-dark border font-monospace">
+                              {palm.farmCode || 'ETH-RA-F001'}
+                            </span>
+                          </td>
+                          <td>
+                            <div className="fw-bold text-dark">{palm.name}</div>
+                            <small className="text-muted extra-small">{palm.location || 'Heritage Grove'}</small>
+                          </td>
+                          <td>
+                            <small className="text-dark fw-semibold">{palm.variety || 'West Coast Tall'}</small>
+                          </td>
+                          <td className="text-center fw-semibold">{palm.age} yrs</td>
+                          <td className="text-center">
+                            <span className={`badge ${palm.selectionStatus === 'Selected' ? 'bg-success' : 'bg-secondary'}`}>
+                              {palm.selectionStatus || 'Selected'}
+                            </span>
+                          </td>
+                          <td className="text-center fw-semibold text-primary">{palm.batchesUsedCount ?? 0}</td>
+                          <td className="text-center fw-semibold text-warning">{(palm.totalCoconutsCollected ?? 0).toLocaleString()}</td>
+                          <td className="text-center fw-semibold text-success">{(palm.totalSeedlingsProduced ?? 0).toLocaleString()}</td>
+                          <td className="text-center">
+                            <div className="form-check form-switch d-inline-block">
+                              <input
+                                className="form-check-input cursor-pointer"
+                                type="checkbox"
+                                role="switch"
+                                checked={palm.isVisible !== false}
+                                disabled={togglingPalmCode === tCode}
+                                onChange={() => handleToggleSinglePalmVisibility(palm)}
+                              />
+                              <label className="form-check-label extra-small fw-semibold ms-1">
+                                {palm.isVisible !== false ? (
+                                  <span className="text-success">ON</span>
+                                ) : (
+                                  <span className="text-secondary">OFF</span>
+                                )}
+                              </label>
+                            </div>
+                          </td>
+                          <td className="text-end">
+                            <button
+                              onClick={() => openEditModal(palm)}
+                              className="btn btn-sm btn-outline-primary"
+                              title="Edit Tree Details & Photos"
+                            >
+                              <i className="bi bi-pencil me-1"></i> Edit
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Form: Register New Mother Tree Under Farm */}
+          <div className="card border-0 shadow-sm rounded-4 p-4 bg-white mb-5">
+            <h5 className="fw-bold text-dark mb-3">
+              <i className="bi bi-plus-circle-fill text-success me-2"></i>
+              Register New Mother Tree Under Farm
+            </h5>
             <form onSubmit={handleCreateTree}>
               <div className="row g-3">
-                <div className="col-md-3">
-                  <label className="form-label small fw-bold">Mother Palm Code *</label>
-                  <input 
-                    type="text" 
-                    className="form-control fw-bold border-success" 
-                    required 
-                    placeholder="e.g. EM-MP-020" 
-                    value={newTree.code}
-                    onChange={e => setNewTree({ ...newTree, code: e.target.value })}
-                  />
-                  <small className="text-muted extra-small">Auto-links to dedicated images folder</small>
+                <div className="col-md-4">
+                  <label className="form-label fw-bold small text-secondary">Assign To Farm *</label>
+                  <select
+                    className="form-select"
+                    value={selectedFarmCode}
+                    onChange={(e) => setSelectedFarmCode(e.target.value)}
+                    required
+                  >
+                    {farms.map(f => (
+                      <option key={f.farmCode} value={f.farmCode}>
+                        {f.farmCode} - {f.farmName} ({f.location})
+                      </option>
+                    ))}
+                  </select>
+                  <small className="text-muted extra-small">
+                    Mother Tree ID (e.g. <code>{selectedFarmCode}-MT001</code>) will be generated automatically.
+                  </small>
                 </div>
 
                 <div className="col-md-5">
-                  <label className="form-label small fw-bold">Mother Palm Name *</label>
-                  <input 
-                    type="text" 
-                    className="form-control" 
-                    required 
-                    placeholder="e.g. Plot C Selected Mother Tree #20" 
+                  <label className="form-label fw-bold small text-secondary">Mother Tree Name / Label *</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="e.g. High Yield Heritage Palm #21"
                     value={newTree.name}
-                    onChange={e => setNewTree({ ...newTree, name: e.target.value })}
+                    onChange={(e) => setNewTree({ ...newTree, name: e.target.value })}
+                    required
                   />
                 </div>
 
-                <div className="col-md-2">
-                  <label className="form-label small fw-bold">Tree Age (Years) *</label>
-                  <input 
-                    type="number" 
-                    className="form-control" 
-                    required 
+                <div className="col-md-3">
+                  <label className="form-label fw-bold small text-secondary">Approximate Age (Years) *</label>
+                  <input
+                    type="number"
+                    className="form-control"
                     value={newTree.age}
-                    onChange={e => setNewTree({ ...newTree, age: Number(e.target.value) })}
-                  />
-                </div>
-
-                <div className="col-md-2">
-                  <label className="form-label small fw-bold">Grove Location *</label>
-                  <input 
-                    type="text" 
-                    className="form-control" 
-                    required 
-                    value={newTree.location}
-                    onChange={e => setNewTree({ ...newTree, location: e.target.value })}
+                    onChange={(e) => setNewTree({ ...newTree, age: parseInt(e.target.value, 10) || 40 })}
+                    required
                   />
                 </div>
 
                 <div className="col-md-4">
-                  <label className="form-label small fw-bold">Health &amp; Pest Status *</label>
-                  <input 
-                    type="text" 
-                    className="form-control" 
-                    required 
-                    value={newTree.healthStatus}
-                    onChange={e => setNewTree({ ...newTree, healthStatus: e.target.value })}
+                  <label className="form-label fw-bold small text-secondary">Coconut Cultivar / Variety</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={newTree.variety}
+                    onChange={(e) => setNewTree({ ...newTree, variety: e.target.value })}
                   />
                 </div>
 
                 <div className="col-md-4">
-                  <label className="form-label small fw-bold">Yield History *</label>
-                  <input 
-                    type="text" 
-                    className="form-control" 
-                    required 
+                  <label className="form-label fw-bold small text-secondary">Selection Status</label>
+                  <select
+                    className="form-select"
+                    value={newTree.selectionStatus}
+                    onChange={(e) => setNewTree({ ...newTree, selectionStatus: e.target.value as any })}
+                  >
+                    <option value="Selected">Selected</option>
+                    <option value="Registered">Registered</option>
+                  </select>
+                </div>
+
+                <div className="col-md-4">
+                  <label className="form-label fw-bold small text-secondary">Production Status</label>
+                  <select
+                    className="form-select"
+                    value={newTree.productionStatus}
+                    onChange={(e) => setNewTree({ ...newTree, productionStatus: e.target.value as any })}
+                  >
+                    <option value="Active for Production">Active for Production</option>
+                    <option value="Inactive">Inactive</option>
+                    <option value="Retired">Retired</option>
+                  </select>
+                </div>
+
+                <div className="col-md-6">
+                  <label className="form-label fw-bold small text-secondary">Yield History</label>
+                  <input
+                    type="text"
+                    className="form-control"
                     value={newTree.yieldHistory}
-                    onChange={e => setNewTree({ ...newTree, yieldHistory: e.target.value })}
-                  />
-                </div>
-
-                <div className="col-md-4">
-                  <label className="form-label small fw-bold">Why Selected *</label>
-                  <input 
-                    type="text" 
-                    className="form-control" 
-                    required 
-                    value={newTree.whySelected}
-                    onChange={e => setNewTree({ ...newTree, whySelected: e.target.value })}
+                    onChange={(e) => setNewTree({ ...newTree, yieldHistory: e.target.value })}
                   />
                 </div>
 
                 <div className="col-md-6">
-                  <label className="form-label small fw-bold">Nut Characteristics *</label>
-                  <input 
-                    type="text" 
-                    className="form-control" 
-                    required 
-                    value={newTree.nutCharacteristics}
-                    onChange={e => setNewTree({ ...newTree, nutCharacteristics: e.target.value })}
-                  />
-                </div>
-
-                <div className="col-md-6">
-                  <label className="form-label small fw-bold">Description / Genetics Notes</label>
-                  <input 
-                    type="text" 
-                    className="form-control" 
-                    value={newTree.description}
-                    onChange={e => setNewTree({ ...newTree, description: e.target.value })}
-                  />
-                </div>
-
-                {/* DEDICATED FOLDER PHOTO UPLOAD */}
-                <div className="col-12 bg-light p-3 rounded-3 border">
-                  <label className="form-label small fw-bold text-dark d-block mb-1">
-                    <i className="bi bi-cloud-arrow-up-fill text-success me-1"></i> Upload Mother Tree Photographs
-                  </label>
-                  <span className="d-block extra-small text-muted mb-2 font-monospace">
-                    <i className="bi bi-cloud-check-fill text-success me-1"></i> Uploads directly to Cloudinary Cloud Storage (CDN optimized)
-                  </span>
-                  <input 
-                    type="file" 
-                    className="form-control form-control-sm" 
-                    multiple 
+                  <label className="form-label fw-bold small text-secondary">Upload Photographs</label>
+                  <input
+                    type="file"
+                    multiple
                     accept="image/*"
+                    className="form-control"
                     onChange={handleTreeFileChange}
                   />
-                  {treeFiles.length > 0 && (
-                    <span className="badge bg-success mt-2">
-                      <i className="bi bi-check-circle-fill me-1"></i> {treeFiles.length} file(s) selected for upload
-                    </span>
-                  )}
                 </div>
 
-                {/* Customer Visibility Toggle in Add Form */}
-                <div className="col-12 bg-light p-3 rounded-3 border d-flex flex-wrap justify-content-between align-items-center gap-2">
-                  <div>
-                    <label className="form-label small fw-bold text-dark mb-0 d-block">
-                      <i className="bi bi-eye-fill text-success me-1"></i> Customer Visibility
-                    </label>
-                    <small className="text-muted extra-small">
-                      Turn ON to make this mother tree visible to customers on the farm page &amp; pedigree registry.
-                    </small>
-                  </div>
-                  <div className="form-check form-switch m-0 fs-5">
-                    <input 
-                      className="form-check-input" 
-                      type="checkbox" 
-                      role="switch" 
-                      id="newTreeVisibility" 
-                      checked={newTree.isVisible !== false} 
-                      onChange={e => setNewTree({ ...newTree, isVisible: e.target.checked })} 
-                    />
-                    <label className="form-check-label small fw-bold ms-2" htmlFor="newTreeVisibility">
-                      {newTree.isVisible !== false ? <span className="text-success">ON (Visible to Customers)</span> : <span className="text-secondary">OFF (Hidden from Customers)</span>}
-                    </label>
-                  </div>
-                </div>
-
-                <div className="col-12">
-                  <button type="submit" className="btn btn-success fw-bold px-4" disabled={uploading}>
-                    <i className="bi bi-plus-circle me-1"></i> {uploading ? 'Uploading to Cloudinary & Saving...' : 'Save Mother Tree Record'}
+                <div className="col-12 text-end">
+                  <button type="submit" className="btn btn-success fw-bold px-4 shadow-sm" disabled={uploading}>
+                    {uploading ? 'Uploading Photographs...' : 'Register Mother Tree'}
                   </button>
                 </div>
               </div>
             </form>
           </div>
 
-          {/* Mother Trees List Table with Visibility Filter */}
-          <div className="card border-0 shadow-sm rounded-4 p-4 bg-white">
-            <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
-              <div>
-                <h4 className="fw-bold text-dark mb-1">
-                  Registered Mother Trees ({palms.filter(p => {
-                    if (visibilityFilter === 'VISIBLE') return p.isVisible !== false;
-                    if (visibilityFilter === 'HIDDEN') return p.isVisible === false;
-                    return true;
-                  }).length} of {palms.length})
-                </h4>
-                <small className="text-secondary">Toggle visibility per mother tree to instantly show or hide from customer view.</small>
+        </div>
+      </section>
+
+      {/* Edit Tree Modal */}
+      {editingTree && (
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}>
+          <div className="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div className="modal-content rounded-4 border-0 shadow">
+              <div className="modal-header bg-primary text-white">
+                <h5 className="modal-title fw-bold">
+                  <i className="bi bi-pencil-square me-2"></i> Edit Mother Tree: {editingTree.motherTreeCode || editingTree.code}
+                </h5>
+                <button type="button" className="btn-close btn-close-white" onClick={() => setEditingTree(null)}></button>
               </div>
-
-              {/* Visibility Filter Tabs */}
-              <div className="d-flex align-items-center gap-1 bg-light p-1 rounded-pill border">
-                <button
-                  type="button"
-                  onClick={() => setVisibilityFilter('ALL')}
-                  className={`btn btn-sm fw-bold rounded-pill px-3 py-1 ${visibilityFilter === 'ALL' ? 'btn-dark text-white shadow-sm' : 'btn-light text-secondary border-0'}`}
-                >
-                  All ({palms.length})
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setVisibilityFilter('VISIBLE')}
-                  className={`btn btn-sm fw-bold rounded-pill px-3 py-1 ${visibilityFilter === 'VISIBLE' ? 'btn-success text-white shadow-sm' : 'btn-light text-secondary border-0'}`}
-                >
-                  <i className="bi bi-eye-fill me-1"></i> Visible / ON ({palms.filter(p => p.isVisible !== false).length})
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setVisibilityFilter('HIDDEN')}
-                  className={`btn btn-sm fw-bold rounded-pill px-3 py-1 ${visibilityFilter === 'HIDDEN' ? 'btn-danger text-white shadow-sm' : 'btn-light text-secondary border-0'}`}
-                >
-                  <i className="bi bi-eye-slash-fill me-1"></i> Hidden / OFF ({palms.filter(p => p.isVisible === false).length})
-                </button>
-              </div>
-            </div>
-
-            {toastMessage && (
-              <div className="alert alert-success alert-dismissible py-2 px-3 small rounded-3 d-flex align-items-center gap-2 mb-3 shadow-sm">
-                <i className="bi bi-check-circle-fill fs-6"></i>
-                <span className="fw-semibold">{toastMessage}</span>
-              </div>
-            )}
-
-            {loading ? (
-              <div className="text-center py-4">Loading mother tree data...</div>
-            ) : (
-              <div className="table-responsive">
-                <table className="table table-hover align-middle">
-                  <thead className="table-dark">
-                    <tr>
-                      <th style={{ width: '80px' }}>Photo</th>
-                      <th>Tree Code</th>
-                      <th>Tree Name</th>
-                      <th>Age</th>
-                      <th>Location</th>
-                      <th>Yield Record</th>
-                      <th>Customer Visibility</th>
-                      <th className="text-end">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {palms
-                      .filter(p => {
-                        if (visibilityFilter === 'VISIBLE') return p.isVisible !== false;
-                        if (visibilityFilter === 'HIDDEN') return p.isVisible === false;
-                        return true;
-                      })
-                      .map(p => {
-                      const primaryPhoto = (p.images && p.images.length > 0) ? p.images[0] : '/images/placeholder.png';
-                      const photoCount = p.images ? p.images.length : 0;
-                      const isVisible = p.isVisible !== false;
-
-                      return (
-                        <tr key={p.id} className={!isVisible ? 'table-secondary opacity-75' : ''}>
-                          {/* Visual Photo Thumbnail Column */}
-                          <td>
-                            <div 
-                              className="position-relative cursor-pointer hover-lift rounded-3 overflow-hidden" 
-                              style={{ width: '52px', height: '52px', cursor: 'pointer' }}
-                              onClick={() => setPreviewTree(p)}
-                              title="Click to view full photo gallery"
-                            >
-                              <img 
-                                src={primaryPhoto} 
-                                alt={p.name} 
-                                className="rounded-3 border object-fit-cover w-100 h-100 shadow-sm"
-                                onError={(e) => { (e.target as HTMLImageElement).src = '/images/placeholder.png'; }}
-                              />
-                              {photoCount > 1 && (
-                                <span 
-                                  className="position-absolute bottom-0 end-0 badge bg-dark bg-opacity-75 rounded-pill"
-                                  style={{ fontSize: '0.65rem', padding: '2px 4px' }}
-                                  title={`${photoCount} photos available`}
-                                >
-                                  {photoCount}
-                                </span>
-                              )}
-                            </div>
-                          </td>
-                          <td><strong className="text-success font-monospace">{p.code}</strong></td>
-                          <td><strong>{p.name}</strong></td>
-                          <td><span className="badge bg-dark">{p.age} Years</span></td>
-                          <td><small className="text-muted">{p.location}</small></td>
-                          <td><small className="text-success fw-bold">{p.yieldHistory}</small></td>
-                          <td>
-                            <div className="d-flex flex-column align-items-start gap-1">
-                              <button
-                                type="button"
-                                disabled={togglingPalmCode === p.code}
-                                onClick={() => handleToggleSinglePalmVisibility(p)}
-                                className={`btn btn-sm fw-bold d-inline-flex align-items-center gap-1 shadow-sm rounded-pill px-3 py-1 ${
-                                  isVisible 
-                                    ? 'btn-success text-white' 
-                                    : 'btn-outline-danger'
-                                }`}
-                                title={isVisible ? 'Currently ON (visible to customers). Click to turn OFF & hide.' : 'Currently OFF (hidden from customers). Click to turn ON & show.'}
-                              >
-                                <i className={`bi ${isVisible ? 'bi-toggle-on fs-6' : 'bi-toggle-off fs-6'}`}></i>
-                                <span>{togglingPalmCode === p.code ? 'Saving...' : (isVisible ? 'ON (Visible)' : 'OFF (Hidden)')}</span>
-                              </button>
-                              <small className="extra-small text-muted">
-                                {isVisible ? 'Shown to Customers' : 'Hidden from Customers'}
-                              </small>
-                            </div>
-                          </td>
-                          <td className="text-end">
-                            <div className="d-flex justify-content-end gap-1">
-                              <Link href={`/parent-palm/${p.code}`} target="_blank" className="btn btn-sm btn-outline-info" title="View Public Profile">
-                                <i className="bi bi-eye"></i> View
-                              </Link>
-                              <button 
-                                className="btn btn-sm btn-outline-primary fw-semibold" 
-                                onClick={() => openEditModal(p)}
-                                title="Edit tree details and photos"
-                              >
-                                <i className="bi bi-pencil"></i> Edit Photos
-                              </button>
-                              <button 
-                                className="btn btn-sm btn-outline-danger" 
-                                onClick={() => handleDeleteTree(p.code)}
-                                title="Delete this mother tree"
-                              >
-                                <i className="bi bi-trash"></i>
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-
-          {/* Full Container Photo Preview Modal */}
-          {previewTree && (
-            <div 
-              className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center p-3"
-              style={{ zIndex: 10500, backgroundColor: 'rgba(0, 0, 0, 0.85)', backdropFilter: 'blur(6px)' }}
-              onClick={() => setPreviewTree(null)}
-            >
-              <div 
-                className="card bg-dark text-white border-secondary rounded-4 shadow-lg overflow-hidden w-100" 
-                style={{ maxWidth: '780px' }} 
-                onClick={e => e.stopPropagation()}
-              >
-                <div className="card-header bg-dark border-secondary d-flex justify-content-between align-items-center p-3">
-                  <div>
-                    <h5 className="fw-bold mb-0 text-white">{previewTree.name}</h5>
-                    <small className="text-muted">{previewTree.code} &bull; {previewTree.location}</small>
-                  </div>
-                  <button type="button" className="btn-close btn-close-white" onClick={() => setPreviewTree(null)}></button>
-                </div>
-                <div className="card-body p-3 bg-black">
-                  <ImageCarousel 
-                    images={previewTree.images || []} 
-                    title={previewTree.name} 
-                    subtitle={`${previewTree.code} • ${previewTree.location}`}
-                    carouselId={`admin-tree-preview-${previewTree.code}`}
-                    height="450px"
-                    showThumbnails={true}
-                    objectFit="cover"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* EDIT MOTHER TREE MODAL */}
-          {editingTree && (
-            <div className="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center z-3">
-              <div className="card border-0 shadow-lg rounded-4 p-4 bg-white" style={{ maxWidth: '750px', width: '92%', maxHeight: '90vh', overflowY: 'auto' }}>
-                <div className="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
-                  <h4 className="fw-bold text-dark mb-0">
-                    <i className="bi bi-pencil-square text-success me-2"></i> 
-                    Edit Mother Tree: <span className="text-success">{editingTree.code}</span>
-                  </h4>
-                  <button className="btn-close" onClick={() => setEditingTree(null)}></button>
-                </div>
-
-                <div className="row g-3">
+              <div className="modal-body p-4">
+                <div className="row g-3 mb-3">
                   <div className="col-md-6">
-                    <label className="form-label small fw-bold">Mother Tree Code</label>
-                    <input 
-                      type="text" 
-                      className="form-control fw-bold border-success font-monospace" 
-                      value={editingTree.code}
-                      onChange={e => setEditingTree({ ...editingTree, code: e.target.value })}
-                    />
-                  </div>
-
-                  <div className="col-md-6">
-                    <label className="form-label small fw-bold">Tree Name</label>
-                    <input 
-                      type="text" 
-                      className="form-control" 
+                    <label className="form-label fw-bold small text-secondary">Tree Name</label>
+                    <input
+                      type="text"
+                      className="form-control"
                       value={editingTree.name}
-                      onChange={e => setEditingTree({ ...editingTree, name: e.target.value })}
+                      onChange={(e) => setEditingTree({ ...editingTree, name: e.target.value })}
                     />
                   </div>
-
-                  <div className="col-md-4">
-                    <label className="form-label small fw-bold">Age (Years)</label>
-                    <input 
-                      type="number" 
-                      className="form-control" 
+                  <div className="col-md-3">
+                    <label className="form-label fw-bold small text-secondary">Age</label>
+                    <input
+                      type="number"
+                      className="form-control"
                       value={editingTree.age}
-                      onChange={e => setEditingTree({ ...editingTree, age: Number(e.target.value) })}
+                      onChange={(e) => setEditingTree({ ...editingTree, age: parseInt(e.target.value, 10) || 40 })}
                     />
                   </div>
-
+                  <div className="col-md-3">
+                    <label className="form-label fw-bold small text-secondary">Variety</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={editingTree.variety}
+                      onChange={(e) => setEditingTree({ ...editingTree, variety: e.target.value })}
+                    />
+                  </div>
                   <div className="col-md-4">
-                    <label className="form-label small fw-bold">Health Status</label>
-                    <input 
-                      type="text" 
-                      className="form-control" 
-                      value={editingTree.healthStatus || ''}
-                      onChange={e => setEditingTree({ ...editingTree, healthStatus: e.target.value })}
-                    />
+                    <label className="form-label fw-bold small text-secondary">Selection Status</label>
+                    <select
+                      className="form-select"
+                      value={editingTree.selectionStatus}
+                      onChange={(e) => setEditingTree({ ...editingTree, selectionStatus: e.target.value })}
+                    >
+                      <option value="Selected">Selected</option>
+                      <option value="Registered">Registered</option>
+                    </select>
                   </div>
-
                   <div className="col-md-4">
-                    <label className="form-label small fw-bold">Grove Location</label>
-                    <input 
-                      type="text" 
-                      className="form-control" 
-                      value={editingTree.location}
-                      onChange={e => setEditingTree({ ...editingTree, location: e.target.value })}
-                    />
+                    <label className="form-label fw-bold small text-secondary">Verification Status</label>
+                    <select
+                      className="form-select"
+                      value={editingTree.verificationStatus}
+                      onChange={(e) => setEditingTree({ ...editingTree, verificationStatus: e.target.value })}
+                    >
+                      <option value="Verified">Verified</option>
+                      <option value="Pending">Pending</option>
+                    </select>
                   </div>
-
+                  <div className="col-md-4">
+                    <label className="form-label fw-bold small text-secondary">Production Status</label>
+                    <select
+                      className="form-select"
+                      value={editingTree.productionStatus}
+                      onChange={(e) => setEditingTree({ ...editingTree, productionStatus: e.target.value })}
+                    >
+                      <option value="Active for Production">Active for Production</option>
+                      <option value="Inactive">Inactive</option>
+                      <option value="Retired">Retired</option>
+                    </select>
+                  </div>
                   <div className="col-12">
-                    <label className="form-label small fw-bold">Recorded Yield History</label>
-                    <input 
-                      type="text" 
-                      className="form-control" 
+                    <label className="form-label fw-bold small text-secondary">Yield History</label>
+                    <textarea
+                      className="form-control"
+                      rows={2}
                       value={editingTree.yieldHistory}
-                      onChange={e => setEditingTree({ ...editingTree, yieldHistory: e.target.value })}
-                    />
-                  </div>
-
-                  <div className="col-12">
-                    <label className="form-label small fw-bold">Why Selected as Mother Tree</label>
-                    <input 
-                      type="text" 
-                      className="form-control" 
-                      value={editingTree.whySelected || ''}
-                      onChange={e => setEditingTree({ ...editingTree, whySelected: e.target.value })}
-                    />
-                  </div>
-
-                  <div className="col-12">
-                    <label className="form-label small fw-bold">Nut &amp; Water Characteristics &amp; Description</label>
-                    <textarea 
-                      className="form-control" 
-                      rows={2} 
-                      value={editingTree.description}
-                      onChange={e => setEditingTree({ ...editingTree, description: e.target.value })}
+                      onChange={(e) => setEditingTree({ ...editingTree, yieldHistory: e.target.value })}
                     ></textarea>
                   </div>
+                </div>
 
-                  {/* Customer Visibility Switch in Edit Modal */}
-                  <div className="col-12 bg-light p-3 rounded-3 border d-flex justify-content-between align-items-center">
-                    <div>
-                      <label className="form-label small fw-bold text-dark mb-0 d-block">
-                        <i className="bi bi-eye-fill text-success me-1"></i> Customer Visibility
-                      </label>
-                      <small className="text-muted extra-small">
-                        {editingTree.isVisible !== false ? 'This mother tree is currently VISIBLE to customers in the registry & farm page.' : 'This mother tree is currently HIDDEN from customers.'}
-                      </small>
-                    </div>
-                    <div className="form-check form-switch m-0 fs-5">
-                      <input 
-                        className="form-check-input" 
-                        type="checkbox" 
-                        role="switch" 
-                        id="editTreeVisibility" 
-                        checked={editingTree.isVisible !== false} 
-                        onChange={e => setEditingTree({ ...editingTree, isVisible: e.target.checked })} 
-                      />
-                      <label className="form-check-label small fw-bold ms-2" htmlFor="editTreeVisibility">
-                        {editingTree.isVisible !== false ? <span className="text-success">ON (Visible)</span> : <span className="text-secondary">OFF (Hidden)</span>}
-                      </label>
-                    </div>
-                  </div>
-
-                  {/* Mother Tree Images — Gallery, URL Manager & Device Uploader */}
-                  <div className="col-12 bg-light p-3 rounded-4 border">
-                    <div className="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
-                      <div>
-                        <label className="form-label small fw-bold text-dark mb-0">
-                          <i className="bi bi-images me-1 text-success"></i> Mother Tree Photo Gallery
-                          <span className="badge bg-success ms-2">{editTreeImages.length} Photo(s)</span>
-                        </label>
-                        <small className="d-block extra-small text-muted">
-                          The first image is the <strong>Primary Cover Photo</strong> shown on customer pages.
-                        </small>
-                      </div>
-                      {editTreeImages.length > 0 && (
+                {/* Photos Gallery Manager */}
+                <div className="p-3 bg-light rounded-3 mb-3">
+                  <h6 className="fw-bold text-dark mb-2">Photographs ({editTreeImages.length})</h6>
+                  <div className="d-flex flex-wrap gap-2 mb-3">
+                    {editTreeImages.map((imgUrl, idx) => (
+                      <div key={idx} className="position-relative border rounded overflow-hidden" style={{ width: '80px', height: '80px' }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={imgUrl} alt={`Photo ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         <button
                           type="button"
-                          className="btn btn-sm btn-outline-danger py-0 px-2 extra-small"
-                          onClick={removeAllTreeImages}
+                          className="btn btn-danger btn-sm p-0 position-absolute top-0 end-0 rounded-circle m-1 d-flex align-items-center justify-content-center"
+                          style={{ width: '20px', height: '20px', fontSize: '10px' }}
+                          onClick={() => setEditTreeImages(prev => prev.filter((_, i) => i !== idx))}
                         >
-                          <i className="bi bi-trash me-1"></i> Clear All
+                          ✕
                         </button>
-                      )}
-                    </div>
-
-                    {/* Image Cards & Reorder/Primary Selector */}
-                    {editTreeImages.length > 0 ? (
-                      <div className="mb-3 d-flex flex-column gap-2">
-                        {editTreeImages.map((imgUrl: string, idx: number) => {
-                          const isPrimary = idx === 0;
-
-                          return (
-                            <div 
-                              key={idx} 
-                              className={`d-flex align-items-center gap-2 p-2 rounded-3 border bg-white ${isPrimary ? 'border-success border-2 shadow-sm' : ''}`}
-                            >
-                              <div className="position-relative flex-shrink-0" style={{ width: '56px', height: '56px' }}>
-                                <img
-                                  src={imgUrl}
-                                  alt={`Tree Photo ${idx + 1}`}
-                                  className="rounded border object-fit-cover w-100 h-100"
-                                  onError={(e) => { (e.target as HTMLImageElement).src = '/images/placeholder.png'; }}
-                                />
-                                {isPrimary && (
-                                  <span 
-                                    className="position-absolute top-0 start-0 badge bg-success extra-small"
-                                    style={{ fontSize: '0.6rem', padding: '1px 3px' }}
-                                  >
-                                    COVER
-                                  </span>
-                                )}
-                              </div>
-
-                              <div className="flex-grow-1">
-                                <div className="d-flex align-items-center justify-content-between mb-1">
-                                  <span className="extra-small fw-bold text-secondary">
-                                    {isPrimary ? '★ Primary Cover Picture (Shown on Farm & Home Page)' : `Photo #${idx + 1}`}
-                                  </span>
-                                  {!isPrimary && (
-                                    <button
-                                      type="button"
-                                      className="btn btn-sm btn-outline-success py-0 px-2 extra-small fw-bold"
-                                      onClick={() => setAsPrimaryImage(idx)}
-                                      title="Make this photo the primary cover image"
-                                    >
-                                      <i className="bi bi-star-fill me-1"></i> Make Primary Cover
-                                    </button>
-                                  )}
-                                </div>
-                                <input
-                                  type="text"
-                                  className="form-control form-control-sm font-monospace extra-small"
-                                  value={imgUrl}
-                                  onChange={e => updateTreeImageUrl(idx, e.target.value)}
-                                  placeholder="/images/parent-palms/… or https://…"
-                                />
-                              </div>
-
-                              <button
-                                type="button"
-                                className="btn btn-sm btn-outline-danger px-2 flex-shrink-0"
-                                onClick={() => removeTreeImage(idx)}
-                                title="Remove this photo"
-                              >
-                                ✕
-                              </button>
-                            </div>
-                          );
-                        })}
                       </div>
-                    ) : (
-                      <div className="text-center py-3 bg-white rounded-3 border mb-3">
-                        <i className="bi bi-image text-muted fs-3 d-block mb-1"></i>
-                        <small className="text-muted d-block">No photos stored for this tree yet. Upload a photo below.</small>
-                      </div>
-                    )}
+                    ))}
+                  </div>
 
-                    {/* Add new URL */}
-                    <div className="d-flex gap-2 mb-3">
-                      <input
-                        type="text"
-                        className="form-control form-control-sm font-monospace"
-                        placeholder="Paste Cloudinary URL: https://res.cloudinary.com/... or web image URL"
-                        value={newTreeImageUrl}
-                        onChange={e => setNewTreeImageUrl(e.target.value)}
-                        onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addTreeImageUrl(); } }}
-                      />
-                      <button
-                        type="button"
-                        className="btn btn-sm btn-outline-success fw-bold text-nowrap"
-                        onClick={addTreeImageUrl}
-                      >
-                        <i className="bi bi-plus-lg me-1"></i> Add URL
-                      </button>
-                    </div>
-
-                    {/* Device Upload Section */}
-                    <div className="p-3 bg-white rounded-3 border mb-3">
-                      <div className="d-flex justify-content-between align-items-center mb-1">
-                        <label className="form-label small fw-bold text-dark mb-0">
-                          <i className="bi bi-upload text-primary me-1"></i> Upload Photos From Device:
-                        </label>
-                        <div className="form-check form-switch mb-0">
-                          <input 
-                            className="form-check-input" 
-                            type="checkbox" 
-                            role="switch" 
-                            id="primaryUploadCheck" 
-                            checked={makePrimaryOnUpload}
-                            onChange={e => setMakePrimaryOnUpload(e.target.checked)}
-                          />
-                          <label className="form-check-label extra-small fw-bold text-secondary" htmlFor="primaryUploadCheck">
-                            Set uploaded photo as Primary Cover
-                          </label>
-                        </div>
-                      </div>
-                      <input
-                        type="file"
-                        className="form-control form-control-sm"
-                        multiple
-                        accept="image/*"
-                        disabled={uploading}
-                        onChange={handleUploadTreeFiles}
-                      />
-                      <small className="text-muted extra-small d-block mt-1">
-                        {uploading ? '⏳ Uploading photo to Cloudinary CDN...' : 'Select JPEG/PNG/WebP. Image will be uploaded directly to Cloudinary cloud storage.'}
-                      </small>
-                    </div>
-
-                    {/* Quick-save button */}
+                  <div className="input-group">
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Add image URL or Cloudinary URL..."
+                      value={newTreeImageUrl}
+                      onChange={(e) => setNewTreeImageUrl(e.target.value)}
+                    />
                     <button
                       type="button"
-                      className="btn btn-primary btn-sm fw-bold w-100"
-                      onClick={handleSaveTreeImageUrls}
-                      disabled={savingImages}
+                      className="btn btn-outline-success"
+                      onClick={() => {
+                        if (newTreeImageUrl.trim()) {
+                          setEditTreeImages(prev => [...prev, newTreeImageUrl.trim()]);
+                          setNewTreeImageUrl('');
+                        }
+                      }}
                     >
-                      {savingImages
-                        ? <><i className="bi bi-hourglass-split me-1"></i> Saving Photos to DB…</>
-                        : <><i className="bi bi-cloud-check-fill me-1"></i> Quick Save Photo Gallery to DB</>}
+                      Add URL
                     </button>
                   </div>
                 </div>
 
-                <div className="d-flex gap-2 justify-content-end mt-4 pt-3 border-top">
-                  <button className="btn btn-outline-secondary" onClick={() => setEditingTree(null)}>
-                    Cancel
-                  </button>
-                  <button 
-                    className="btn btn-success fw-bold px-4 shadow-sm" 
-                    onClick={handleUpdateTree}
-                    disabled={savingImages}
-                  >
-                    {savingImages ? (
-                      <>
-                        <span className="spinner-border spinner-border-sm me-2"></span>
-                        Saving All Changes...
-                      </>
-                    ) : (
-                      <>
-                        <i className="bi bi-check-circle-fill me-1"></i> Save Changes &amp; Photos
-                      </>
-                    )}
-                  </button>
+                {/* Customer Visibility Toggle */}
+                <div className="form-check form-switch p-2 bg-light rounded">
+                  <input
+                    className="form-check-input ms-0 me-2"
+                    type="checkbox"
+                    role="switch"
+                    id="editTreeVisSwitch"
+                    checked={editingTree.isVisible !== false}
+                    onChange={(e) => setEditingTree({ ...editingTree, isVisible: e.target.checked })}
+                  />
+                  <label className="form-check-label fw-semibold" htmlFor="editTreeVisSwitch">
+                    Visible to Customers on Public Site &amp; Farm Pages ({editingTree.isVisible !== false ? 'ON' : 'OFF'})
+                  </label>
                 </div>
               </div>
-            </div>
-          )}
 
+              <div className="modal-footer bg-light border-0">
+                <button type="button" className="btn btn-secondary" onClick={() => setEditingTree(null)}>Cancel</button>
+                <button type="button" className="btn btn-primary fw-bold" onClick={handleSaveTreeEdits} disabled={savingImages}>
+                  {savingImages ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-      </section>
+      )}
+
+      {/* Image Preview Popup */}
+      {previewTree && (
+        <ImageCarousel
+          images={previewTree.images || ['/images/placeholder.png']}
+          title={`${previewTree.name} (${previewTree.motherTreeCode || previewTree.code})`}
+          onClose={() => setPreviewTree(null)}
+        />
+      )}
     </>
   );
 }

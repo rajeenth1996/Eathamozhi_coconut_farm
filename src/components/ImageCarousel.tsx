@@ -11,6 +11,7 @@ interface ImageCarouselProps {
   showThumbnails?: boolean;
   objectFit?: 'contain' | 'cover';
   className?: string;
+  onClose?: () => void;
 }
 
 export default function ImageCarousel({ 
@@ -21,7 +22,8 @@ export default function ImageCarousel({
   height = '240px',
   showThumbnails = true,
   objectFit = 'cover',
-  className = ''
+  className = '',
+  onClose
 }: ImageCarouselProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -78,6 +80,7 @@ export default function ImageCarousel({
       e.stopPropagation();
     }
     setIsPopupOpen(false);
+    onClose?.();
   };
 
   // Close with Escape key or keyboard navigation

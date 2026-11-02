@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import AdminNav from '@/components/AdminNav';
 import AdminLogoutButton from '@/components/AdminLogoutButton';
 
 export default function AdminDashboardPage() {
+  const [dashboardData, setDashboardData] = useState<any | null>(null);
   const [batches, setBatches] = useState<any[]>([]);
   const [parentPalms, setParentPalms] = useState<any[]>([]);
   const [bookings, setBookings] = useState<any[]>([]);
@@ -12,15 +14,18 @@ export default function AdminDashboardPage() {
 
   const fetchDashboardData = async () => {
     try {
-      const [batchesRes, palmsRes, bookingsRes] = await Promise.all([
+      const [dashRes, batchesRes, palmsRes, bookingsRes] = await Promise.all([
+        fetch('/api/admin/farm-dashboard'),
         fetch('/api/batches?all=true'),
         fetch('/api/parent-palms?all=true'),
         fetch('/api/bookings'),
       ]);
+      const dashData = await dashRes.json();
       const batchesData = await batchesRes.json();
       const palmsData = await palmsRes.json();
       const bookingsData = await bookingsRes.json();
-      
+
+      setDashboardData(dashData);
       setBatches(Array.isArray(batchesData) ? batchesData : []);
       setParentPalms(Array.isArray(palmsData) ? palmsData : []);
       setBookings(Array.isArray(bookingsData) ? bookingsData : []);
@@ -35,10 +40,6 @@ export default function AdminDashboardPage() {
     fetchDashboardData();
   }, []);
 
-  const totalProduced = batches.reduce((acc, b) => acc + (b.totalQuantity || 0), 0);
-  const totalBooked = batches.reduce((acc, b) => acc + (b.bookedQuantity || 0), 0);
-  const totalAvailable = batches.reduce((acc, b) => acc + (b.availableQuantity || 0), 0);
-  const activeOrders = bookings.filter(b => b.bookingStatus !== 'Delivered' && b.bookingStatus !== 'Cancelled').length;
   const totalOrders = bookings.length;
 
   const statusCounts = {
@@ -55,20 +56,23 @@ export default function AdminDashboardPage() {
 
   return (
     <>
-      <section className="bg-dark text-white py-4 border-bottom border-success border-3">
+      <section className="bg-dark text-white py-3 border-bottom border-success border-3">
         <div className="container">
           <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
             <div>
               <span className="badge bg-danger mb-1">SECURE ADMIN PORTAL</span>
-              <h1 className="fw-bold mb-0 text-light">Eathamozhi Farm Admin Dashboard</h1>
+              <h1 className="fw-bold mb-0 text-light fs-3">Eathamozhi Farm Executive Dashboard</h1>
             </div>
             <div className="d-flex align-items-center gap-2 flex-wrap">
               <span className="badge bg-dark border border-secondary text-light px-2 py-1 small d-none d-md-inline-flex align-items-center gap-1">
                 <i className="bi bi-shield-check text-success"></i> Administrator
               </span>
+              <Link href="/admin/traceability" className="btn btn-outline-light btn-sm fw-bold d-inline-flex align-items-center gap-1">
+                <i className="bi bi-diagram-3-fill text-success"></i> Traceability
+              </Link>
               <Link href="/admin/analytics" className="btn btn-warning fw-bold btn-sm d-inline-flex align-items-center gap-1 shadow-sm text-dark">
                 <i className="bi bi-graph-up-arrow fs-6"></i>
-                <span>Visitor Analytics</span>
+                <span>Analytics</span>
               </Link>
               <a 
                 href="/api/admin/export?type=all" 
@@ -77,7 +81,7 @@ export default function AdminDashboardPage() {
                 title="Download all farm records in Excel spreadsheet"
               >
                 <i className="bi bi-file-earmark-excel-fill fs-6"></i>
-                <span>Download (Excel)</span>
+                <span>Excel (.xlsx)</span>
               </a>
               <Link href="/" className="btn btn-outline-light btn-sm">
                 <i className="bi bi-house-door me-1"></i> Public Site
@@ -88,103 +92,275 @@ export default function AdminDashboardPage() {
         </div>
       </section>
 
-      <section className="py-5 bg-light">
+      <AdminNav />
+
+      <section className="py-4 bg-light min-vh-100">
         <div className="container">
           
-          {/* Executive Stat Cards */}
-          <div className="row g-4 mb-5">
-            <div className="col-md-3">
-              <div className="card border-0 shadow-sm rounded-4 p-4 bg-white border-start border-primary border-4">
-                <small className="text-muted d-block text-uppercase fw-bold">Total Produced</small>
-                <h2 className="fw-bold text-dark mb-0">{loading ? '...' : totalProduced.toLocaleString()}</h2>
-                <small className="text-secondary">All Sapling Batches</small>
-              </div>
-            </div>
+          {/* Module 2.1: Summary Cards */}
+          <div className="mb-4">
+            <h5 className="fw-bold text-dark mb-3">
+              <i className="bi bi-speedometer2 text-success me-2"></i>
+              Farm-Wise Inventory &amp; Performance Summary
+            </h5>
 
-            <div className="col-md-3">
-              <div className="card border-0 shadow-sm rounded-4 p-4 bg-white border-start border-success border-4">
-                <small className="text-muted d-block text-uppercase fw-bold">Total Booked</small>
-                <h2 className="fw-bold text-success mb-0">{loading ? '...' : totalBooked.toLocaleString()}</h2>
-                <small className="text-secondary">Confirmed Orders</small>
+            <div className="row g-3">
+              {/* Row 1: Farms & Trees */}
+              <div className="col-6 col-md-4 col-lg-2">
+                <div className="card border-0 shadow-sm rounded-4 p-3 bg-white border-start border-success border-4 h-100">
+                  <small className="text-muted d-block text-uppercase extra-small fw-bold">Registered Farms</small>
+                  <h3 className="fw-bold text-dark mb-0">{loading ? '...' : dashboardData?.totalFarms ?? 0}</h3>
+                  <small className="text-secondary extra-small">Provenance Origins</small>
+                </div>
               </div>
-            </div>
 
-            <div className="col-md-3">
-              <div className="card border-0 shadow-sm rounded-4 p-4 bg-white border-start border-warning border-4">
-                <small className="text-muted d-block text-uppercase fw-bold">Available Inventory</small>
-                <h2 className="fw-bold text-warning mb-0">{loading ? '...' : totalAvailable.toLocaleString()}</h2>
-                <small className="text-secondary">Live Stock Remaining</small>
+              <div className="col-6 col-md-4 col-lg-2">
+                <div className="card border-0 shadow-sm rounded-4 p-3 bg-white border-start border-success border-4 h-100">
+                  <small className="text-muted d-block text-uppercase extra-small fw-bold">Mother Trees</small>
+                  <h3 className="fw-bold text-dark mb-0">{loading ? '...' : dashboardData?.totalMotherTrees ?? 0}</h3>
+                  <small className="text-secondary extra-small">Total Cataloged</small>
+                </div>
               </div>
-            </div>
 
-            <div className="col-md-3">
-              <div className="card border-0 shadow-sm rounded-4 p-4 bg-white border-start border-danger border-4">
-                <small className="text-muted d-block text-uppercase fw-bold">Active Orders</small>
-                <h2 className="fw-bold text-danger mb-0">{loading ? '...' : activeOrders.toLocaleString()}</h2>
-                <small className="text-secondary d-block">{loading ? '' : `${totalOrders} Total Booking(s)`}</small>
-                {!loading && (
-                  <div className="d-flex flex-wrap gap-1 mt-2">
-                    <span className="badge bg-warning text-dark extra-small">Pre: {statusCounts.preOrder}</span>
-                    <span className="badge bg-danger-subtle text-danger extra-small">Rev: {statusCounts.paymentReview}</span>
-                    <span className="badge bg-success-subtle text-success extra-small">Conf: {statusCounts.confirmed}</span>
-                  </div>
-                )}
+              <div className="col-6 col-md-4 col-lg-2">
+                <div className="card border-0 shadow-sm rounded-4 p-3 bg-white border-start border-primary border-4 h-100">
+                  <small className="text-muted d-block text-uppercase extra-small fw-bold">Selected Trees</small>
+                  <h3 className="fw-bold text-primary mb-0">{loading ? '...' : dashboardData?.totalSelectedMotherTrees ?? 0}</h3>
+                  <small className="text-secondary extra-small">Verified Elite Stock</small>
+                </div>
+              </div>
+
+              <div className="col-6 col-md-4 col-lg-2">
+                <div className="card border-0 shadow-sm rounded-4 p-3 bg-white border-start border-info border-4 h-100">
+                  <small className="text-muted d-block text-uppercase extra-small fw-bold">Trees in Batches</small>
+                  <h3 className="fw-bold text-info mb-0">{loading ? '...' : dashboardData?.totalMotherTreesUsedInBatches ?? 0}</h3>
+                  <small className="text-secondary extra-small">Used as Seed Nut Source</small>
+                </div>
+              </div>
+
+              <div className="col-6 col-md-4 col-lg-2">
+                <div className="card border-0 shadow-sm rounded-4 p-3 bg-white border-start border-primary border-4 h-100">
+                  <small className="text-muted d-block text-uppercase extra-small fw-bold">Active Batches</small>
+                  <h3 className="fw-bold text-dark mb-0">{loading ? '...' : dashboardData?.totalActiveBatches ?? 0}</h3>
+                  <small className="text-secondary extra-small">In Cultivation/Sale</small>
+                </div>
+              </div>
+
+              <div className="col-6 col-md-4 col-lg-2">
+                <div className="card border-0 shadow-sm rounded-4 p-3 bg-white border-start border-warning border-4 h-100">
+                  <small className="text-muted d-block text-uppercase extra-small fw-bold">Coconuts Collected</small>
+                  <h3 className="fw-bold text-warning mb-0">{loading ? '...' : (dashboardData?.totalCoconutsCollected ?? 0).toLocaleString()}</h3>
+                  <small className="text-secondary extra-small">Raw Seed Nuts</small>
+                </div>
+              </div>
+
+              {/* Row 2: Seedlings Inventory */}
+              <div className="col-6 col-md-3">
+                <div className="card border-0 shadow-sm rounded-4 p-3 bg-white border-start border-primary border-4 h-100">
+                  <small className="text-muted d-block text-uppercase extra-small fw-bold">Seedlings Produced</small>
+                  <h3 className="fw-bold text-primary mb-0">{loading ? '...' : (dashboardData?.totalSeedlingsProduced ?? 0).toLocaleString()}</h3>
+                  <small className="text-secondary extra-small">Germinated Successfully</small>
+                </div>
+              </div>
+
+              <div className="col-6 col-md-3">
+                <div className="card border-0 shadow-sm rounded-4 p-3 bg-white border-start border-success border-4 h-100">
+                  <small className="text-muted d-block text-uppercase extra-small fw-bold">Available Seedlings</small>
+                  <h3 className="fw-bold text-success mb-0">{loading ? '...' : (dashboardData?.totalAvailableSeedlings ?? 0).toLocaleString()}</h3>
+                  <small className="text-secondary extra-small">Ready for Customer Order</small>
+                </div>
+              </div>
+
+              <div className="col-6 col-md-3">
+                <div className="card border-0 shadow-sm rounded-4 p-3 bg-white border-start border-warning border-4 h-100">
+                  <small className="text-muted d-block text-uppercase extra-small fw-bold">Booked Seedlings</small>
+                  <h3 className="fw-bold text-dark mb-0">{loading ? '...' : (dashboardData?.totalBookedSeedlings ?? 0).toLocaleString()}</h3>
+                  <small className="text-secondary extra-small">Reserved by Customers</small>
+                </div>
+              </div>
+
+              <div className="col-6 col-md-3">
+                <div className="card border-0 shadow-sm rounded-4 p-3 bg-white border-start border-secondary border-4 h-100">
+                  <small className="text-muted d-block text-uppercase extra-small fw-bold">Dispatched Seedlings</small>
+                  <h3 className="fw-bold text-secondary mb-0">{loading ? '...' : (dashboardData?.totalDispatchedSeedlings ?? 0).toLocaleString()}</h3>
+                  <small className="text-secondary extra-small">Shipped Consignments</small>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Customer Visibility Overview Card */}
-          <div className="card border-0 shadow-sm rounded-4 p-4 mb-5 bg-white border-start border-success border-4">
-            <div className="d-flex flex-wrap justify-content-between align-items-center gap-3">
+          {/* Module 2.2: Farm-Wise Summary Table */}
+          <div className="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
+            <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
               <div>
-                <span className="badge bg-success-subtle text-success border border-success extra-small mb-1">
-                  <i className="bi bi-eye-fill me-1"></i> CUSTOMER VISIBILITY
-                </span>
-                <h5 className="fw-bold text-dark mb-1">Catalog &amp; Main Page Visibility</h5>
+                <h5 className="fw-bold text-dark mb-1">
+                  <i className="bi bi-table text-success me-2"></i>
+                  Farm-Wise Performance &amp; Inventory Breakdown
+                </h5>
                 <p className="text-secondary small mb-0">
-                  Per-item visibility switches (ON/OFF) and filters are located directly in the respective management modules.
+                  Dynamically aggregated figures from verified database records.
                 </p>
               </div>
-              <div className="d-flex flex-wrap align-items-center gap-2">
-                <Link href="/admin/batches" className="btn btn-outline-success btn-sm fw-bold rounded-pill px-3 py-2 d-inline-flex align-items-center gap-2">
-                  <i className="bi bi-grid-3x3-gap-fill"></i>
-                  <span>Batches ({batches.filter(b => b.isVisible !== false).length} / {batches.length} Visible)</span>
-                  <i className="bi bi-arrow-right"></i>
+              <Link href="/admin/farms" className="btn btn-outline-success btn-sm fw-bold rounded-pill px-3">
+                Manage Farms <i className="bi bi-arrow-right ms-1"></i>
+              </Link>
+            </div>
+
+            <div className="table-responsive">
+              <table className="table table-hover align-middle mb-0 text-nowrap">
+                <thead className="table-light">
+                  <tr>
+                    <th>Farm ID</th>
+                    <th>Farm Name</th>
+                    <th className="text-center">Total Trees</th>
+                    <th className="text-center">Selected</th>
+                    <th className="text-center">Trees in Batches</th>
+                    <th className="text-center">Active Batches</th>
+                    <th className="text-center">Coconuts Collected</th>
+                    <th className="text-center">Produced</th>
+                    <th className="text-center">Available</th>
+                    <th className="text-center">Reserved / Booked</th>
+                    <th className="text-center">Dispatched</th>
+                    <th className="text-center">Damaged / Rejected</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {loading ? (
+                    <tr>
+                      <td colSpan={12} className="text-center py-4 text-muted">
+                        <div className="spinner-border spinner-border-sm text-success me-2"></div>
+                        Calculating dynamic farm metrics...
+                      </td>
+                    </tr>
+                  ) : !dashboardData?.farms || dashboardData.farms.length === 0 ? (
+                    <tr>
+                      <td colSpan={12} className="text-center py-4 text-muted">
+                        No farms registered yet. Click &quot;Manage Farms&quot; to register your first farm.
+                      </td>
+                    </tr>
+                  ) : (
+                    dashboardData.farms.map((f: any) => (
+                      <tr key={f.farmCode}>
+                        <td>
+                          <span className="badge bg-secondary-subtle text-secondary font-monospace fw-bold">
+                            {f.farmCode}
+                          </span>
+                        </td>
+                        <td className="fw-semibold">
+                          <Link href={`/admin/farms`} className="text-decoration-none text-dark hover-text-success">
+                            {f.farmName}
+                          </Link>
+                        </td>
+                        <td className="text-center">{f.totalMotherTrees ?? 0}</td>
+                        <td className="text-center">
+                          <span className="badge bg-success-subtle text-success">{f.selectedMotherTrees ?? 0}</span>
+                        </td>
+                        <td className="text-center">{f.treesUsedInBatches ?? 0}</td>
+                        <td className="text-center">{f.activeBatches ?? 0}</td>
+                        <td className="text-center fw-semibold text-warning">{(f.totalCoconutsCollected ?? 0).toLocaleString()}</td>
+                        <td className="text-center fw-semibold text-primary">{(f.totalSeedlingsProduced ?? 0).toLocaleString()}</td>
+                        <td className="text-center">
+                          <span className="badge bg-success">{(f.availableSeedlings ?? 0).toLocaleString()}</span>
+                        </td>
+                        <td className="text-center fw-semibold text-dark">{(f.bookedSeedlings ?? 0).toLocaleString()}</td>
+                        <td className="text-center text-secondary">{(f.dispatchedSeedlings ?? 0).toLocaleString()}</td>
+                        <td className="text-center text-danger">{(Number(f.damagedSeedlings || 0) + Number(f.rejectedSeedlings || 0)).toLocaleString()}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Quick Admin Actions & Navigation Hub */}
+          <div className="row g-3 mb-4">
+            <div className="col-md-3">
+              <div className="card border-0 shadow-sm rounded-4 p-3 bg-white h-100">
+                <h6 className="fw-bold text-dark mb-1"><i className="bi bi-geo-alt-fill text-success me-2"></i> Farm Registry</h6>
+                <p className="text-secondary extra-small mb-2">Register farms, manage owner details, locations & auto-generated Farm IDs.</p>
+                <Link href="/admin/farms" className="btn btn-outline-success btn-sm fw-bold mt-auto">
+                  Open Farms <i className="bi bi-arrow-right ms-1"></i>
                 </Link>
-                <Link href="/admin/mother-trees" className="btn btn-outline-success btn-sm fw-bold rounded-pill px-3 py-2 d-inline-flex align-items-center gap-2">
-                  <i className="bi bi-tree-fill"></i>
-                  <span>Mother Trees ({parentPalms.filter(p => p.isVisible !== false).length} / {parentPalms.length} Visible)</span>
-                  <i className="bi bi-arrow-right"></i>
-                </Link>
-                <Link href="/" target="_blank" className="btn btn-success text-white btn-sm fw-bold rounded-pill px-3 py-2 d-inline-flex align-items-center gap-1 shadow-sm">
-                  <i className="bi bi-box-arrow-up-right"></i>
-                  <span>Preview Customer View</span>
-                </Link>
+              </div>
+            </div>
+
+            <div className="col-md-3">
+              <div className="col-12 h-100">
+                <div className="card border-0 shadow-sm rounded-4 p-3 bg-white h-100">
+                  <h6 className="fw-bold text-dark mb-1"><i className="bi bi-tree-fill text-success me-2"></i> Mother Tree Registry</h6>
+                  <p className="text-secondary extra-small mb-2">Ancestral mother trees linked to farms, genetic variety & yield histories.</p>
+                  <Link href="/admin/mother-trees" className="btn btn-outline-success btn-sm fw-bold mt-auto">
+                    Manage Trees <i className="bi bi-arrow-right ms-1"></i>
+                  </Link>
+                </div>
+              </div>
+            </div>
+
+            <div className="col-md-3">
+              <div className="col-12 h-100">
+                <div className="card border-0 shadow-sm rounded-4 p-3 bg-white h-100">
+                  <h6 className="fw-bold text-dark mb-1"><i className="bi bi-grid-3x3-gap text-success me-2"></i> Batch Sourcing</h6>
+                  <p className="text-secondary extra-small mb-2">Create multi-farm batches, coconut quantities & track seeded dates.</p>
+                  <Link href="/admin/batches" className="btn btn-outline-success btn-sm fw-bold mt-auto">
+                    Manage Batches <i className="bi bi-arrow-right ms-1"></i>
+                  </Link>
+                </div>
+              </div>
+            </div>
+
+            <div className="col-md-3">
+              <div className="col-12 h-100">
+                <div className="card border-0 shadow-sm rounded-4 p-3 bg-white h-100">
+                  <h6 className="fw-bold text-dark mb-1"><i className="bi bi-diagram-3-fill text-primary me-2"></i> Traceability Reports</h6>
+                  <p className="text-secondary extra-small mb-2">Full seed-to-customer traceability audits and 9 performance reports.</p>
+                  <Link href="/admin/traceability" className="btn btn-outline-primary btn-sm fw-bold mt-auto">
+                    View Reports <i className="bi bi-arrow-right ms-1"></i>
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* System Status Badges */}
-          <div className="card border-0 shadow-sm rounded-4 p-4 mb-5 bg-white">
-            <h5 className="fw-bold text-dark mb-3"><i className="bi bi-cpu me-2 text-success"></i> System Integrations & Live Data</h5>
-            <div className="d-flex flex-wrap gap-3">
-              <span className="badge bg-success-subtle text-success border border-success p-2">
-                <i className="bi bi-whatsapp me-1"></i> WhatsApp Business API: Connected
+          {/* Customer Orders Live Counters */}
+          <div className="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white border-start border-primary border-4">
+            <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+              <div>
+                <h5 className="fw-bold text-dark mb-0">
+                  <i className="bi bi-bag-check-fill text-primary me-2"></i>
+                  Customer Orders Pipeline
+                </h5>
+                <small className="text-muted">Live order count: {totalOrders} orders across all stages</small>
+              </div>
+              <Link href="/admin/orders" className="btn btn-primary btn-sm fw-bold rounded-pill px-3">
+                Manage Orders <i className="bi bi-arrow-right ms-1"></i>
+              </Link>
+            </div>
+
+            <div className="d-flex flex-wrap gap-2">
+              <span className="badge bg-warning bg-opacity-25 text-dark border border-warning p-2">
+                <i className="bi bi-clock-history me-1"></i> Pre-order: <strong>{statusCounts.preOrder}</strong>
               </span>
-              <span className="badge bg-success-subtle text-success border border-success p-2">
-                <i className="bi bi-credit-card me-1"></i> UPI Payment Gateway: Active
+              <span className="badge bg-danger bg-opacity-10 text-danger border border-danger p-2">
+                <i className="bi bi-hourglass-split me-1"></i> Payment Review: <strong>{statusCounts.paymentReview}</strong>
               </span>
-              <span className="badge bg-success-subtle text-success border border-success p-2">
-                <i className="bi bi-database me-1"></i> Real-Time Inventory Sync: Active
+              <span className="badge bg-success bg-opacity-10 text-success border border-success p-2">
+                <i className="bi bi-check-circle-fill me-1"></i> Confirmed: <strong>{statusCounts.confirmed}</strong>
               </span>
-              <span className="badge bg-info-subtle text-info border border-info p-2">
-                <i className="bi bi-shield-lock me-1"></i> Audit Logging: Enabled
+              <span className="badge bg-info bg-opacity-10 text-info border border-info p-2">
+                <i className="bi bi-box-seam me-1"></i> Preparing: <strong>{statusCounts.preparing}</strong>
+              </span>
+              <span className="badge bg-primary bg-opacity-10 text-primary border border-primary p-2">
+                <i className="bi bi-truck me-1"></i> Dispatched: <strong>{statusCounts.dispatched}</strong>
+              </span>
+              <span className="badge bg-success text-white p-2">
+                <i className="bi bi-check2-all me-1"></i> Delivered: <strong>{statusCounts.delivered}</strong>
               </span>
             </div>
           </div>
 
           {/* Farm Data Export & Excel Reports Center */}
-          <div className="card border-0 shadow-sm rounded-4 p-4 mb-5 bg-white border-start border-success border-4">
+          <div className="card border-0 shadow-sm rounded-4 p-4 bg-white border-start border-success border-4">
             <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
               <div>
                 <h5 className="fw-bold text-dark mb-1">
@@ -192,7 +368,7 @@ export default function AdminDashboardPage() {
                   Farm Data Export &amp; Excel Reports
                 </h5>
                 <p className="text-secondary small mb-0">
-                  Download all verified records (Mother Trees, Customer Orders, Batch Stock, Enquiries, Inventory Audit) directly to Excel (.xlsx).
+                  Download all verified records (Farms, Mother Trees, Customer Orders, Batch Stock, Audit) directly to Excel (.xlsx).
                 </p>
               </div>
               <a 
@@ -213,12 +389,12 @@ export default function AdminDashboardPage() {
               </div>
               <div className="col-6 col-lg">
                 <a href="/api/admin/export?type=orders" download className="btn btn-outline-secondary btn-sm w-100 text-dark fw-semibold d-flex align-items-center justify-content-center gap-1 py-2 rounded-3 hover-lift-subtle">
-                  <i className="bi bi-bag-check-fill text-primary"></i> Orders &amp; Bookings (.xlsx)
+                  <i className="bi bi-bag-check-fill text-primary"></i> Orders (.xlsx)
                 </a>
               </div>
               <div className="col-6 col-lg">
                 <a href="/api/admin/export?type=batches" download className="btn btn-outline-secondary btn-sm w-100 text-dark fw-semibold d-flex align-items-center justify-content-center gap-1 py-2 rounded-3 hover-lift-subtle">
-                  <i className="bi bi-grid-3x3-gap-fill text-success"></i> Batches Inventory (.xlsx)
+                  <i className="bi bi-grid-3x3-gap-fill text-success"></i> Batches (.xlsx)
                 </a>
               </div>
               <div className="col-6 col-lg">
@@ -230,116 +406,6 @@ export default function AdminDashboardPage() {
                 <a href="/api/admin/export?type=audit" download className="btn btn-outline-secondary btn-sm w-100 text-dark fw-semibold d-flex align-items-center justify-content-center gap-1 py-2 rounded-3 hover-lift-subtle">
                   <i className="bi bi-shield-check text-secondary"></i> Inventory Audit (.xlsx)
                 </a>
-              </div>
-              <div className="col-6 col-lg">
-                <a href="/api/admin/export?type=reviews" download className="btn btn-outline-secondary btn-sm w-100 text-dark fw-semibold d-flex align-items-center justify-content-center gap-1 py-2 rounded-3 hover-lift-subtle">
-                  <i className="bi bi-chat-quote-fill text-warning"></i> Farmer Reviews (.xlsx)
-                </a>
-              </div>
-            </div>
-
-            <div className="mt-3 pt-2 border-top d-flex justify-content-between align-items-center flex-wrap gap-2">
-              <small className="text-secondary extra-small">
-                <i className="bi bi-info-circle-fill text-success me-1"></i>
-                <strong>Need custom date-range exports?</strong> In <Link href="/admin/orders" className="text-success fw-semibold text-decoration-none">Orders Admin</Link>, you can filter by Order Date range and Expected Delivery Date range and click <em>&ldquo;Download Only Filtered Data&rdquo;</em>.
-              </small>
-              <Link href="/admin/orders" className="btn btn-sm btn-outline-success extra-small fw-semibold py-1">
-                <i className="bi bi-funnel me-1"></i> Filter &amp; Export Orders
-              </Link>
-            </div>
-          </div>
-
-          {/* Quick Admin Actions */}
-          <div className="row g-4">
-            <div className="col-md-4">
-              <div className="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
-                <h5 className="fw-bold text-dark mb-2"><i className="bi bi-grid-3x3-gap text-success me-2"></i> Batch Management</h5>
-                <p className="text-secondary small mb-3">Create new batches, assign Mother Palms, set prices, photo gallery & statuses.</p>
-                <Link href="/admin/batches" className="btn btn-outline-success fw-bold mt-auto">
-                  Manage Batches & Photos <i className="bi bi-arrow-right ms-1"></i>
-                </Link>
-              </div>
-            </div>
-
-            <div className="col-md-4">
-              <div className="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
-                <div className="d-flex justify-content-between align-items-start mb-2">
-                  <h5 className="fw-bold text-dark mb-0"><i className="bi bi-bag-check text-primary me-2"></i> Order Management</h5>
-                  <span className="badge bg-primary-subtle text-primary fw-bold">{loading ? '...' : `${totalOrders} Orders`}</span>
-                </div>
-                <p className="text-secondary small mb-2">View bookings, check payment screenshots, update status & enter tracking IDs.</p>
-                
-                {/* Live count tracking */}
-                {!loading && (
-                  <div className="d-flex flex-wrap gap-1 mb-3">
-                    <span className="badge bg-warning bg-opacity-25 text-dark border border-warning extra-small">
-                      <i className="bi bi-clock-history me-1"></i>Pre-order: <strong>{statusCounts.preOrder}</strong>
-                    </span>
-                    <span className="badge bg-danger bg-opacity-10 text-danger border border-danger extra-small">
-                      <i className="bi bi-hourglass-split me-1"></i>Review: <strong>{statusCounts.paymentReview}</strong>
-                    </span>
-                    <span className="badge bg-success bg-opacity-10 text-success border border-success extra-small">
-                      <i className="bi bi-check-circle-fill me-1"></i>Confirmed: <strong>{statusCounts.confirmed}</strong>
-                    </span>
-                    <span className="badge bg-primary bg-opacity-10 text-primary border border-primary extra-small">
-                      <i className="bi bi-truck me-1"></i>Dispatched: <strong>{statusCounts.dispatched}</strong>
-                    </span>
-                  </div>
-                )}
-
-                <Link href="/admin/orders" className="btn btn-outline-primary fw-bold mt-auto">
-                  Manage Customer Orders <i className="bi bi-arrow-right ms-1"></i>
-                </Link>
-              </div>
-            </div>
-
-            <div className="col-md-4">
-              <div className="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
-                <h5 className="fw-bold text-dark mb-2"><i className="bi bi-star-fill text-warning me-2"></i> Farmer Reviews</h5>
-                <p className="text-secondary small mb-3">Create, edit, and moderate verified farmer testimonials, star ratings & customer feedback.</p>
-                <Link href="/admin/reviews" className="btn btn-outline-warning text-dark fw-bold mt-auto">
-                  Manage Farmer Reviews <i className="bi bi-arrow-right ms-1"></i>
-                </Link>
-              </div>
-            </div>
-
-            <div className="col-md-4">
-              <div className="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
-                <h5 className="fw-bold text-dark mb-2"><i className="bi bi-envelope-paper text-warning me-2"></i> Customer Enquiries</h5>
-                <p className="text-secondary small mb-3">View contact form enquiries, customer questions, locations & reply directly on WhatsApp.</p>
-                <Link href="/admin/enquiries" className="btn btn-outline-secondary text-dark fw-bold mt-auto">
-                  View Customer Enquiries <i className="bi bi-arrow-right ms-1"></i>
-                </Link>
-              </div>
-            </div>
-
-            <div className="col-md-4">
-              <div className="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
-                <h5 className="fw-bold text-dark mb-2"><i className="bi bi-tree-fill text-success me-2"></i> Mother Tree Genetics</h5>
-                <p className="text-secondary small mb-3">Add and update Mother Palms (Parent Trees), yield history, age, plot location & photos.</p>
-                <Link href="/admin/mother-trees" className="btn btn-outline-success fw-bold mt-auto">
-                  Manage Mother Trees <i className="bi bi-arrow-right ms-1"></i>
-                </Link>
-              </div>
-            </div>
-
-            <div className="col-md-4">
-              <div className="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
-                <h5 className="fw-bold text-dark mb-2"><i className="bi bi-box-seam text-secondary me-2"></i> Inventory Audit</h5>
-                <p className="text-secondary small mb-3">Adjust inventory for damaged/rejected saplings with mandatory audit log reasons.</p>
-                <Link href="/admin/inventory" className="btn btn-outline-secondary fw-bold mt-auto">
-                  Adjust Inventory Audit <i className="bi bi-arrow-right ms-1"></i>
-                </Link>
-              </div>
-            </div>
-
-            <div className="col-md-4">
-              <div className="card border-0 shadow-sm rounded-4 p-4 bg-white h-100 border-start border-warning border-4">
-                <h5 className="fw-bold text-dark mb-2"><i className="bi bi-graph-up-arrow text-warning me-2"></i> Visitor &amp; Navigation Analytics</h5>
-                <p className="text-secondary small mb-3">Real-time visitor counts, customer purchase funnel, live navigation trails &amp; WhatsApp acquisition.</p>
-                <Link href="/admin/analytics" className="btn btn-warning text-dark fw-bold mt-auto">
-                  Explore Visitor Analytics <i className="bi bi-arrow-right ms-1"></i>
-                </Link>
               </div>
             </div>
           </div>

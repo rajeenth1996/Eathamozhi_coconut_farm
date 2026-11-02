@@ -1,7 +1,38 @@
-export interface ParentPalm {
+export interface Farm {
   id: string;
-  code: string;
+  farmCode: string; // e.g. ETH-RA-F001
+  farmName: string;
+  ownerName: string;
+  ownerCode: string; // e.g. RA
+  locationCode: string; // e.g. ETH
+  location: string;
+  status: 'Active' | 'Inactive';
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+  // Dynamic computed fields
+  totalMotherTrees?: number;
+  selectedMotherTrees?: number;
+  treesUsedInBatches?: number;
+  activeBatches?: number;
+  totalCoconutsCollected?: number;
+  totalSeedlingsProduced?: number;
+  availableSeedlings?: number;
+  bookedSeedlings?: number;
+  dispatchedSeedlings?: number;
+  damagedSeedlings?: number;
+  rejectedSeedlings?: number;
+}
+
+export interface MotherTree {
+  id: string;
+  motherTreeCode: string; // e.g. ETH-RA-F001-MT001
+  code: string; // Legacy code (e.g. EM-MP-001 or ETH-RA-F001-MT001)
+  farmId: string; // Foreign reference to Farm
+  farmCode: string; // Human-readable farm code
+  farmName?: string;
   name: string;
+  variety: string;
   age: number;
   location: string;
   healthStatus: string;
@@ -10,7 +41,62 @@ export interface ParentPalm {
   nutCharacteristics: string;
   whySelected: string;
   images: string[];
+  selectionStatus: 'Selected' | 'Registered';
+  verificationStatus: 'Verified' | 'Pending';
+  productionStatus: 'Active for Production' | 'Inactive' | 'Retired';
+  notes?: string;
   isVisible?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  // Dynamic metrics
+  batchesUsedCount?: number;
+  totalCoconutsCollected?: number;
+  totalSeedlingsProduced?: number;
+}
+
+// Backward-compatible ParentPalm interface aliased to MotherTree
+export interface ParentPalm extends MotherTree {}
+
+export interface BatchSource {
+  id: string;
+  batchId: string;
+  batchCode: string;
+  farmId: string;
+  farmCode: string;
+  farmName: string;
+  motherTreeId: string;
+  motherTreeCode: string;
+  motherTreeName?: string;
+  coconutQuantity: number;
+  coconutsSown: number;
+  collectionDate: string;
+  collectionStatus: 'Collected' | 'Verified' | 'Pending' | 'Rejected';
+  germinatedQuantity: number;
+  rejectedQuantity: number;
+  germinationRate?: string;
+  germinationStartDate?: string;
+  germinationEndDate?: string;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BatchInventory {
+  id: string;
+  batchId: string;
+  batchCode: string;
+  batchSourceId: string;
+  farmId: string;
+  farmCode: string;
+  motherTreeId: string;
+  motherTreeCode: string;
+  seedlingsProduced: number;
+  availableQuantity: number;
+  bookedQuantity: number;
+  dispatchedQuantity: number;
+  damagedQuantity: number;
+  rejectedQuantity: number;
+  updatedAt: string;
 }
 
 export interface Batch {
@@ -35,6 +121,18 @@ export interface Batch {
   availableQuantity?: number;
   bookedPercentage?: number;
   isVisible?: boolean;
+  // Module 4 & 5 extensions
+  primaryFarmId?: string;
+  primaryFarmCode?: string;
+  batchMonth?: number;
+  batchYear?: number;
+  batchNumber?: number;
+  totalCoconuts?: number;
+  totalSeedlings?: number;
+  sources?: BatchSource[];
+  inventory?: BatchInventory[];
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface InventoryAdjustment {
@@ -44,6 +142,15 @@ export interface InventoryAdjustment {
   reason: string;
   adminName: string;
   createdAt: string;
+}
+
+export interface OrderAllocation {
+  batchSourceId: string;
+  farmId: string;
+  farmCode: string;
+  motherTreeId: string;
+  motherTreeCode: string;
+  quantity: number;
 }
 
 export interface Booking {
@@ -80,6 +187,11 @@ export interface Booking {
   trackingId?: string;
   dispatchDate?: string;
   createdAt: string;
+  // Traceability & Source Allocations
+  allocations?: OrderAllocation[];
+  sourceFarmCode?: string;
+  sourceMotherTreeCode?: string;
+  isMixedSource?: boolean;
 }
 
 export interface Review {
@@ -105,7 +217,6 @@ export interface SiteSettings {
   showBatchesOnMainPage: boolean;
   showMotherTreesOnMainPage: boolean;
 }
-
 
 export interface Enquiry {
   id: string;
@@ -140,4 +251,3 @@ export interface VisitorJourney {
   convertedToOrder: boolean;
   orderId?: string;
 }
-

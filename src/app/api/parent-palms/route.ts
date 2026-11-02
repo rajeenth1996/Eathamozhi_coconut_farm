@@ -6,7 +6,44 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const includeHidden = searchParams.get('all') === 'true' || searchParams.get('admin') === 'true';
-  const palms = await DataStore.getParentPalmsAsync();
+  const farmCode = searchParams.get('farmCode')?.toLowerCase();
+  const farmId = searchParams.get('farmId');
+  const variety = searchParams.get('variety')?.toLowerCase();
+  const selectionStatus = searchParams.get('selectionStatus');
+  const verificationStatus = searchParams.get('verificationStatus');
+  const search = searchParams.get('search')?.toLowerCase();
+
+  let palms = await DataStore.getParentPalmsAsync();
+
+  if (farmCode && farmCode !== 'all') {
+    palms = palms.filter(p => p.farmCode.toLowerCase() === farmCode);
+  }
+
+  if (farmId && farmId !== 'all') {
+    palms = palms.filter(p => p.farmId === farmId);
+  }
+
+  if (variety && variety !== 'all') {
+    palms = palms.filter(p => p.variety?.toLowerCase().includes(variety));
+  }
+
+  if (selectionStatus && selectionStatus !== 'all') {
+    palms = palms.filter(p => p.selectionStatus === selectionStatus);
+  }
+
+  if (verificationStatus && verificationStatus !== 'all') {
+    palms = palms.filter(p => p.verificationStatus === verificationStatus);
+  }
+
+  if (search) {
+    palms = palms.filter(p =>
+      p.name?.toLowerCase().includes(search) ||
+      p.code?.toLowerCase().includes(search) ||
+      p.motherTreeCode?.toLowerCase().includes(search) ||
+      p.farmCode?.toLowerCase().includes(search)
+    );
+  }
+
   const result = includeHidden ? palms : palms.filter(p => p.isVisible !== false);
   return NextResponse.json(result, {
     headers: {
@@ -18,8 +55,8 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    if (!body.code || !body.name) {
-      return NextResponse.json({ error: 'Mother tree code and name required' }, { status: 400 });
+    if (!body.name) {
+      return NextResponse.json({ error: 'Mother tree name is required' }, { status: 400 });
     }
 
     const created = await DataStore.addParentPalmAsync(body);
@@ -32,7 +69,7 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
   try {
     const body = await request.json();
-    const identifier = body.id || body.code;
+    const identifier = body.id || body.code || body.motherTreeCode;
     if (!identifier) {
       return NextResponse.json({ error: 'Mother tree id or code is required' }, { status: 400 });
     }
