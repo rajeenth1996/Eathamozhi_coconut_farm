@@ -139,8 +139,15 @@ export async function generateMotherTreeId(farmCode: string, existingTreeCodes: 
 }
 
 /**
- * Generates a unique Batch ID: FARMID-MMYYYY-BNNN (e.g. ETH-RA-F001-112026-B001)
- * Resets sequence for each Farm ID and MMYYYY combination.
+ * Generates a unique Batch ID using the new naming convention:
+ * <Farm ID>-<Month>'<YY>-B<Batch Number>
+ * Examples:
+ * - SUN-SE-F001-November'26-B1
+ * - SUN-SE-F001-November'26-B2
+ * - SUN-SE-F001-December'26-B1
+ * - SUN-SE-F002-January'27-B1
+ *
+ * Sequential batch number without leading zeros, sequential within farm and month.
  */
 export async function generateBatchId(
   primaryFarmCode: string,
@@ -163,16 +170,24 @@ export async function generateBatchId(
     yearNum = now.getFullYear();
   }
 
+  const monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+  const fullMonth = monthNames[(monthNum || 1) - 1] || 'November';
+  const twoDigitYear = String(yearNum || 2026).slice(-2);
   const monthStr = String(monthNum).padStart(2, '0');
   const yearStr = String(yearNum);
-  const monthYearCode = `${monthStr}${yearStr}`;
-  const prefix = `${primaryFarmCode}-${monthYearCode}`;
+  const fullMonthYear = `${fullMonth} ${yearNum}`;
+
+  // Prefix format: <Farm ID>-<Month>'<YY> (e.g. ETH-RA-F001-November'26)
+  const prefix = `${primaryFarmCode}-${fullMonth}'${twoDigitYear}`;
   const counterKey = `batch-${prefix}`;
 
   let maxSeq = 0;
   for (const code of existingBatchCodes) {
     if (code.startsWith(prefix + '-B')) {
-      const part = code.split('-B')[1];
+      const part = code.slice((prefix + '-B').length);
       const num = parseInt(part, 10);
       if (!isNaN(num) && num > maxSeq) {
         maxSeq = num;
@@ -181,18 +196,13 @@ export async function generateBatchId(
   }
 
   let nextSeq = await getNextAtomicSequence(counterKey, maxSeq);
-  let batchId = `${prefix}-B${String(nextSeq).padStart(3, '0')}`;
+  // Sequential batch number without leading zeros: B1, B2...
+  let batchId = `${prefix}-B${nextSeq}`;
 
   while (existingBatchCodes.includes(batchId)) {
     nextSeq = await getNextAtomicSequence(counterKey, nextSeq);
-    batchId = `${prefix}-B${String(nextSeq).padStart(3, '0')}`;
+    batchId = `${prefix}-B${nextSeq}`;
   }
-
-  const monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
-  ];
-  const fullMonthYear = `${monthNames[monthNum - 1] || 'Current'} ${yearNum}`;
 
   return { batchId, monthStr, yearStr, monthNum, yearNum, fullMonthYear };
 }

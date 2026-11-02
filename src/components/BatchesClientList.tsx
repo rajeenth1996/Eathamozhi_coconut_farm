@@ -118,8 +118,8 @@ export default function BatchesClientList({ initialBatches }: BatchesClientListP
                     <h5 className="fw-bold text-dark mb-2">{b.name}</h5>
 
                     <div className="bg-light p-2 rounded-3 mb-3 small text-secondary d-flex justify-content-between">
-                      <div><i className="bi bi-calendar3 me-1 text-success"></i> Age: <strong className="text-dark">{b.age}</strong></div>
-                      <div><i className="bi bi-rulers me-1 text-success"></i> Height: <strong className="text-dark">{b.height}</strong></div>
+                      <div><i className="bi bi-calendar3 me-1 text-success"></i> Age: <strong className="text-dark">{b.age || '8–10 months'}</strong></div>
+                      <div><i className="bi bi-rulers me-1 text-success"></i> Height: <strong className="text-dark">{b.height || 'Approx. 2–3 ft'}</strong></div>
                     </div>
 
                     {/* Stock Stats */}

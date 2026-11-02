@@ -33,7 +33,7 @@ export interface MotherTree {
   farmName?: string;
   name: string;
   variety: string;
-  age: number;
+  age: number | string;
   location: string;
   healthStatus: string;
   yieldHistory: string;
@@ -250,4 +250,42 @@ export interface VisitorJourney {
   steps: string[];
   convertedToOrder: boolean;
   orderId?: string;
+}
+
+export interface InstagramPost {
+  id: string;
+  title: string;
+  url: string;
+  order: number;
+  isVisible: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BatchView {
+  id: string;
+  batchCode: string;
+  visitorId: string;
+  firstViewedAt: string;
+  lastViewedAt: string;
+}
+
+export function formatApproximateAge(age: number | string | undefined): string {
+  if (age === undefined || age === null || age === '') return '40+ years';
+  if (typeof age === 'string') {
+    const trimmed = age.trim();
+    if (trimmed.toLowerCase().includes('year')) return trimmed;
+    if (trimmed.includes('+')) return `${trimmed} years`;
+    const num = parseInt(trimmed, 10);
+    if (!isNaN(num)) return formatApproximateAge(num);
+    return trimmed;
+  }
+  const n = Number(age);
+  if (isNaN(n) || n <= 0) return '40+ years';
+  if (n >= 80) return '80+ years';
+  if (n >= 50) return '50+ years';
+  if (n >= 40) return '40+ years';
+  if (n >= 30) return '30+ years';
+  const floored = Math.max(10, Math.floor(n / 10) * 10);
+  return `${floored}+ years`;
 }

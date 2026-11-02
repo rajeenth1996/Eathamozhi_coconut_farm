@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { DataStore } from '@/lib/dataStore';
 import { notFound } from 'next/navigation';
 import ImageCarousel from '@/components/ImageCarousel';
+import BatchViewTracker from '@/components/BatchViewTracker';
+import { formatApproximateAge } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -39,9 +41,7 @@ export default async function BatchDetailPage({
               <span className="badge bg-success px-3 py-2 me-2">{batch.status}</span>
               
               {/* Social Proof Views Counter */}
-              <span className="badge bg-danger bg-opacity-75 px-3 py-2 me-2">
-                <i className="bi bi-eye-fill me-1"></i> 🔥 {batch.viewsCount ?? 0} farmers viewed
-              </span>
+              <BatchViewTracker batchCode={batch.batchCode} initialCount={batch.viewsCount ?? 0} />
 
               <h1 className="fw-bold mb-0 text-light d-inline-block align-middle fs-2 mt-2 mt-md-0">{batch.name}</h1>
             </div>
@@ -102,10 +102,10 @@ export default async function BatchDetailPage({
                             <i className="bi bi-tree-fill text-success me-1"></i>
                             {palm.code} &mdash; {palm.name}
                           </strong>
-                          <span className="badge bg-warning text-dark">{palm.age} Yrs Old</span>
+                          <span className="badge bg-warning text-dark">{formatApproximateAge(palm.age)}</span>
                         </div>
                         <small className="text-muted d-block mb-1">
-                          <i className="bi bi-geo-alt-fill text-danger me-1"></i>{palm.location} &bull; <span className="text-success fw-semibold">{palm.healthStatus}</span>
+                          <span className="text-success fw-semibold">{palm.healthStatus}</span>
                         </small>
                         <p className="text-secondary extra-small mb-2">{palm.yieldHistory}</p>
                         <Link href={`/parent-palm/${palm.code}`} className="btn btn-outline-success btn-sm fw-bold extra-small">
@@ -138,12 +138,12 @@ export default async function BatchDetailPage({
                       <td className="fw-bold text-success text-end py-2">{batch.seededDate || '2026-01-15'}</td>
                     </tr>
                     <tr className="border-bottom">
-                      <td className="text-muted py-2">Calculated Sapling Age</td>
-                      <td className="fw-bold text-dark text-end py-2"><span className="badge bg-success-subtle text-success border border-success">{batch.age}</span></td>
+                      <td className="text-muted py-2">Sapling Age</td>
+                      <td className="fw-bold text-dark text-end py-2"><span className="badge bg-success-subtle text-success border border-success">{batch.age || '8–10 months'}</span></td>
                     </tr>
                     <tr className="border-bottom">
-                      <td className="text-muted py-2">Calculated Avg Height</td>
-                      <td className="fw-bold text-dark text-end py-2">{batch.height}</td>
+                      <td className="text-muted py-2">Approximate Height</td>
+                      <td className="fw-bold text-dark text-end py-2">{batch.height || 'Approx. 2–3 ft'}</td>
                     </tr>
                     <tr className="border-bottom">
                       <td className="text-muted py-2">Total Seednuts Produced</td>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import AdminNav from '@/components/AdminNav';
 import AdminLogoutButton from '@/components/AdminLogoutButton';
 
 interface AnalyticsData {
@@ -24,6 +25,11 @@ interface AnalyticsData {
     checkout: number;
     converted: number;
   };
+  batchAnalytics?: {
+    batchCode: string;
+    viewsCount: number;
+    uniqueVisitors: number;
+  }[];
   recentJourneys: {
     sessionId: string;
     startedAt: string;
@@ -40,11 +46,12 @@ interface AnalyticsData {
 export default function AdminAnalyticsPage() {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [timeRange, setTimeRange] = useState<'daily' | 'weekly' | 'monthly' | 'all'>('weekly');
 
   const fetchAnalytics = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/admin/analytics');
+      const res = await fetch(`/api/admin/analytics?range=${timeRange}&_t=${Date.now()}`);
       if (res.ok) {
         const json = await res.json();
         setData(json);
@@ -58,7 +65,7 @@ export default function AdminAnalyticsPage() {
 
   useEffect(() => {
     fetchAnalytics();
-  }, []);
+  }, [timeRange]);
 
   const totalSourceCount = data?.trafficSources
     ? Object.values(data.trafficSources).reduce((a, b) => a + b, 0)
@@ -92,6 +99,23 @@ export default function AdminAnalyticsPage() {
               <h1 className="fw-bold mb-0 text-light fs-3">Visitor Traffic &amp; Navigation Analytics</h1>
             </div>
             <div className="d-flex align-items-center gap-2 flex-wrap">
+              <div className="d-flex align-items-center gap-2 bg-black bg-opacity-25 px-2 py-1 rounded-3 border border-secondary border-opacity-50">
+                <label className="text-light extra-small fw-bold mb-0 text-nowrap">
+                  <i className="bi bi-funnel-fill text-success me-1"></i> Range:
+                </label>
+                <select
+                  className="form-select form-select-sm bg-dark text-light border-0 fw-bold extra-small"
+                  style={{ width: '135px' }}
+                  value={timeRange}
+                  onChange={(e) => setTimeRange(e.target.value as any)}
+                >
+                  <option value="daily">Day-wise</option>
+                  <option value="weekly">Week-wise</option>
+                  <option value="monthly">Month-wise</option>
+                  <option value="all">All-Time</option>
+                </select>
+              </div>
+
               <button
                 onClick={fetchAnalytics}
                 className="btn btn-sm btn-outline-light d-flex align-items-center gap-1"
@@ -111,6 +135,8 @@ export default function AdminAnalyticsPage() {
           </div>
         </div>
       </section>
+
+      <AdminNav />
 
       {/* Main Analytics Content */}
       <section className="py-4 bg-light">
@@ -259,6 +285,59 @@ export default function AdminAnalyticsPage() {
               </div>
             </div>
           </div>
+
+          {/* 2.5 Batch Views & Unique Farmer Engagement */}
+          {data?.batchAnalytics && data.batchAnalytics.length > 0 && (
+            <div className="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                  <h5 className="fw-bold text-dark mb-1">
+                    <i className="bi bi-people-fill text-success me-2"></i>
+                    Batch Views &amp; Unique Farmer Engagement
+                  </h5>
+                  <small className="text-muted">Unique farmers who viewed each batch (does not reset daily).</small>
+                </div>
+                <span className="badge bg-light text-dark border">
+                  {data.batchAnalytics.length} Batches Tracked
+                </span>
+              </div>
+              <div className="table-responsive">
+                <table className="table table-hover align-middle mb-0">
+                  <thead className="table-light">
+                    <tr className="extra-small text-uppercase">
+                      <th>Batch Code</th>
+                      <th className="text-center">Unique Farmers Viewed</th>
+                      <th className="text-center">Total View Hits</th>
+                      <th className="text-end">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.batchAnalytics.map(b => (
+                      <tr key={b.batchCode}>
+                        <td>
+                          <span className="badge bg-secondary-subtle text-secondary font-monospace fw-bold me-2">{b.batchCode}</span>
+                        </td>
+                        <td className="text-center">
+                          <span className="badge bg-success-subtle text-success fs-6 fw-bold">
+                            <i className="bi bi-person-check-fill me-1"></i> {b.uniqueVisitors}
+                          </span>
+                        </td>
+                        <td className="text-center fw-bold text-dark">{b.viewsCount}</td>
+                        <td className="text-end">
+                          <Link href={`/batches/${b.batchCode}`} target="_blank" className="btn btn-sm btn-outline-secondary extra-small me-1">
+                            <i className="bi bi-box-arrow-up-right"></i> View
+                          </Link>
+                          <Link href="/admin/batches" className="btn btn-sm btn-outline-primary extra-small">
+                            Edit
+                          </Link>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
 
           <div className="row g-4 mb-4">
             {/* 3. Top Visited Pages */}

@@ -8,10 +8,62 @@
       "ownerCode": "RA",
       "locationCode": "ETH",
       "location": "Eathamozhi, Kanyakumari",
-      "status": "Active",
+      "status": "Inactive",
       "notes": "Primary ancestral grove registered since 1938 with proven high-yielding West Coast Tall mother palms.",
       "createdAt": "2026-11-02T02:47:37.888Z",
-      "updatedAt": "2026-11-02T02:47:37.889Z"
+      "updatedAt": "2026-11-02T17:16:54.379Z"
+    },
+    {
+      "id": "farm-eth-se-f001",
+      "farmCode": "ETH-SE-F001",
+      "farmName": "Sundapattivilai Amman kovil",
+      "ownerName": "Selvakumaran",
+      "ownerCode": "SE",
+      "locationCode": "ETH",
+      "location": "Sundapattivilai",
+      "status": "Inactive",
+      "notes": "80+ years heritage trees in this farm",
+      "createdAt": "2026-11-02T17:12:50.457Z",
+      "updatedAt": "2026-11-02T17:16:55.550Z"
+    },
+    {
+      "id": "farm-sun-se-f001",
+      "farmCode": "SUN-SE-F001",
+      "farmName": "Sundapattivilai amman kovil thattu",
+      "ownerName": "Selvakumaran",
+      "ownerCode": "SE",
+      "locationCode": "SUN",
+      "location": "Sundapattivilai",
+      "status": "Active",
+      "notes": "80+ Years trees",
+      "createdAt": "2026-11-02T17:18:18.683Z",
+      "updatedAt": "2026-11-02T17:18:18.683Z"
+    },
+    {
+      "id": "farm-man-se-f001",
+      "farmCode": "MAN-SE-F001",
+      "farmName": "Maniyanvilai",
+      "ownerName": "Selvakumaran",
+      "ownerCode": "SE",
+      "locationCode": "MAN",
+      "location": "Maniyanvilai",
+      "status": "Active",
+      "notes": "80+ years ancient trees",
+      "createdAt": "2026-11-02T17:19:18.578Z",
+      "updatedAt": "2026-11-02T17:19:18.578Z"
+    },
+    {
+      "id": "farm-soo-se-f001",
+      "farmCode": "SOO-SE-F001",
+      "farmName": "Soorankudy",
+      "ownerName": "Selvakumaran",
+      "ownerCode": "SE",
+      "locationCode": "SOO",
+      "location": "Soorankudy",
+      "status": "Active",
+      "notes": "",
+      "createdAt": "2026-11-02T17:20:41.755Z",
+      "updatedAt": "2026-11-02T17:20:41.755Z"
     }
   ],
   "parentPalms": [
@@ -40,9 +92,9 @@
       "verificationStatus": "Verified",
       "productionStatus": "Active for Production",
       "notes": "",
-      "isVisible": false,
+      "isVisible": true,
       "createdAt": "2026-11-02T02:47:37.890Z",
-      "updatedAt": "2026-11-02T02:47:37.890Z"
+      "updatedAt": "2026-11-02T17:23:26.940Z"
     },
     {
       "id": "mp-2",
@@ -316,6 +368,33 @@
       "isVisible": true,
       "createdAt": "2026-11-02T02:47:37.890Z",
       "updatedAt": "2026-11-02T02:47:37.890Z"
+    },
+    {
+      "id": "mp-1793640513091",
+      "motherTreeCode": "SUN-SE-F001-MT001",
+      "code": "SUN-SE-F001-MT001",
+      "farmId": "farm-sun-se-f001",
+      "farmCode": "SUN-SE-F001",
+      "farmName": "Sundapattivilai amman kovil thattu",
+      "name": "High yield 80+ Years",
+      "variety": "West Coast Tall (Eathamozhi Tall)",
+      "age": 80,
+      "location": "Heritage Grove",
+      "healthStatus": "Excellent (100% Disease Resistant)",
+      "yieldHistory": "Consistently 160–180 high-weight seed nuts per year over 25 monitored years.",
+      "description": "Selected for heavy canopy, disease immunity, and large copra content.",
+      "nutCharacteristics": "Large spherical nuts with high coconut water volume and thick kernel.",
+      "whySelected": "Consistently high yield with exceptional seedling germination rate (>94%).",
+      "images": [
+        "https://res.cloudinary.com/ub9fl2yg/image/upload/v1793640511/eathamozhi-farm/parent-palms/3b8466e8-3d6a-4631-82af-31c8b8bcf9db-1793640511429.jpg"
+      ],
+      "selectionStatus": "Registered",
+      "verificationStatus": "Verified",
+      "productionStatus": "Active for Production",
+      "notes": "",
+      "isVisible": true,
+      "createdAt": "2026-11-02T17:28:33.091Z",
+      "updatedAt": "2026-11-02T17:28:33.091Z"
     }
   ],
   "batches": [
@@ -352,8 +431,8 @@
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792893909/eathamozhy-farm/batches/74cbbdcb-f064-459c-9267-d045737e799c-1792893907395.jpg"
       ],
       "isVisible": false,
-      "createdAt": "2026-11-02T05:31:59.138Z",
-      "updatedAt": "2026-11-02T05:31:59.138Z"
+      "createdAt": "2026-11-02T22:53:01.050Z",
+      "updatedAt": "2026-11-02T22:53:01.050Z"
     },
     {
       "id": "b-1",
@@ -388,8 +467,8 @@
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792893909/eathamozhy-farm/batches/74cbbdcb-f064-459c-9267-d045737e799c-1792893907395.jpg"
       ],
       "isVisible": false,
-      "createdAt": "2026-11-02T05:31:59.138Z",
-      "updatedAt": "2026-11-02T05:31:59.138Z"
+      "createdAt": "2026-11-02T22:53:01.050Z",
+      "updatedAt": "2026-11-02T22:53:01.050Z"
     },
     {
       "id": "b-2",
@@ -423,8 +502,8 @@
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792888376/eathamozhy-farm/batches/b76f3226-817a-4ae2-8511-d66aeb861dca-1792888375115.jpg"
       ],
       "isVisible": false,
-      "createdAt": "2026-11-02T05:31:59.138Z",
-      "updatedAt": "2026-11-02T05:31:59.138Z"
+      "createdAt": "2026-11-02T22:53:01.050Z",
+      "updatedAt": "2026-11-02T22:53:01.050Z"
     },
     {
       "id": "b-3",
@@ -452,13 +531,13 @@
       "price": 160,
       "status": "AVAILABLE",
       "description": "Coastal shield cultivar batch. Engineered for wind resistance and saline soil adaptability.",
-      "viewsCount": 1,
+      "viewsCount": 2,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792893909/eathamozhy-farm/batches/74cbbdcb-f064-459c-9267-d045737e799c-1792893907395.jpg"
       ],
       "isVisible": false,
-      "createdAt": "2026-11-02T05:31:59.138Z",
-      "updatedAt": "2026-11-02T05:31:59.138Z"
+      "createdAt": "2026-11-02T22:53:01.050Z",
+      "updatedAt": "2026-11-02T22:53:01.050Z"
     },
     {
       "id": "b-4",
@@ -484,13 +563,13 @@
       "price": 155,
       "status": "AVAILABLE",
       "description": "Heavy collar saplings raised under drip irrigation with balanced organic compost nutrition.",
-      "viewsCount": 0,
+      "viewsCount": 1,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909327/eathamozhi-farm/batches/25b2b6ad-0a44-47b6-a4b4-a45d1e426cca-1792909327401.jpg"
       ],
       "isVisible": true,
-      "createdAt": "2026-11-02T05:31:59.138Z",
-      "updatedAt": "2026-11-02T05:31:59.138Z"
+      "createdAt": "2026-11-02T22:53:01.050Z",
+      "updatedAt": "2026-11-02T22:53:01.050Z"
     },
     {
       "id": "b-5",
@@ -521,8 +600,8 @@
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909391/eathamozhi-farm/batches/5700477e-967d-4133-9a99-76560430a143-1792909391250.jpg"
       ],
       "isVisible": true,
-      "createdAt": "2026-11-02T05:31:59.138Z",
-      "updatedAt": "2026-11-02T05:31:59.138Z"
+      "createdAt": "2026-11-02T22:53:01.050Z",
+      "updatedAt": "2026-11-02T22:53:01.050Z"
     },
     {
       "id": "b-6",
@@ -553,8 +632,8 @@
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792893909/eathamozhy-farm/batches/74cbbdcb-f064-459c-9267-d045737e799c-1792893907395.jpg"
       ],
       "isVisible": true,
-      "createdAt": "2026-11-02T05:31:59.138Z",
-      "updatedAt": "2026-11-02T05:31:59.138Z"
+      "createdAt": "2026-11-02T22:53:01.050Z",
+      "updatedAt": "2026-11-02T22:53:01.050Z"
     },
     {
       "id": "b-7",
@@ -585,8 +664,8 @@
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909327/eathamozhi-farm/batches/25b2b6ad-0a44-47b6-a4b4-a45d1e426cca-1792909327401.jpg"
       ],
       "isVisible": true,
-      "createdAt": "2026-11-02T05:31:59.138Z",
-      "updatedAt": "2026-11-02T05:31:59.138Z"
+      "createdAt": "2026-11-02T22:53:01.050Z",
+      "updatedAt": "2026-11-02T22:53:01.050Z"
     },
     {
       "id": "b-8",
@@ -617,8 +696,8 @@
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909391/eathamozhi-farm/batches/5700477e-967d-4133-9a99-76560430a143-1792909391250.jpg"
       ],
       "isVisible": true,
-      "createdAt": "2026-11-02T05:31:59.138Z",
-      "updatedAt": "2026-11-02T05:31:59.138Z"
+      "createdAt": "2026-11-02T22:53:01.050Z",
+      "updatedAt": "2026-11-02T22:53:01.050Z"
     },
     {
       "id": "b-9",
@@ -649,8 +728,8 @@
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792893909/eathamozhy-farm/batches/74cbbdcb-f064-459c-9267-d045737e799c-1792893907395.jpg"
       ],
       "isVisible": true,
-      "createdAt": "2026-11-02T05:31:59.138Z",
-      "updatedAt": "2026-11-02T05:31:59.138Z"
+      "createdAt": "2026-11-02T22:53:01.050Z",
+      "updatedAt": "2026-11-02T22:53:01.050Z"
     },
     {
       "id": "b-10",
@@ -681,8 +760,74 @@
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909327/eathamozhi-farm/batches/25b2b6ad-0a44-47b6-a4b4-a45d1e426cca-1792909327401.jpg"
       ],
       "isVisible": true,
-      "createdAt": "2026-11-02T05:31:59.138Z",
-      "updatedAt": "2026-11-02T05:31:59.138Z"
+      "createdAt": "2026-11-02T22:53:01.050Z",
+      "updatedAt": "2026-11-02T22:53:01.050Z"
+    },
+    {
+      "id": "b-1793641998639",
+      "batchCode": "SUN-SE-F001-112026-B001",
+      "primaryFarmId": "farm-sun-se-f001",
+      "primaryFarmCode": "SUN-SE-F001",
+      "batchMonth": 11,
+      "batchYear": 2026,
+      "batchNumber": 1,
+      "totalCoconuts": 100,
+      "totalSeedlings": 100,
+      "parentPalmId": "mp-1793640513091",
+      "parentPalmCode": "SUN-SE-F001-MT001",
+      "parentPalmCodes": [
+        "SUN-SE-F001-MT001"
+      ],
+      "name": "SUN-SE-F001 SUN-SE-F001-112026-B001 November 2026",
+      "harvestDate": "2026-11-20",
+      "seededDate": "2026-11-02",
+      "totalQuantity": 100,
+      "bookedQuantity": 0,
+      "inventoryAdjustments": 0,
+      "price": 150,
+      "status": "AVAILABLE",
+      "description": "",
+      "viewsCount": 15,
+      "images": [
+        "https://res.cloudinary.com/ub9fl2yg/image/upload/v1793641992/eathamozhi-farm/batches/f45865a9-978f-4d32-8d4f-7b730ba9f103-1793641992496.jpg"
+      ],
+      "isVisible": true,
+      "createdAt": "2026-11-02T17:53:18.639Z",
+      "updatedAt": "2026-11-02T17:53:18.639Z"
+    },
+    {
+      "id": "b-1793659843261",
+      "batchCode": "ETH-RA-F001-November'26-B3",
+      "primaryFarmId": "farm-eth-ra-f001",
+      "primaryFarmCode": "ETH-RA-F001",
+      "batchMonth": 11,
+      "batchYear": 2026,
+      "batchNumber": 3,
+      "totalCoconuts": 500,
+      "totalSeedlings": 500,
+      "parentPalmId": "mp-1",
+      "parentPalmCode": "EM-MP-001",
+      "parentPalmCodes": [
+        "EM-MP-001"
+      ],
+      "name": "ETH-RA-F001 ETH-RA-F001-November'26-B3 November 2026",
+      "harvestDate": "2026-11-01",
+      "seededDate": "2026-11-15",
+      "age": "9 months",
+      "height": "Approx. 2–3 ft",
+      "totalQuantity": 500,
+      "bookedQuantity": 0,
+      "inventoryAdjustments": 0,
+      "price": 160,
+      "status": "AVAILABLE",
+      "description": "Testing new naming convention",
+      "viewsCount": 17,
+      "images": [
+        "/images/placeholder.png"
+      ],
+      "isVisible": true,
+      "createdAt": "2026-11-02T22:50:43.261Z",
+      "updatedAt": "2026-11-02T22:50:43.261Z"
     }
   ],
   "batchSources": [
@@ -997,6 +1142,48 @@
       "notes": "Heritage seed nuts collected from verified mother palm EM-MP-010.",
       "rejectedQuantity": 30,
       "updatedAt": "2026-11-02T02:47:37.891Z"
+    },
+    {
+      "_id": "6ae8ce0e255f95e3a2fb7ff5",
+      "id": "bs-SUN-SE-F001-112026-B001-SUN-SE-F001-MT001",
+      "__v": 0,
+      "batchCode": "SUN-SE-F001-112026-B001",
+      "batchId": "b-1793641998639",
+      "coconutQuantity": 100,
+      "coconutsSown": 100,
+      "collectionDate": "2026-11-20",
+      "collectionStatus": "Verified",
+      "createdAt": "2026-11-02T17:53:18.639Z",
+      "farmCode": "SUN-SE-F001",
+      "farmId": "farm-sun-se-f001",
+      "farmName": "Sundapattivilai amman kovil thattu",
+      "germinatedQuantity": 100,
+      "motherTreeCode": "SUN-SE-F001-MT001",
+      "motherTreeId": "mp-1793640513091",
+      "notes": "Collected from verified mother tree SUN-SE-F001-MT001",
+      "rejectedQuantity": 0,
+      "updatedAt": "2026-11-02T17:53:18.639Z"
+    },
+    {
+      "_id": "6ae913c4255f95e3a2fb8a99",
+      "id": "bs-ETH-RA-F001-November'26-B3-ETH-RA-F001-MT001",
+      "__v": 0,
+      "batchCode": "ETH-RA-F001-November'26-B3",
+      "batchId": "b-1793659843261",
+      "coconutQuantity": 500,
+      "coconutsSown": 500,
+      "collectionDate": "2026-11-01",
+      "collectionStatus": "Verified",
+      "createdAt": "2026-11-02T22:50:43.261Z",
+      "farmCode": "ETH-RA-F001",
+      "farmId": "farm-eth-ra-f001",
+      "farmName": "Eathamozhi Ancestral Heritage Coconut Farm",
+      "germinatedQuantity": 500,
+      "motherTreeCode": "ETH-RA-F001-MT001",
+      "motherTreeId": "mp-1",
+      "notes": "Batch initial seed nut allocation.",
+      "rejectedQuantity": 0,
+      "updatedAt": "2026-11-02T22:50:43.261Z"
     }
   ],
   "batchInventory": [
@@ -1246,6 +1433,44 @@
       "rejectedQuantity": 0,
       "seedlingsProduced": 600,
       "updatedAt": "2026-11-02T02:47:37.891Z"
+    },
+    {
+      "_id": "6ae8ce0f255f95e3a2fb7ff6",
+      "id": "bi-bs-SUN-SE-F001-112026-B001-SUN-SE-F001-MT001",
+      "__v": 0,
+      "availableQuantity": 7,
+      "batchCode": "SUN-SE-F001-112026-B001",
+      "batchId": "b-1793641998639",
+      "batchSourceId": "bs-SUN-SE-F001-112026-B001-SUN-SE-F001-MT001",
+      "bookedQuantity": 93,
+      "damagedQuantity": 0,
+      "dispatchedQuantity": 0,
+      "farmCode": "SUN-SE-F001",
+      "farmId": "farm-sun-se-f001",
+      "motherTreeCode": "SUN-SE-F001-MT001",
+      "motherTreeId": "mp-1793640513091",
+      "rejectedQuantity": 0,
+      "seedlingsProduced": 100,
+      "updatedAt": "2026-11-02T18:23:21.882Z"
+    },
+    {
+      "_id": "6ae913c4255f95e3a2fb8a9a",
+      "id": "bi-bs-ETH-RA-F001-November'26-B3-ETH-RA-F001-MT001",
+      "__v": 0,
+      "availableQuantity": 500,
+      "batchCode": "ETH-RA-F001-November'26-B3",
+      "batchId": "b-1793659843261",
+      "batchSourceId": "bs-ETH-RA-F001-November'26-B3-ETH-RA-F001-MT001",
+      "bookedQuantity": 0,
+      "damagedQuantity": 0,
+      "dispatchedQuantity": 0,
+      "farmCode": "ETH-RA-F001",
+      "farmId": "farm-eth-ra-f001",
+      "motherTreeCode": "ETH-RA-F001-MT001",
+      "motherTreeId": "mp-1",
+      "rejectedQuantity": 0,
+      "seedlingsProduced": 500,
+      "updatedAt": "2026-11-02T22:50:43.261Z"
     }
   ],
   "bookings": [
@@ -1517,6 +1742,52 @@
       "subtotal": 33790,
       "totalAmount": 33790,
       "whatsapp": "6385265828"
+    },
+    {
+      "_id": "6ae8d519255f95e3a2fb80c7",
+      "bookingId": "SUN-SE-F001-112026-B001-4188",
+      "__v": 0,
+      "address": "Kanyakumari, Tamil Nadu - 629501",
+      "allocations": [
+        {
+          "batchSourceId": "bs-SUN-SE-F001-112026-B001-SUN-SE-F001-MT001",
+          "farmId": "farm-sun-se-f001",
+          "farmCode": "SUN-SE-F001",
+          "motherTreeId": "mp-1793640513091",
+          "motherTreeCode": "SUN-SE-F001-MT001",
+          "quantity": 93,
+          "_id": "6ae8d5192f12941e9b4cc053"
+        }
+      ],
+      "balanceAmount": 0,
+      "batchCode": "SUN-SE-F001-112026-B001",
+      "bookingStatus": "Payment review",
+      "createdAt": "2026-11-02T18:23:21.882Z",
+      "customerName": "Rajeenth",
+      "deliveryCharge": 0,
+      "deliveryService": "MSS Parcel Service",
+      "district": "Kanyakumari",
+      "email": "",
+      "expectedDeliveryDate": "2026-11-09",
+      "farmLocation": "",
+      "id": "bk-1793643801882",
+      "isMixedSource": false,
+      "isPreOrder": false,
+      "mobile": "9486880641",
+      "nearestHub": "nagercoil",
+      "orderType": "COMPLETE",
+      "paidAmount": 13950,
+      "paymentScreenshotUrl": "https://res.cloudinary.com/ub9fl2yg/image/upload/v1793643797/eathamozhi-farm/receipts/fb37727b-c85f-4e9e-8107-e9efb48cbc2f-1793643797348.jpg",
+      "paymentStatus": "PENDING_VERIFICATION",
+      "pinCode": "629501",
+      "quantity": 93,
+      "sourceFarmCode": "SUN-SE-F001",
+      "sourceMotherTreeCode": "SUN-SE-F001-MT001",
+      "specialInstructions": "",
+      "state": "Tamil Nadu",
+      "subtotal": 13950,
+      "totalAmount": 13950,
+      "whatsapp": "9486880641"
     }
   ],
   "adjustments": [],
@@ -2112,6 +2383,65 @@
       "convertedToOrder": false
     }
   ],
+  "batchViews": [
+    {
+      "id": "bv-1793659774112-212",
+      "batchCode": "ETH-RA-F001-November'26-B1",
+      "visitorId": "farmer_session_alpha",
+      "firstViewedAt": "2026-11-02T22:49:34.112Z",
+      "lastViewedAt": "2026-11-02T22:49:34.195Z"
+    },
+    {
+      "id": "bv-1793659774262-899",
+      "batchCode": "ETH-RA-F001-November'26-B1",
+      "visitorId": "farmer_session_beta",
+      "firstViewedAt": "2026-11-02T22:49:34.262Z",
+      "lastViewedAt": "2026-11-02T22:49:34.262Z"
+    },
+    {
+      "id": "bv-1793659827613-897",
+      "batchCode": "ETH-RA-F001-November'26-B2",
+      "visitorId": "farmer_session_alpha",
+      "firstViewedAt": "2026-11-02T22:50:27.613Z",
+      "lastViewedAt": "2026-11-02T22:50:27.680Z"
+    },
+    {
+      "id": "bv-1793659827745-151",
+      "batchCode": "ETH-RA-F001-November'26-B2",
+      "visitorId": "farmer_session_beta",
+      "firstViewedAt": "2026-11-02T22:50:27.745Z",
+      "lastViewedAt": "2026-11-02T22:50:27.745Z"
+    },
+    {
+      "id": "bv-1793659843428-508",
+      "batchCode": "ETH-RA-F001-November'26-B3",
+      "visitorId": "farmer_session_alpha",
+      "firstViewedAt": "2026-11-02T22:50:43.428Z",
+      "lastViewedAt": "2026-11-02T22:50:43.504Z"
+    },
+    {
+      "id": "bv-1793659843568-431",
+      "batchCode": "ETH-RA-F001-November'26-B3",
+      "visitorId": "farmer_session_beta",
+      "firstViewedAt": "2026-11-02T22:50:43.568Z",
+      "lastViewedAt": "2026-11-02T22:50:43.568Z"
+    },
+    {
+      "id": "bv-1793659887866-368",
+      "batchCode": "ETH-RA-F001-November'26-B4",
+      "visitorId": "farmer_session_alpha",
+      "firstViewedAt": "2026-11-02T22:51:27.866Z",
+      "lastViewedAt": "2026-11-02T22:51:27.931Z"
+    },
+    {
+      "id": "bv-1793659887994-32",
+      "batchCode": "ETH-RA-F001-November'26-B4",
+      "visitorId": "farmer_session_beta",
+      "firstViewedAt": "2026-11-02T22:51:27.994Z",
+      "lastViewedAt": "2026-11-02T22:51:27.994Z"
+    }
+  ],
+  "instagramPosts": [],
   "siteSettings": {
     "showBatchesOnMainPage": true,
     "showMotherTreesOnMainPage": true

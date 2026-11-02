@@ -5,6 +5,7 @@ import Link from 'next/link';
 import AdminNav from '@/components/AdminNav';
 import AdminLogoutButton from '@/components/AdminLogoutButton';
 import ImageCarousel from '@/components/ImageCarousel';
+import { formatApproximateAge } from '@/lib/types';
 
 export default function AdminMotherTreesPage() {
   const [palms, setPalms] = useState<any[]>([]);
@@ -33,7 +34,7 @@ export default function AdminMotherTreesPage() {
     motherTreeCode: '',
     name: '',
     variety: 'West Coast Tall (Eathamozhi Tall)',
-    age: 45,
+    age: '40+ years' as any,
     location: 'Heritage Grove',
     healthStatus: 'Excellent (100% Disease Resistant)',
     yieldHistory: 'Consistently 160–180 high-weight seed nuts per year over 25 monitored years.',
@@ -173,7 +174,7 @@ export default function AdminMotherTreesPage() {
           motherTreeCode: '',
           name: '',
           variety: 'West Coast Tall (Eathamozhi Tall)',
-          age: 45,
+          age: '40+ years',
           location: activeFarm?.location || 'Heritage Grove',
           healthStatus: 'Excellent (100% Disease Resistant)',
           yieldHistory: 'Consistently 160–180 high-weight seed nuts per year over 25 monitored years.',
@@ -213,7 +214,7 @@ export default function AdminMotherTreesPage() {
         farmCode: editingTree.farmCode,
         name: editingTree.name,
         variety: editingTree.variety,
-        age: Number(editingTree.age),
+        age: formatApproximateAge(editingTree.age),
         location: editingTree.location,
         healthStatus: editingTree.healthStatus,
         yieldHistory: editingTree.yieldHistory,
@@ -510,7 +511,7 @@ export default function AdminMotherTreesPage() {
                           <td>
                             <small className="text-dark fw-semibold">{palm.variety || 'West Coast Tall'}</small>
                           </td>
-                          <td className="text-center fw-semibold">{palm.age} yrs</td>
+                          <td className="text-center fw-semibold">{formatApproximateAge(palm.age)}</td>
                           <td className="text-center">
                             <span className={`badge ${palm.selectionStatus === 'Selected' ? 'bg-success' : 'bg-secondary'}`}>
                               {palm.selectionStatus || 'Selected'}
@@ -596,14 +597,21 @@ export default function AdminMotherTreesPage() {
                 </div>
 
                 <div className="col-md-3">
-                  <label className="form-label fw-bold small text-secondary">Approximate Age (Years) *</label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    value={newTree.age}
-                    onChange={(e) => setNewTree({ ...newTree, age: parseInt(e.target.value, 10) || 40 })}
+                  <label className="form-label fw-bold small text-secondary">Approximate Age *</label>
+                  <select
+                    className="form-select"
+                    value={typeof newTree.age === 'string' ? newTree.age : formatApproximateAge(newTree.age)}
+                    onChange={(e) => setNewTree({ ...newTree, age: e.target.value })}
                     required
-                  />
+                  >
+                    <option value="30+ years">30+ years</option>
+                    <option value="40+ years">40+ years</option>
+                    <option value="50+ years">50+ years</option>
+                    <option value="60+ years">60+ years</option>
+                    <option value="70+ years">70+ years</option>
+                    <option value="80+ years">80+ years</option>
+                    <option value="100+ years">100+ years</option>
+                  </select>
                 </div>
 
                 <div className="col-md-4">
@@ -688,6 +696,22 @@ export default function AdminMotherTreesPage() {
               <div className="modal-body p-4">
                 <div className="row g-3 mb-3">
                   <div className="col-md-6">
+                    <label className="form-label fw-bold small text-secondary">Associated Farm *</label>
+                    <select
+                      className="form-select"
+                      value={editingTree.farmCode || ''}
+                      onChange={(e) => setEditingTree({ ...editingTree, farmCode: e.target.value })}
+                      required
+                    >
+                      {farms.map(f => (
+                        <option key={f.farmCode} value={f.farmCode}>
+                          {f.farmCode} - {f.farmName} ({f.location || ''})
+                        </option>
+                      ))}
+                    </select>
+                    <small className="text-muted extra-small">Change the farm this mother tree belongs to</small>
+                  </div>
+                  <div className="col-md-6">
                     <label className="form-label fw-bold small text-secondary">Tree Name</label>
                     <input
                       type="text"
@@ -696,16 +720,23 @@ export default function AdminMotherTreesPage() {
                       onChange={(e) => setEditingTree({ ...editingTree, name: e.target.value })}
                     />
                   </div>
-                  <div className="col-md-3">
-                    <label className="form-label fw-bold small text-secondary">Age</label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      value={editingTree.age}
-                      onChange={(e) => setEditingTree({ ...editingTree, age: parseInt(e.target.value, 10) || 40 })}
-                    />
+                  <div className="col-md-6">
+                    <label className="form-label fw-bold small text-secondary">Approximate Age *</label>
+                    <select
+                      className="form-select"
+                      value={formatApproximateAge(editingTree.age)}
+                      onChange={(e) => setEditingTree({ ...editingTree, age: e.target.value })}
+                    >
+                      <option value="30+ years">30+ years</option>
+                      <option value="40+ years">40+ years</option>
+                      <option value="50+ years">50+ years</option>
+                      <option value="60+ years">60+ years</option>
+                      <option value="70+ years">70+ years</option>
+                      <option value="80+ years">80+ years</option>
+                      <option value="100+ years">100+ years</option>
+                    </select>
                   </div>
-                  <div className="col-md-3">
+                  <div className="col-md-6">
                     <label className="form-label fw-bold small text-secondary">Variety</label>
                     <input
                       type="text"

@@ -4,6 +4,8 @@ import LiveStockTerminal from '@/components/LiveStockTerminal';
 import PlantingCalculator from '@/components/PlantingCalculator';
 import HeroVideo from '@/components/HeroVideo';
 import ImageCarousel from '@/components/ImageCarousel';
+import InstagramSection from '@/components/InstagramSection';
+import { formatApproximateAge } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -166,7 +168,7 @@ export default async function Home() {
                       <ImageCarousel 
                         images={palm.images && palm.images.length > 0 ? palm.images : ['/images/placeholder.png']} 
                         title={palm.name} 
-                        subtitle={`${palm.code} • ${palm.age} Yrs Old • ${palm.location}`}
+                        subtitle={`${palm.code} • ${formatApproximateAge(palm.age)}`}
                         carouselId={`home-palm-${palm.code}`} 
                         height="200px" 
                         showThumbnails={false} 
@@ -176,16 +178,13 @@ export default async function Home() {
                         <span className="badge bg-dark bg-opacity-75">{palm.code}</span>
                       </div>
                       <div className="position-absolute top-0 end-0 m-2" style={{ pointerEvents: 'none', zIndex: 3 }}>
-                        <span className="badge bg-warning text-dark fw-bold">{palm.age} Yrs</span>
+                        <span className="badge bg-warning text-dark fw-bold">{formatApproximateAge(palm.age)}</span>
                       </div>
                     </div>
 
                       <div className="card-body p-3 d-flex flex-column justify-content-between">
                         <div>
                           <h6 className="fw-bold text-dark mb-1">{palm.name}</h6>
-                          <small className="text-muted d-block mb-2">
-                            <i className="bi bi-geo-alt-fill text-danger me-1"></i> {palm.location}
-                          </small>
                           <div className="d-flex gap-1 mb-2 flex-wrap">
                             <span className="badge bg-success-subtle text-success border border-success extra-small">{palm.healthStatus.split(' ')[0]}</span>
                           </div>
@@ -323,6 +322,9 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      {/* 6.5 INSTAGRAM REELS & UPDATES */}
+      <InstagramSection />
 
       {/* 7. CALL TO ACTION BANNER */}
       <section className="py-5 bg-dark text-white text-center position-relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #022c22 0%, #064e3b 100%)' }}>

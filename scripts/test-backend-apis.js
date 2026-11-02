@@ -42,10 +42,10 @@ async function runTests() {
     assert(testTreeId === 'ETH-RA-F001-MT001', `Mother Tree ID -> ETH-RA-F001-MT001 (got ${testTreeId})`);
 
     const testBatchGen = await generateBatchId('ETH-RA-F001', '2026-11-20', []);
-    assert(testBatchGen.batchId === 'ETH-RA-F001-112026-B001', `Batch ID -> ETH-RA-F001-112026-B001 (got ${testBatchGen.batchId})`);
+    assert(testBatchGen.batchId === "ETH-RA-F001-November'26-B1", `Batch ID -> ETH-RA-F001-November'26-B1 (got ${testBatchGen.batchId})`);
 
     const displayName = formatBatchDisplayName('ETH-RA-F001', testBatchGen.batchId, 11, 2026);
-    assert(displayName === 'ETH-RA-F001 ETH-RA-F001-112026-B001 November 2026', `Batch display name matches requirement (got: "${displayName}")`);
+    assert(displayName === `ETH-RA-F001 ${testBatchGen.batchId} November 2026`, `Batch display name matches requirement (got: "${displayName}")`);
 
     // 2. Test Farm Registry
     console.log('\n--- TEST 2: Farm Registration & CRUD ---');
@@ -124,7 +124,7 @@ async function runTests() {
     };
 
     const multiBatch = await DataStore.addBatchAsync(multiFarmBatchData);
-    assert(multiBatch && multiBatch.batchCode.startsWith('ETH-RA-F001-112026-B'), `Multi-farm batch created with code: ${multiBatch?.batchCode}`);
+    assert(multiBatch && multiBatch.batchCode.startsWith("ETH-RA-F001-November'26-B"), `Multi-farm batch created with code: ${multiBatch?.batchCode}`);
 
     const batchSources = await DataStore.getBatchSourcesAsync(multiBatch.batchCode);
     assert(batchSources.length === 2, `Batch has 2 distinct contributing sources (got ${batchSources.length})`);

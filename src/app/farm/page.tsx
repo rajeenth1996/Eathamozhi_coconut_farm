@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { DataStore } from '@/lib/dataStore';
 import ImageCarousel from '@/components/ImageCarousel';
+import { formatApproximateAge } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -128,7 +129,7 @@ export default async function MotherTreesPage() {
                         <ImageCarousel
                           images={palm.images && palm.images.length > 0 ? palm.images : ['/images/placeholder.png']}
                           title={palm.name}
-                          subtitle={`${palm.code} • ${palm.age} Yrs Old • ${palm.location}`}
+                          subtitle={`${palm.code} • ${formatApproximateAge(palm.age)}`}
                           carouselId={`palm-card-${palm.code}`}
                           height="240px"
                           showThumbnails={false}
@@ -138,7 +139,7 @@ export default async function MotherTreesPage() {
                         {/* Overlays */}
                         <div className="position-absolute top-0 start-0 m-2 d-flex gap-1 flex-wrap" style={{ pointerEvents: 'none', zIndex: 3 }}>
                           <span className="badge bg-dark bg-opacity-80 fw-bold">{palm.code}</span>
-                          <span className="badge bg-warning text-dark fw-bold">{palm.age} Yrs Old</span>
+                          <span className="badge bg-warning text-dark fw-bold">{formatApproximateAge(palm.age)}</span>
                         </div>
                         <div className="position-absolute top-0 end-0 m-2" style={{ pointerEvents: 'none', zIndex: 3 }}>
                           <span className={`badge bg-${healthColor}`}>
@@ -156,17 +157,14 @@ export default async function MotherTreesPage() {
 
                       {/* Card Body */}
                       <div className="card-body p-4 d-flex flex-column">
-                        <h6 className="fw-bold text-dark mb-1 fs-5">{palm.name}</h6>
-                        <small className="text-muted d-flex align-items-center gap-1 mb-3">
-                          <i className="bi bi-geo-alt-fill text-danger"></i> {palm.location}
-                        </small>
+                        <h6 className="fw-bold text-dark mb-3 fs-5">{palm.name}</h6>
 
                         {/* Key Stats Row */}
                         <div className="row g-2 mb-3">
                           <div className="col-6">
                             <div className="bg-light rounded-3 p-2 text-center">
-                              <small className="text-muted d-block extra-small text-uppercase fw-bold">Age</small>
-                              <span className="fw-bold text-dark">{palm.age} Years</span>
+                              <small className="text-muted d-block extra-small text-uppercase fw-bold">Approx. Age</small>
+                              <span className="fw-bold text-dark">{formatApproximateAge(palm.age)}</span>
                             </div>
                           </div>
                           <div className="col-6">

@@ -34,3 +34,18 @@ export async function PATCH(
     return NextResponse.json({ error: err.message || 'Failed to update images' }, { status: 500 });
   }
 }
+
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ code: string }> }
+) {
+  try {
+    const { code } = await params;
+    const body = await request.json().catch(() => ({}));
+    const visitorId = body.visitorId || 'anon-visitor';
+    const result = await DataStore.recordBatchViewAsync(code, visitorId);
+    return NextResponse.json(result);
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || 'Failed to record view' }, { status: 500 });
+  }
+}

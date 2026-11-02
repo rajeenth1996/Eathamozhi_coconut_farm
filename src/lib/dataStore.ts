@@ -11,7 +11,9 @@ import {
   FAQModel,
   EnquiryModel,
   InventoryAdjustmentModel,
-  SiteSettingsModel
+  SiteSettingsModel,
+  BatchViewModel,
+  InstagramPostModel
 } from '@/lib/models';
 import {
   Farm,
@@ -27,7 +29,10 @@ import {
   Enquiry,
   SiteSettings,
   PageViewEvent,
-  VisitorJourney
+  VisitorJourney,
+  InstagramPost,
+  BatchView,
+  formatApproximateAge
 } from '@/lib/types';
 import {
   generateFarmId,
@@ -128,6 +133,8 @@ let faqs: FAQ[] = [
 let enquiries: Enquiry[] = [];
 let pageViews: PageViewEvent[] = [];
 let visitorJourneys: VisitorJourney[] = [];
+let batchViews: BatchView[] = [];
+let instagramPosts: InstagramPost[] = [];
 let siteSettings: SiteSettings = {
   showBatchesOnMainPage: true,
   showMotherTreesOnMainPage: true,
@@ -181,6 +188,8 @@ function loadFromDb() {
       if (Array.isArray(data.faqs)) faqs = data.faqs;
       if (Array.isArray(data.pageViews)) pageViews = data.pageViews;
       if (Array.isArray(data.visitorJourneys)) visitorJourneys = data.visitorJourneys;
+      if (Array.isArray(data.batchViews)) batchViews = data.batchViews;
+      if (Array.isArray(data.instagramPosts)) instagramPosts = data.instagramPosts;
       if (data.siteSettings) siteSettings = data.siteSettings;
     }
   } catch (err) {
@@ -205,6 +214,8 @@ function saveToDb() {
       faqs,
       pageViews: pageViews.slice(0, 1000),
       visitorJourneys: visitorJourneys.slice(0, 500),
+      batchViews,
+      instagramPosts,
       siteSettings
     };
     const jsonStr = JSON.stringify(payload, null, 2);
@@ -257,7 +268,7 @@ async function syncFromMongo(force = false): Promise<void> {
       const conn = await connectToDatabase();
       if (!conn) return;
 
-      const [mFarms, mPalms, mBatches, mSources, mInventory, mBookings, mEnquiries, mReviews, mAdjustments, mFaqs, mSettings] = await Promise.all([
+      const [mFarms, mPalms, mBatches, mSources, mInventory, mBookings, mEnquiries, mReviews, mAdjustments, mFaqs, mSettings, mBatchViews, mInstagram] = await Promise.all([
         FarmModel.find({}).lean(),
         ParentPalmModel.find({}).lean(),
         BatchModel.find({}).lean(),
@@ -269,6 +280,8 @@ async function syncFromMongo(force = false): Promise<void> {
         InventoryAdjustmentModel.find({}).lean(),
         FAQModel.find({}).lean(),
         SiteSettingsModel.findOne({ id: 'site_settings' }).lean(),
+        BatchViewModel.find({}).lean(),
+        InstagramPostModel.find({}).lean()
       ]);
 
       if (Array.isArray(mFarms) && mFarms.length > 0) {
@@ -297,7 +310,7 @@ async function syncFromMongo(force = false): Promise<void> {
           farmName: p.farmName || (farms[0]?.farmName || 'Eathamozhi Ancestral Heritage Coconut Farm'),
           name: p.name,
           variety: p.variety || 'West Coast Tall (Eathamozhi Tall)',
-          age: Number(p.age) || 40,
+          age: p.age !== undefined && p.age !== null ? p.age : '40+ years',
           location: p.location || 'Heritage Grove',
           healthStatus: p.healthStatus || 'Excellent',
           yieldHistory: p.yieldHistory || '',
@@ -374,6 +387,26 @@ async function syncFromMongo(force = false): Promise<void> {
           showBatchesOnMainPage: mSettings.showBatchesOnMainPage !== false,
           showMotherTreesOnMainPage: mSettings.showMotherTreesOnMainPage !== false,
         };
+      }
+      if (Array.isArray(mBatchViews) && mBatchViews.length > 0) {
+        batchViews = mBatchViews.map((v: any) => ({
+          id: v.id || `bv-${v._id}`,
+          batchCode: v.batchCode,
+          visitorId: v.visitorId,
+          firstViewedAt: v.firstViewedAt || new Date().toISOString(),
+          lastViewedAt: v.lastViewedAt || new Date().toISOString()
+        }));
+      }
+      if (Array.isArray(mInstagram) && mInstagram.length > 0) {
+        instagramPosts = mInstagram.map((ig: any) => ({
+          id: ig.id || `ig-${ig._id}`,
+          title: ig.title,
+          url: ig.url,
+          order: Number(ig.order) || 0,
+          isVisible: ig.isVisible !== false,
+          createdAt: ig.createdAt || new Date().toISOString(),
+          updatedAt: ig.updatedAt || new Date().toISOString()
+        }));
       }
 
       lastMongoSyncTime = Date.now();
@@ -614,29 +647,67 @@ export const DataStore = {
     return updated;
   },
 
-  deleteFarm: (code: string): boolean => {
+  canDeleteFarm: (code: string): { canDelete: boolean; reason?: string } => {
     loadFromDb();
-    const idx = farms.findIndex(f => f.farmCode.toLowerCase() === code.toLowerCase() || f.id === code);
-    if (idx === -1) return false;
-    farms.splice(idx, 1);
-    saveToDb();
-    return true;
+    const farm = farms.find(f => f.farmCode.toLowerCase() === code.toLowerCase() || f.id === code);
+    if (!farm) return { canDelete: false, reason: 'Farm not found' };
+
+    const associatedTrees = parentPalms.filter(
+      p => (p.farmCode && p.farmCode.toLowerCase() === farm.farmCode.toLowerCase()) || p.farmId === farm.id
+    );
+    if (associatedTrees.length > 0) {
+      const treeCodes = associatedTrees.map(t => t.motherTreeCode || t.code).slice(0, 3).join(', ');
+      return {
+        canDelete: false,
+        reason: `Cannot delete farm "${farm.farmName}" (${farm.farmCode}): It has ${associatedTrees.length} associated Mother Tree(s) [${treeCodes}${associatedTrees.length > 3 ? '...' : ''}]. Please reassign or delete the trees first.`
+      };
+    }
+
+    const associatedBatches = batches.filter(
+      b => (b.primaryFarmCode && b.primaryFarmCode.toLowerCase() === farm.farmCode.toLowerCase()) || b.primaryFarmId === farm.id
+    );
+    const associatedSources = batchSources.filter(
+      s => (s.farmCode && s.farmCode.toLowerCase() === farm.farmCode.toLowerCase()) || s.farmId === farm.id
+    );
+    if (associatedBatches.length > 0 || associatedSources.length > 0) {
+      return {
+        canDelete: false,
+        reason: `Cannot delete farm "${farm.farmName}" (${farm.farmCode}): It has associated batch records (${associatedBatches.length} batch(es), ${associatedSources.length} collection record(s)). Deletion is blocked to preserve traceability.`
+      };
+    }
+
+    return { canDelete: true };
   },
 
-  deleteFarmAsync: async (code: string): Promise<boolean> => {
-    const success = DataStore.deleteFarm(code);
-    if (success) {
+  deleteFarm: (code: string): { success: boolean; reason?: string } => {
+    loadFromDb();
+    const check = DataStore.canDeleteFarm(code);
+    if (!check.canDelete) {
+      return { success: false, reason: check.reason };
+    }
+    const idx = farms.findIndex(f => f.farmCode.toLowerCase() === code.toLowerCase() || f.id === code);
+    if (idx === -1) return { success: false, reason: 'Farm not found' };
+    farms.splice(idx, 1);
+    saveToDb();
+    return { success: true };
+  },
+
+  deleteFarmAsync: async (code: string): Promise<{ success: boolean; reason?: string }> => {
+    loadFromDb();
+    await syncFromMongo();
+    const res = DataStore.deleteFarm(code);
+    if (res.success) {
       try {
         const conn = await connectToDatabase();
         if (conn) {
-          await FarmModel.findOneAndDelete({ farmCode: code });
+          await FarmModel.findOneAndDelete({ $or: [{ farmCode: code }, { id: code }] });
           lastMongoSyncTime = 0;
         }
       } catch (err) {
         console.error('Failed to delete Farm in MongoDB:', err);
       }
     }
-    return success;
+    return res;
   },
 
   getFarmDashboardSummary: (): any => {
@@ -700,9 +771,22 @@ export const DataStore = {
 
       const bookedPercentage = netStock > 0 ? Math.min(100, Math.round((computedBookedQuantity / netStock) * 100)) : 100;
       const dynamicStatus = getDynamicBatchStatus(availableQuantity, b.seededDate);
+      const metrics = getSaplingMetrics(b.seededDate);
+      const age = b.age || metrics.age || '8–10 Months';
+      let height = b.height || metrics.height || '2.5–4.5 ft';
+      if (!height.toLowerCase().startsWith('approx')) {
+        height = `Approx. ${height}`;
+      }
+      const uniqueViewsCount = Math.max(
+        Number(b.viewsCount) || 0,
+        new Set(batchViews.filter(v => v.batchCode.toLowerCase() === b.batchCode.toLowerCase()).map(v => v.visitorId)).size
+      );
 
       return {
         ...b,
+        age,
+        height,
+        viewsCount: uniqueViewsCount,
         bookedQuantity: computedBookedQuantity,
         availableQuantity,
         bookedPercentage,
@@ -756,17 +840,21 @@ export const DataStore = {
 
     let batchCode = newBatchData.batchCode;
     if (!batchCode) {
-      const monthStr = String(monthNum).padStart(2, '0');
-      const yearStr = String(yearNum);
-      const prefix = `${primaryFarmCode}-${monthStr}${yearStr}`;
+      const monthNames = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+      ];
+      const fullMonth = monthNames[(monthNum || 1) - 1] || 'November';
+      const twoDigitYear = String(yearNum || 2026).slice(-2);
+      const prefix = `${primaryFarmCode}-${fullMonth}'${twoDigitYear}`;
       let maxSeq = 0;
       for (const b of batches) {
         if (b.batchCode.startsWith(prefix + '-B')) {
-          const num = parseInt(b.batchCode.split('-B')[1], 10);
+          const num = parseInt(b.batchCode.slice((prefix + '-B').length), 10);
           if (!isNaN(num) && num > maxSeq) maxSeq = num;
         }
       }
-      batchCode = `${prefix}-B${String(maxSeq + 1).padStart(3, '0')}`;
+      batchCode = `${prefix}-B${maxSeq + 1}`;
     }
 
     const defaultFolderImages = ['/images/placeholder.png'];
@@ -784,6 +872,13 @@ export const DataStore = {
 
     const batchName = newBatchData.name || formatBatchDisplayName(primaryFarmCode, batchCode, monthNum, yearNum);
 
+    const metrics = getSaplingMetrics(seededDate);
+    const age = newBatchData.age || metrics.age;
+    let height = newBatchData.height || metrics.height;
+    if (height && !height.toLowerCase().startsWith('approx')) {
+      height = `Approx. ${height}`;
+    }
+
     const created: Batch = {
       id: `b-${Date.now()}`,
       batchCode,
@@ -800,6 +895,8 @@ export const DataStore = {
       name: batchName,
       harvestDate,
       seededDate,
+      age,
+      height,
       totalQuantity: Number(newBatchData.totalQuantity) || 500,
       bookedQuantity: 0,
       inventoryAdjustments: 0,
@@ -950,6 +1047,14 @@ export const DataStore = {
     if (updatedFields.totalQuantity !== undefined) target.totalQuantity = Number(updatedFields.totalQuantity);
     if (updatedFields.harvestDate) target.harvestDate = updatedFields.harvestDate;
     if (updatedFields.seededDate) target.seededDate = updatedFields.seededDate;
+    if (updatedFields.age !== undefined) target.age = updatedFields.age;
+    if (updatedFields.height !== undefined) {
+      let h = String(updatedFields.height).trim();
+      if (h && !h.toLowerCase().startsWith('approx')) {
+        h = `Approx. ${h}`;
+      }
+      target.height = h;
+    }
     if (updatedFields.description !== undefined) target.description = updatedFields.description;
     if (updatedFields.name) target.name = updatedFields.name;
     if (updatedFields.images) target.images = updatedFields.images;
@@ -1096,7 +1201,7 @@ export const DataStore = {
       farmName: farm?.farmName || 'Eathamozhi Ancestral Heritage Coconut Farm',
       name: data.name || `Mother Palm ${motherTreeCode}`,
       variety: data.variety || 'West Coast Tall (Eathamozhi Tall)',
-      age: Number(data.age) || 40,
+      age: data.age !== undefined && data.age !== null && data.age !== '' ? data.age : '40+ years',
       location: data.location || farm?.location || 'Heritage Grove',
       healthStatus: data.healthStatus || 'Excellent',
       yieldHistory: data.yieldHistory || 'High-yielding verified genetic stock.',
@@ -1150,8 +1255,32 @@ export const DataStore = {
     const palm = parentPalms.find(p => (p.code && p.code.toLowerCase() === code.toLowerCase()) || (p.motherTreeCode && p.motherTreeCode.toLowerCase() === code.toLowerCase()) || p.id === code);
     if (!palm) return null;
 
+    if (updatedFields.farmCode) {
+      const f = farms.find(farm => farm.farmCode.toLowerCase() === updatedFields.farmCode.toLowerCase() || farm.id === updatedFields.farmCode);
+      if (f) {
+        palm.farmCode = f.farmCode;
+        palm.farmId = f.id;
+        palm.farmName = f.farmName;
+
+        // Keep batchSources and batchInventory synchronized
+        for (const s of batchSources) {
+          if (s.motherTreeCode === palm.motherTreeCode || s.motherTreeId === palm.id) {
+            s.farmCode = f.farmCode;
+            s.farmId = f.id;
+            s.farmName = f.farmName;
+          }
+        }
+        for (const inv of batchInventory) {
+          if (inv.motherTreeCode === palm.motherTreeCode || inv.motherTreeId === palm.id) {
+            inv.farmCode = f.farmCode;
+            inv.farmId = f.id;
+          }
+        }
+      }
+    }
+
     if (updatedFields.name) palm.name = updatedFields.name;
-    if (updatedFields.age !== undefined) palm.age = Number(updatedFields.age);
+    if (updatedFields.age !== undefined) palm.age = updatedFields.age;
     if (updatedFields.variety) palm.variety = updatedFields.variety;
     if (updatedFields.location) palm.location = updatedFields.location;
     if (updatedFields.healthStatus) palm.healthStatus = updatedFields.healthStatus;
@@ -1181,6 +1310,18 @@ export const DataStore = {
           { $set: updated },
           { new: true }
         );
+
+        if (updatedFields.farmCode) {
+          await BatchSourceModel.updateMany(
+            { $or: [{ motherTreeCode: updated.motherTreeCode }, { motherTreeId: updated.id }] },
+            { $set: { farmCode: updated.farmCode, farmId: updated.farmId, farmName: updated.farmName } }
+          );
+          await BatchInventoryModel.updateMany(
+            { $or: [{ motherTreeCode: updated.motherTreeCode }, { motherTreeId: updated.id }] },
+            { $set: { farmCode: updated.farmCode, farmId: updated.farmId } }
+          );
+        }
+
         lastMongoSyncTime = 0;
       }
     } catch (err) {
@@ -2156,13 +2297,317 @@ export const DataStore = {
     return created;
   },
 
-  getAnalyticsSummary: (): any => {
+  // ─── Batch Unique Visitor Views Tracking ─────────────────────────────────
+  recordBatchView: (batchCode: string, visitorId: string): { batchCode: string; viewsCount: number; isNewUniqueView: boolean } => {
     loadFromDb();
-    return {
-      totalViews: pageViews.length,
-      recentViews: pageViews.slice(0, 50),
-      totalJourneys: visitorJourneys.length
+    if (!batchCode || !visitorId) return { batchCode, viewsCount: 0, isNewUniqueView: false };
+
+    const batch = batches.find(b => b.batchCode.toLowerCase() === batchCode.toLowerCase());
+    if (!batch) return { batchCode, viewsCount: 0, isNewUniqueView: false };
+
+    const existing = batchViews.find(
+      v => v.batchCode.toLowerCase() === batchCode.toLowerCase() && v.visitorId === visitorId
+    );
+
+    let isNewUniqueView = false;
+    if (!existing) {
+      isNewUniqueView = true;
+      batchViews.push({
+        id: `bv-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        batchCode: batch.batchCode,
+        visitorId,
+        firstViewedAt: new Date().toISOString(),
+        lastViewedAt: new Date().toISOString()
+      });
+      batch.viewsCount = (Number(batch.viewsCount) || 0) + 1;
+      batch.updatedAt = new Date().toISOString();
+    } else {
+      existing.lastViewedAt = new Date().toISOString();
+    }
+
+    const distinctCount = new Set(
+      batchViews.filter(v => v.batchCode.toLowerCase() === batch.batchCode.toLowerCase()).map(v => v.visitorId)
+    ).size;
+    batch.viewsCount = Math.max(Number(batch.viewsCount) || 0, distinctCount);
+
+    saveToDb();
+    return { batchCode: batch.batchCode, viewsCount: batch.viewsCount, isNewUniqueView };
+  },
+
+  recordBatchViewAsync: async (batchCode: string, visitorId: string): Promise<{ batchCode: string; viewsCount: number; isNewUniqueView: boolean }> => {
+    loadFromDb();
+    await syncFromMongo();
+    const result = DataStore.recordBatchView(batchCode, visitorId);
+    try {
+      const conn = await connectToDatabase();
+      if (conn) {
+        if (result.isNewUniqueView) {
+          await BatchViewModel.findOneAndUpdate(
+            { batchCode: result.batchCode, visitorId },
+            {
+              $setOnInsert: {
+                id: `bv-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+                batchCode: result.batchCode,
+                visitorId,
+                firstViewedAt: new Date().toISOString()
+              },
+              $set: { lastViewedAt: new Date().toISOString() }
+            },
+            { upsert: true, new: true }
+          );
+        } else {
+          await BatchViewModel.updateOne(
+            { batchCode: result.batchCode, visitorId },
+            { $set: { lastViewedAt: new Date().toISOString() } }
+          );
+        }
+
+        await BatchModel.findOneAndUpdate(
+          { batchCode: new RegExp('^' + result.batchCode + '$', 'i') },
+          { $set: { viewsCount: result.viewsCount } }
+        );
+      }
+    } catch (err) {
+      console.error('Failed to sync batch view to Mongo:', err);
+    }
+    return result;
+  },
+
+  getBatchViewsCount: (batchCode: string): number => {
+    loadFromDb();
+    const batch = batches.find(b => b.batchCode.toLowerCase() === batchCode.toLowerCase());
+    const distinct = new Set(
+      batchViews.filter(v => v.batchCode.toLowerCase() === batchCode.toLowerCase()).map(v => v.visitorId)
+    ).size;
+    return Math.max(Number(batch?.viewsCount) || 0, distinct);
+  },
+
+  // ─── Instagram Content Module ───────────────────────────────────────────────
+  getInstagramPosts: (): InstagramPost[] => {
+    loadFromDb();
+    return instagramPosts.slice().sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0));
+  },
+
+  getInstagramPostsAsync: async (): Promise<InstagramPost[]> => {
+    loadFromDb();
+    await syncFromMongo();
+    return DataStore.getInstagramPosts();
+  },
+
+  addInstagramPost: (data: Partial<InstagramPost>): InstagramPost => {
+    loadFromDb();
+    const created: InstagramPost = {
+      id: `ig-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      title: data.title?.trim() || 'Eathamozhi Coconut Farm Reel',
+      url: data.url?.trim() || '',
+      order: Number(data.order) || (instagramPosts.length + 1),
+      isVisible: data.isVisible !== false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     };
+    instagramPosts.push(created);
+    saveToDb();
+    return created;
+  },
+
+  addInstagramPostAsync: async (data: Partial<InstagramPost>): Promise<InstagramPost> => {
+    loadFromDb();
+    await syncFromMongo();
+    const created = DataStore.addInstagramPost(data);
+    try {
+      const conn = await connectToDatabase();
+      if (conn) {
+        await InstagramPostModel.create(created);
+        lastMongoSyncTime = 0;
+      }
+    } catch (err) {
+      console.error('Failed to save Instagram post to Mongo:', err);
+    }
+    return created;
+  },
+
+  updateInstagramPost: (id: string, data: Partial<InstagramPost>): InstagramPost | null => {
+    loadFromDb();
+    const item = instagramPosts.find(p => p.id === id);
+    if (!item) return null;
+    if (data.title !== undefined) item.title = data.title.trim();
+    if (data.url !== undefined) item.url = data.url.trim();
+    if (data.order !== undefined) item.order = Number(data.order);
+    if (data.isVisible !== undefined) item.isVisible = Boolean(data.isVisible);
+    item.updatedAt = new Date().toISOString();
+    saveToDb();
+    return item;
+  },
+
+  updateInstagramPostAsync: async (id: string, data: Partial<InstagramPost>): Promise<InstagramPost | null> => {
+    const updated = DataStore.updateInstagramPost(id, data);
+    try {
+      const conn = await connectToDatabase();
+      if (conn && updated) {
+        await InstagramPostModel.findOneAndUpdate({ id }, { $set: updated }, { new: true });
+        lastMongoSyncTime = 0;
+      }
+    } catch (err) {
+      console.error('Failed to update Instagram post in Mongo:', err);
+    }
+    return updated;
+  },
+
+  deleteInstagramPost: (id: string): boolean => {
+    loadFromDb();
+    const idx = instagramPosts.findIndex(p => p.id === id);
+    if (idx === -1) return false;
+    instagramPosts.splice(idx, 1);
+    saveToDb();
+    return true;
+  },
+
+  deleteInstagramPostAsync: async (id: string): Promise<boolean> => {
+    const success = DataStore.deleteInstagramPost(id);
+    try {
+      const conn = await connectToDatabase();
+      if (conn && success) {
+        await InstagramPostModel.findOneAndDelete({ id });
+        lastMongoSyncTime = 0;
+      }
+    } catch (err) {
+      console.error('Failed to delete Instagram post in Mongo:', err);
+    }
+    return success;
+  },
+
+  // ─── Analytics Engine (Day-wise, Week-wise, Month-wise) ──────────────────────
+  getAnalyticsSummary: (range: 'daily' | 'weekly' | 'monthly' | 'all' = 'weekly'): any => {
+    loadFromDb();
+
+    const now = new Date();
+    const nowMs = now.getTime();
+    const oneDayMs = 24 * 60 * 60 * 1000;
+    const sevenDaysMs = 7 * oneDayMs;
+    const thirtyDaysMs = 30 * oneDayMs;
+
+    // Filter by date range
+    const filteredViews = pageViews.filter(v => {
+      if (range === 'all') return true;
+      const vTime = new Date(v.timestamp).getTime();
+      if (isNaN(vTime)) return true;
+      if (range === 'daily') return nowMs - vTime <= oneDayMs;
+      if (range === 'weekly') return nowMs - vTime <= sevenDaysMs;
+      if (range === 'monthly') return nowMs - vTime <= thirtyDaysMs;
+      return true;
+    });
+
+    const filteredJourneys = visitorJourneys.filter(j => {
+      if (range === 'all') return true;
+      const jTime = new Date(j.lastActiveAt || j.startedAt).getTime();
+      if (isNaN(jTime)) return true;
+      if (range === 'daily') return nowMs - jTime <= oneDayMs;
+      if (range === 'weekly') return nowMs - jTime <= sevenDaysMs;
+      if (range === 'monthly') return nowMs - jTime <= thirtyDaysMs;
+      return true;
+    });
+
+    const viewsToday = pageViews.filter(v => nowMs - new Date(v.timestamp).getTime() <= oneDayMs).length;
+    const views7d = pageViews.filter(v => nowMs - new Date(v.timestamp).getTime() <= sevenDaysMs).length;
+
+    const uniqueSessions = new Set(filteredViews.map(v => v.sessionId)).size;
+    const todaySessions = new Set(pageViews.filter(v => nowMs - new Date(v.timestamp).getTime() <= oneDayMs).map(v => v.sessionId)).size;
+
+    const convertedSessions = filteredJourneys.filter(j => j.convertedToOrder).length;
+    const conversionRate = uniqueSessions > 0
+      ? ((convertedSessions / uniqueSessions) * 100).toFixed(1)
+      : '0.0';
+
+    // Top Pages
+    const pageCounts: Record<string, number> = {};
+    for (const v of filteredViews) {
+      pageCounts[v.path] = (pageCounts[v.path] || 0) + 1;
+    }
+    const topPages = Object.entries(pageCounts)
+      .map(([path, count]) => ({ path, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10);
+
+    // Traffic Sources
+    const trafficSources: Record<string, number> = {};
+    for (const v of filteredViews) {
+      const src = v.referrerSource || 'Direct / Bookmark';
+      trafficSources[src] = (trafficSources[src] || 0) + 1;
+    }
+
+    // Devices
+    const devices = { mobile: 0, desktop: 0, tablet: 0 };
+    for (const v of filteredViews) {
+      if (v.device === 'mobile') devices.mobile++;
+      else if (v.device === 'tablet') devices.tablet++;
+      else devices.desktop++;
+    }
+
+    // Funnel
+    const funnelSessions = {
+      home: new Set<string>(),
+      motherTrees: new Set<string>(),
+      batches: new Set<string>(),
+      checkout: new Set<string>(),
+      converted: new Set<string>()
+    };
+
+    for (const v of filteredViews) {
+      if (v.path === '/') funnelSessions.home.add(v.sessionId);
+      if (v.path.startsWith('/farm') || v.path.startsWith('/parent-palm')) funnelSessions.motherTrees.add(v.sessionId);
+      if (v.path.startsWith('/batches')) funnelSessions.batches.add(v.sessionId);
+      if (v.path.startsWith('/book')) funnelSessions.checkout.add(v.sessionId);
+    }
+    for (const j of filteredJourneys) {
+      if (j.convertedToOrder) funnelSessions.converted.add(j.sessionId);
+    }
+
+    const funnel = {
+      home: funnelSessions.home.size,
+      motherTrees: funnelSessions.motherTrees.size,
+      batches: funnelSessions.batches.size,
+      checkout: funnelSessions.checkout.size,
+      converted: funnelSessions.converted.size
+    };
+
+    // Batch specific views analytics
+    const batchAnalytics = batches.map(b => {
+      const bViews = batchViews.filter(v => v.batchCode.toLowerCase() === b.batchCode.toLowerCase());
+      const distinctVisitors = new Set(bViews.map(v => v.visitorId)).size;
+      return {
+        batchCode: b.batchCode,
+        name: b.name,
+        price: b.price,
+        status: b.status,
+        uniqueVisitors: Math.max(Number(b.viewsCount) || 0, distinctVisitors),
+        totalPings: bViews.length
+      };
+    });
+
+    return {
+      range,
+      kpis: {
+        totalViews: filteredViews.length,
+        viewsToday,
+        views7d,
+        uniqueSessions,
+        sessionsToday: todaySessions,
+        convertedSessions,
+        conversionRate
+      },
+      topPages,
+      trafficSources,
+      devices,
+      funnel,
+      recentJourneys: filteredJourneys.slice(0, 30),
+      batchAnalytics
+    };
+  },
+
+  getAnalyticsSummaryAsync: async (range: 'daily' | 'weekly' | 'monthly' | 'all' = 'weekly'): Promise<any> => {
+    loadFromDb();
+    await syncFromMongo();
+    return DataStore.getAnalyticsSummary(range);
   },
 
   syncImagesWithDisk: () => {

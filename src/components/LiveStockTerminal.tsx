@@ -166,7 +166,7 @@ export default function LiveStockTerminal({ initialBatch, initialBatches = [] }:
                     <div>
                       <h3 className="fw-bold text-dark mb-1">{currentBatch?.name}</h3>
                       <p className="text-muted small mb-0">
-                        Age: <strong className="text-dark">{currentBatch?.age}</strong> &bull; Avg Height: <strong className="text-dark">{currentBatch?.height}</strong> &bull; {(() => {
+                        Age: <strong className="text-dark">{currentBatch?.age || '8–10 months'}</strong> &bull; Height: <strong className="text-dark">{currentBatch?.height || 'Approx. 2–3 ft'}</strong> &bull; {(() => {
                           const treeCodes = (currentBatch?.parentPalmCodes && currentBatch.parentPalmCodes.length > 0)
                             ? currentBatch.parentPalmCodes
                             : (currentBatch?.parentPalmCode ? [currentBatch.parentPalmCode] : []);
@@ -247,10 +247,7 @@ export default function LiveStockTerminal({ initialBatch, initialBatches = [] }:
                   </div>
                 </div>
 
-                <div className="d-flex justify-content-between align-items-center mt-3 pt-2 text-muted extra-small border-top border-light">
-                  <span className="d-inline-flex align-items-center gap-1 text-success fw-semibold">
-                    <i className="bi bi-check-circle-fill"></i> 100% Synced with Farm DB
-                  </span>
+                <div className="d-flex justify-content-end align-items-center mt-3 pt-2 text-muted extra-small border-top border-light">
                   <span>
                     Status: <strong className="text-dark">{currentBatch?.status || 'AVAILABLE'}</strong> &bull; Total Available across all batches: <strong className="text-success">{batches.reduce((acc, b) => acc + (b.availableQuantity || 0), 0)}</strong>
                   </span>

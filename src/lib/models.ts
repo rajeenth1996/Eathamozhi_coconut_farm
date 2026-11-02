@@ -25,7 +25,7 @@ const MotherTreeSchema = new Schema({
   farmName:           { type: String, default: '' },
   name:               { type: String, required: true },
   variety:            { type: String, default: 'West Coast Tall (Eathamozhi Tall)' },
-  age:                { type: Number, required: true },
+  age:                { type: Schema.Types.Mixed, required: true },
   location:           { type: String, default: 'Heritage Grove' },
   healthStatus:       { type: String, default: 'Excellent' },
   yieldHistory:       { type: String, default: '' },
@@ -249,6 +249,27 @@ const SiteSettingsSchema = new Schema({
   showMotherTreesOnMainPage: { type: Boolean, default: true },
 }, { timestamps: true });
 
+// ─── BatchView ───────────────────────────────────────────────────────────────
+const BatchViewSchema = new Schema({
+  id:           { type: String, required: true, unique: true },
+  batchCode:    { type: String, required: true, index: true },
+  visitorId:    { type: String, required: true, index: true },
+  firstViewedAt:{ type: String, default: () => new Date().toISOString() },
+  lastViewedAt: { type: String, default: () => new Date().toISOString() },
+}, { timestamps: false });
+BatchViewSchema.index({ batchCode: 1, visitorId: 1 }, { unique: true });
+
+// ─── InstagramPost ───────────────────────────────────────────────────────────
+const InstagramPostSchema = new Schema({
+  id:           { type: String, required: true, unique: true },
+  title:        { type: String, required: true },
+  url:          { type: String, required: true },
+  order:        { type: Number, default: 0 },
+  isVisible:    { type: Boolean, default: true, index: true },
+  createdAt:    { type: String, default: () => new Date().toISOString() },
+  updatedAt:    { type: String, default: () => new Date().toISOString() },
+}, { timestamps: false });
+
 // Export models (use existing model if already compiled — important for Next.js hot-reload)
 export const FarmModel            = models.Farm            || model('Farm',            FarmSchema);
 export const MotherTreeModel      = models.MotherTree      || model('MotherTree',      MotherTreeSchema, 'parentpalms');
@@ -265,3 +286,5 @@ export const InventoryAdjustmentModel = models.InventoryAdjustment || model('Inv
 export const PageViewModel        = models.PageView        || model('PageView',        PageViewSchema);
 export const VisitorJourneyModel  = models.VisitorJourney  || model('VisitorJourney',  VisitorJourneySchema);
 export const SiteSettingsModel    = models.SiteSettings    || model('SiteSettings',    SiteSettingsSchema);
+export const BatchViewModel       = models.BatchView       || model('BatchView',       BatchViewSchema, 'batch_views');
+export const InstagramPostModel   = models.InstagramPost   || model('InstagramPost',   InstagramPostSchema, 'instagram_posts');

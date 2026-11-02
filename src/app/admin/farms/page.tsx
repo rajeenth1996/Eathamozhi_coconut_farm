@@ -170,6 +170,31 @@ export default function AdminFarmRegistryPage() {
     }
   };
 
+  const handleDeleteFarm = async (farm: any) => {
+    if ((farm.totalMotherTrees ?? 0) > 0 || (farm.activeBatches ?? 0) > 0) {
+      alert(`⚠️ Cannot delete Farm "${farm.farmName}" (${farm.farmCode}). It has ${farm.totalMotherTrees || 0} associated mother tree(s) and ${farm.activeBatches || 0} associated batch(es). A farm can only be deleted if it has no associated Mother Trees and no associated Batches.`);
+      return;
+    }
+
+    const confirmed = window.confirm(`Are you sure you want to permanently delete Farm "${farm.farmName}" (${farm.farmCode})? This action cannot be undone.`);
+    if (!confirmed) return;
+
+    try {
+      const res = await fetch(`/api/farms/${farm.farmCode}`, {
+        method: 'DELETE'
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(`⚠️ Cannot delete farm: ${data.error || 'Server rejected deletion'}`);
+        return;
+      }
+      alert(`✅ Farm "${farm.farmName}" (${farm.farmCode}) has been successfully deleted.`);
+      fetchFarms();
+    } catch (err: any) {
+      alert(`⚠️ Error deleting farm: ${err.message}`);
+    }
+  };
+
   // Unique locations for filter
   const locations = Array.from(new Set(farms.map(f => f.location).filter(Boolean)));
 
@@ -380,6 +405,13 @@ export default function AdminFarmRegistryPage() {
                               title="Edit Farm"
                             >
                               <i className="bi bi-pencil"></i>
+                            </button>
+                            <button
+                              onClick={() => handleDeleteFarm(farm)}
+                              className="btn btn-outline-danger"
+                              title="Delete Farm"
+                            >
+                              <i className="bi bi-trash"></i>
                             </button>
                           </div>
                         </td>

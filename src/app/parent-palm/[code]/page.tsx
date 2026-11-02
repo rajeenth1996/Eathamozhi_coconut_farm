@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { DataStore } from '@/lib/dataStore';
 import { notFound } from 'next/navigation';
 import ImageCarousel from '@/components/ImageCarousel';
+import { formatApproximateAge } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -35,7 +36,7 @@ export default async function ParentPalmDetailPage({
           </nav>
           <div className="d-flex justify-content-between align-items-center">
             <div>
-              <span className="badge bg-warning text-dark px-3 py-2 me-2">{palm.age} YEARS OLD</span>
+              <span className="badge bg-warning text-dark px-3 py-2 me-2">{formatApproximateAge(palm.age).toUpperCase()}</span>
               <h1 className="fw-bold mb-0 text-light d-inline-block align-middle">{palm.name}</h1>
             </div>
             <span className="badge bg-success fs-6">{palm.healthStatus}</span>
@@ -50,7 +51,7 @@ export default async function ParentPalmDetailPage({
               <ImageCarousel 
                 images={palm.images} 
                 title={palm.name} 
-                subtitle={`${palm.code} • ${palm.location} • Age: ${palm.age} yrs`}
+                subtitle={`${palm.code} • Age: ${formatApproximateAge(palm.age)}`}
                 carouselId="palmCarousel" 
                 height="420px"
                 showThumbnails={true}
@@ -73,8 +74,8 @@ export default async function ParentPalmDetailPage({
                   </div>
                   <div className="col-6">
                     <div className="p-3 bg-light rounded-3 border">
-                      <small className="text-muted d-block text-uppercase">Farm Location</small>
-                      <strong className="text-dark fs-6">{palm.location}</strong>
+                      <small className="text-muted d-block text-uppercase">Approximate Age</small>
+                      <strong className="text-dark fs-6">{formatApproximateAge(palm.age)}</strong>
                     </div>
                   </div>
                 </div>
@@ -117,7 +118,7 @@ export default async function ParentPalmDetailPage({
                       </div>
                     </div>
                     <h5 className="fw-bold text-dark mb-1">{b.name}</h5>
-                    <p className="text-muted small mb-2">Age: {b.age} | Height: {b.height}</p>
+                    <p className="text-muted small mb-2">Age: {b.age || '8–10 months'} | Height: {b.height || 'Approx. 2–3 ft'}</p>
                     <div className="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
                       <span className="fw-bold text-success fs-5">₹{b.price}</span>
                       <Link href={`/batches/${b.batchCode}`} className="btn btn-sm btn-outline-success fw-bold">

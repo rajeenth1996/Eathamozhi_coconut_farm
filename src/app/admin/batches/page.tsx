@@ -39,6 +39,8 @@ export default function AdminBatchesPage() {
   const [batchSeededDate, setBatchSeededDate] = useState('2026-11-15');
   const [batchHarvestDate, setBatchHarvestDate] = useState('2026-11-01');
   const [batchPrice, setBatchPrice] = useState(150);
+  const [batchAge, setBatchAge] = useState('8–10 months');
+  const [batchHeight, setBatchHeight] = useState('Approx. 2–3 ft');
   const [batchDescription, setBatchDescription] = useState('');
   const [batchIsVisible, setBatchIsVisible] = useState(true);
   const [batchFiles, setBatchFiles] = useState<File[]>([]);
@@ -54,6 +56,8 @@ export default function AdminBatchesPage() {
   // Edit Modal State
   const [editingBatch, setEditingBatch] = useState<any | null>(null);
   const [editPrice, setEditPrice] = useState<number>(150);
+  const [editAge, setEditAge] = useState<string>('8–10 months');
+  const [editHeight, setEditHeight] = useState<string>('Approx. 2–3 ft');
   const [editTotalQuantity, setEditTotalQuantity] = useState<number>(500);
   const [editDescription, setEditDescription] = useState<string>('');
   const [editImages, setEditImages] = useState<string[]>([]);
@@ -90,29 +94,29 @@ export default function AdminBatchesPage() {
     fetchInitialData();
   }, []);
 
-  // Compute Preview Batch ID & Full Display Name
+  // Compute Preview Batch ID & Full Display Name (<Farm ID>-<Month>'<YY>-B<Batch Number>)
   const getPreviewBatchIdAndName = () => {
     const d = new Date(batchSeededDate || '2026-11-15');
     const monthNum = d.getMonth() + 1;
     const yearNum = d.getFullYear();
-    const monthStr = String(monthNum).padStart(2, '0');
-    const yearStr = String(yearNum);
-    const prefix = `${primaryFarmCode}-${monthStr}${yearStr}`;
+    const twoDigitYear = String(yearNum).slice(-2);
 
     const monthNames = [
       'January', 'February', 'March', 'April', 'May', 'June',
       'July', 'August', 'September', 'October', 'November', 'December'
     ];
     const fullMonth = monthNames[monthNum - 1] || 'November';
+    const prefix = `${primaryFarmCode}-${fullMonth}'${twoDigitYear}`;
 
     let maxSeq = 0;
     for (const b of batches) {
       if (b.batchCode && b.batchCode.startsWith(prefix + '-B')) {
-        const num = parseInt(b.batchCode.split('-B')[1], 10);
+        const parts = b.batchCode.split('-B');
+        const num = parseInt(parts[parts.length - 1], 10);
         if (!isNaN(num) && num > maxSeq) maxSeq = num;
       }
     }
-    const batchId = `${prefix}-B${String(maxSeq + 1).padStart(3, '0')}`;
+    const batchId = `${prefix}-B${maxSeq + 1}`;
     const displayName = `${primaryFarmCode} ${batchId} ${fullMonth} ${yearNum}`;
 
     return { batchId, displayName, monthNum, yearNum };
@@ -202,6 +206,8 @@ export default function AdminBatchesPage() {
         totalQuantity: totalCoconuts,
         totalCoconuts,
         price: batchPrice,
+        age: batchAge.trim() || '8–10 months',
+        height: batchHeight.startsWith('Approx.') ? batchHeight : `Approx. ${batchHeight}`,
         description: batchDescription,
         isVisible: batchIsVisible,
         parentPalmCodes: sourcesList.map(s => s.motherTreeCode),
@@ -264,6 +270,8 @@ export default function AdminBatchesPage() {
   const openEditModal = (batch: any) => {
     setEditingBatch({ ...batch });
     setEditPrice(batch.price);
+    setEditAge(batch.age || '8–10 months');
+    setEditHeight(batch.height || 'Approx. 2–3 ft');
     setEditTotalQuantity(batch.totalQuantity);
     setEditDescription(batch.description || '');
     setEditIsVisible(batch.isVisible !== false);
@@ -282,6 +290,8 @@ export default function AdminBatchesPage() {
         body: JSON.stringify({
           batchCode: editingBatch.batchCode,
           price: editPrice,
+          age: editAge.trim() || '8–10 months',
+          height: editHeight.startsWith('Approx.') ? editHeight : `Approx. ${editHeight}`,
           totalQuantity: editTotalQuantity,
           description: editDescription,
           isVisible: editIsVisible,
@@ -447,7 +457,7 @@ export default function AdminBatchesPage() {
                       </span>
                     </div>
                     <div className="d-flex align-items-center gap-3">
-                      <div className="input-group input-group-sm" style={{ width: '180px' }}>
+                      <div className="input-group input-group-sm" style={{ width: '170px' }}>
                         <span className="input-group-text">Price (₹)</span>
                         <input
                           type="number"
@@ -455,6 +465,26 @@ export default function AdminBatchesPage() {
                           value={batchPrice}
                           onChange={(e) => setBatchPrice(parseInt(e.target.value, 10) || 150)}
                           required
+                        />
+                      </div>
+                      <div className="input-group input-group-sm" style={{ width: '180px' }}>
+                        <span className="input-group-text">Age</span>
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder="e.g. 9 months"
+                          value={batchAge}
+                          onChange={(e) => setBatchAge(e.target.value)}
+                        />
+                      </div>
+                      <div className="input-group input-group-sm" style={{ width: '210px' }}>
+                        <span className="input-group-text">Height</span>
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder="Approx. 2–3 ft"
+                          value={batchHeight}
+                          onChange={(e) => setBatchHeight(e.target.value)}
                         />
                       </div>
                       <div className="form-check form-switch mb-0">
@@ -728,12 +758,14 @@ export default function AdminBatchesPage() {
                     <th>Photo</th>
                     <th>Batch ID</th>
                     <th>Customer Display Name</th>
+                    <th>Age &amp; Height</th>
                     <th>Primary Farm</th>
                     <th className="text-center">Sources / Trees</th>
                     <th>Harvest / Sown</th>
                     <th className="text-center">Total Qty</th>
                     <th className="text-center">Available</th>
                     <th className="text-center">Booked</th>
+                    <th className="text-center">Farmer Views</th>
                     <th>Price</th>
                     <th className="text-center">Status</th>
                     <th className="text-center">Customer Visibility</th>
@@ -743,14 +775,14 @@ export default function AdminBatchesPage() {
                 <tbody>
                   {loading ? (
                     <tr>
-                      <td colSpan={13} className="text-center py-5">
+                      <td colSpan={15} className="text-center py-5">
                         <div className="spinner-border text-success" role="status"></div>
                         <p className="text-muted small mt-2 mb-0">Loading batches...</p>
                       </td>
                     </tr>
                   ) : filteredBatches.length === 0 ? (
                     <tr>
-                      <td colSpan={13} className="text-center py-5 text-muted">
+                      <td colSpan={15} className="text-center py-5 text-muted">
                         No batches found matching filters.
                       </td>
                     </tr>
@@ -781,9 +813,14 @@ export default function AdminBatchesPage() {
                           </td>
                           <td>
                             <div className="fw-bold text-dark">{batch.name}</div>
-                            <small className="text-muted extra-small">
-                              Age: {metrics.age} &bull; Height: {metrics.height}
-                            </small>
+                          </td>
+                          <td>
+                            <span className="badge bg-light text-dark border d-block mb-1">
+                              Age: {batch.age || metrics.age || '8–10 months'}
+                            </span>
+                            <span className="badge bg-light text-dark border d-block">
+                              Height: {batch.height || metrics.height || 'Approx. 2–3 ft'}
+                            </span>
                           </td>
                           <td>
                             <span className="badge bg-light text-dark border font-monospace">
@@ -806,6 +843,12 @@ export default function AdminBatchesPage() {
                             </span>
                           </td>
                           <td className="text-center fw-semibold text-warning">{batch.bookedQuantity ?? 0}</td>
+                          <td className="text-center">
+                            <span className="badge bg-secondary-subtle text-dark border font-monospace">
+                              <i className="bi bi-people-fill text-primary me-1"></i>
+                              {batch.viewsCount ?? 0}
+                            </span>
+                          </td>
                           <td>
                             <span className="fw-bold text-dark">₹{batch.price}</span>
                           </td>
@@ -897,6 +940,27 @@ export default function AdminBatchesPage() {
                       value={editTotalQuantity}
                       onChange={(e) => setEditTotalQuantity(parseInt(e.target.value, 10) || 500)}
                     />
+                  </div>
+                  <div className="col-md-6">
+                    <label className="form-label fw-bold small text-secondary">Seedling Age</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="e.g. 9 months"
+                      value={editAge}
+                      onChange={(e) => setEditAge(e.target.value)}
+                    />
+                  </div>
+                  <div className="col-md-6">
+                    <label className="form-label fw-bold small text-secondary">Approximate Height</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="e.g. Approx. 2–3 ft"
+                      value={editHeight}
+                      onChange={(e) => setEditHeight(e.target.value)}
+                    />
+                    <small className="text-muted extra-small">Height will explicitly display as approximate</small>
                   </div>
                   <div className="col-12">
                     <label className="form-label fw-bold small text-secondary">Description</label>
