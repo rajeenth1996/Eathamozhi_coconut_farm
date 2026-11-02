@@ -316,3 +316,24 @@ export function formatApproximateAge(age: number | string | undefined): string {
   const floored = Math.max(10, Math.floor(n / 10) * 10);
   return `${floored}+ years`;
 }
+
+/**
+ * Normalizes farm ID / farm code to short farm code format (e.g. EF01, EF02).
+ * Examples:
+ * - "ETH-RA-F001" -> "EF01"
+ * - "SUN-SE-F001" -> "EF01"
+ * - "SUN-SE-F002" -> "EF02"
+ * - "EF01" -> "EF01"
+ * - "EF02" -> "EF02"
+ */
+export function toShortFarmCode(farmCode: string): string {
+  if (!farmCode) return 'EF01';
+  const clean = farmCode.trim().toUpperCase();
+  if (/^EF\d{2}$/.test(clean)) return clean;
+  const match = clean.match(/F0*(\d+)$/);
+  if (match) {
+    const num = parseInt(match[1], 10);
+    return `EF${String(num).padStart(2, '0')}`;
+  }
+  return clean;
+}

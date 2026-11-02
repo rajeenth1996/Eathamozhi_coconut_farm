@@ -38,10 +38,14 @@ export default async function BatchDetailPage({
 
           <div className="d-flex flex-wrap justify-content-between align-items-center gap-2">
             <div>
-              <span className="badge bg-success px-3 py-2 me-2">{batch.status}</span>
-              
-              {/* Social Proof Views Counter */}
-              <BatchViewTracker batchCode={batch.batchCode} initialCount={batch.viewsCount ?? 0} />
+              <div className="d-flex flex-wrap align-items-center gap-2 mb-2">
+                <span className="badge bg-success px-3 py-2">{batch.status}</span>
+                <span className="badge bg-dark bg-opacity-75 font-monospace border border-secondary px-3 py-2">
+                  Batch ID: {batch.batchCode}
+                </span>
+                {/* Social Proof Views Counter */}
+                <BatchViewTracker batchCode={batch.batchCode} initialCount={batch.viewsCount ?? 0} />
+              </div>
 
               <h1 className="fw-bold mb-0 text-light d-inline-block align-middle fs-2 mt-2 mt-md-0">{batch.name}</h1>
             </div>
@@ -61,7 +65,7 @@ export default async function BatchDetailPage({
                 <ImageCarousel 
                   images={batch.images} 
                   title={batch.name} 
-                  subtitle={`Batch ${batch.batchCode} • ₹${batch.price} / sapling`}
+                  subtitle={`${batch.name} • Batch ID: ${batch.batchCode} • ₹${batch.price} / sapling`}
                   carouselId="batchDetailCarousel" 
                   height="420px"
                   showThumbnails={true}
@@ -126,8 +130,20 @@ export default async function BatchDetailPage({
                 <table className="table table-borderless mb-4">
                   <tbody>
                     <tr className="border-bottom">
+                      <td className="text-muted py-2">Batch Name</td>
+                      <td className="fw-bold text-dark text-end py-2">{batch.name}</td>
+                    </tr>
+                    <tr className="border-bottom">
                       <td className="text-muted py-2">Batch ID</td>
-                      <td className="fw-bold text-dark text-end py-2">{batch.batchCode}</td>
+                      <td className="fw-bold text-secondary font-monospace text-end py-2">{batch.batchCode}</td>
+                    </tr>
+                    <tr className="border-bottom">
+                      <td className="text-muted py-2">Age</td>
+                      <td className="fw-bold text-dark text-end py-2"><span className="badge bg-success-subtle text-success border border-success">{batch.age || '8–10 months'}</span></td>
+                    </tr>
+                    <tr className="border-bottom">
+                      <td className="text-muted py-2">Height</td>
+                      <td className="fw-bold text-dark text-end py-2">{batch.height || 'Approx. 2–3 ft'}</td>
                     </tr>
                     <tr className="border-bottom">
                       <td className="text-muted py-2">Coconut Cut Date</td>
@@ -136,14 +152,6 @@ export default async function BatchDetailPage({
                     <tr className="border-bottom">
                       <td className="text-muted py-2">Seeded On Date</td>
                       <td className="fw-bold text-success text-end py-2">{batch.seededDate || '2026-01-15'}</td>
-                    </tr>
-                    <tr className="border-bottom">
-                      <td className="text-muted py-2">Sapling Age</td>
-                      <td className="fw-bold text-dark text-end py-2"><span className="badge bg-success-subtle text-success border border-success">{batch.age || '8–10 months'}</span></td>
-                    </tr>
-                    <tr className="border-bottom">
-                      <td className="text-muted py-2">Approximate Height</td>
-                      <td className="fw-bold text-dark text-end py-2">{batch.height || 'Approx. 2–3 ft'}</td>
                     </tr>
                     <tr className="border-bottom">
                       <td className="text-muted py-2">Total Seednuts Produced</td>

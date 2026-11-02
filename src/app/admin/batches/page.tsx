@@ -6,6 +6,7 @@ import AdminNav from '@/components/AdminNav';
 import AdminLogoutButton from '@/components/AdminLogoutButton';
 import { getSaplingMetrics } from '@/lib/metrics';
 import ImageCarousel from '@/components/ImageCarousel';
+import { toShortFarmCode } from '@/lib/types';
 
 interface SourceItem {
   farmId: string;
@@ -55,6 +56,7 @@ export default function AdminBatchesPage() {
 
   // Edit Modal State
   const [editingBatch, setEditingBatch] = useState<any | null>(null);
+  const [editName, setEditName] = useState<string>('');
   const [editPrice, setEditPrice] = useState<number>(150);
   const [editAge, setEditAge] = useState<string>('8–10 months');
   const [editHeight, setEditHeight] = useState<string>('Approx. 2–3 ft');
@@ -94,7 +96,7 @@ export default function AdminBatchesPage() {
     fetchInitialData();
   }, []);
 
-  // Compute Preview Batch ID & Full Display Name (<Farm ID>-<Month>'<YY>-B<Batch Number>)
+  // Compute Preview Batch ID & Customer-Facing Batch Name (<Farm Code>-<Month><YY>-B<Batch Number>)
   const getPreviewBatchIdAndName = () => {
     const d = new Date(batchSeededDate || '2026-11-15');
     const monthNum = d.getMonth() + 1;
@@ -105,8 +107,11 @@ export default function AdminBatchesPage() {
       'January', 'February', 'March', 'April', 'May', 'June',
       'July', 'August', 'September', 'October', 'November', 'December'
     ];
+    const shortMonthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const fullMonth = monthNames[monthNum - 1] || 'November';
-    const prefix = `${primaryFarmCode}-${fullMonth}'${twoDigitYear}`;
+    const shortMonth = shortMonthNames[monthNum - 1] || 'Nov';
+    const shortFarmCode = toShortFarmCode(primaryFarmCode);
+    const prefix = `${shortFarmCode}-${shortMonth}${twoDigitYear}`;
 
     let maxSeq = 0;
     for (const b of batches) {
@@ -117,7 +122,7 @@ export default function AdminBatchesPage() {
       }
     }
     const batchId = `${prefix}-B${maxSeq + 1}`;
-    const displayName = `${primaryFarmCode} ${batchId} ${fullMonth} ${yearNum}`;
+    const displayName = `${fullMonth} ${yearNum} (${batchId})`;
 
     return { batchId, displayName, monthNum, yearNum };
   };
@@ -269,6 +274,7 @@ export default function AdminBatchesPage() {
 
   const openEditModal = (batch: any) => {
     setEditingBatch({ ...batch });
+    setEditName(batch.name || '');
     setEditPrice(batch.price);
     setEditAge(batch.age || '8–10 months');
     setEditHeight(batch.height || 'Approx. 2–3 ft');
@@ -289,6 +295,7 @@ export default function AdminBatchesPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           batchCode: editingBatch.batchCode,
+          name: editName.trim() || editingBatch.name,
           price: editPrice,
           age: editAge.trim() || '8–10 months',
           height: editHeight.startsWith('Approx.') ? editHeight : `Approx. ${editHeight}`,
@@ -450,11 +457,19 @@ export default function AdminBatchesPage() {
                 {/* Batch Name Display Requirement */}
                 <div className="col-12 pt-2 border-top">
                   <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                    <div className="small">
-                      <strong className="text-dark">Customer Batch Display Name:</strong>
-                      <span className="badge bg-success-subtle text-success ms-2 font-monospace fs-6">
-                        {previewInfo.displayName}
-                      </span>
+                    <div className="small d-flex flex-wrap align-items-center gap-2">
+                      <div>
+                        <strong className="text-dark">Batch ID:</strong>
+                        <span className="badge bg-secondary-subtle text-secondary ms-1 font-monospace fs-6">
+                          {previewInfo.batchId}
+                        </span>
+                      </div>
+                      <div>
+                        <strong className="text-dark">Customer Batch Name:</strong>
+                        <span className="badge bg-success-subtle text-success ms-1 font-monospace fs-6">
+                          {previewInfo.displayName}
+                        </span>
+                      </div>
                     </div>
                     <div className="d-flex align-items-center gap-3">
                       <div className="input-group input-group-sm" style={{ width: '170px' }}>
@@ -923,6 +938,25 @@ export default function AdminBatchesPage() {
               </div>
               <div className="modal-body p-4">
                 <div className="row g-3 mb-3">
+                  <div className="col-12">
+                    <div className="d-flex justify-content-between align-items-center mb-1">
+                      <label className="form-label fw-bold small text-secondary mb-0">Customer-Facing Batch Name *</label>
+                      <span className="badge bg-secondary-subtle text-secondary font-monospace extra-small">
+                        Batch ID: {editingBatch.batchCode}
+                      </span>
+                    </div>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      placeholder="e.g. November 2026 (EF01-Nov26-B1)"
+                      required
+                    />
+                    <small className="text-muted extra-small">
+                      Format: <code>&lt;Month&gt; &lt;Year&gt; (&lt;Batch ID&gt;)</code>. Preserves Batch ID, Mother Tree associations, orders, and analytics.
+                    </small>
+                  </div>
                   <div className="col-md-6">
                     <label className="form-label fw-bold small text-secondary">Price per Sapling (₹)</label>
                     <input

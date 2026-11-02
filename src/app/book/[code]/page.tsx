@@ -263,7 +263,15 @@ Please confirm our order and dispatch details. Thank you!`;
       <section className="bg-dark text-white py-4">
         <div className="container">
           <span className="badge bg-success mb-1">EASY 3-STEP BOOKING</span>
-          <h2 className="fw-bold mb-0 text-light">Booking Batch {batch.batchCode}</h2>
+          <h2 className="fw-bold mb-1 text-light">Booking {batch.name || `Batch ${batch.batchCode}`}</h2>
+          <div className="text-white-50 extra-small d-flex flex-wrap align-items-center gap-2">
+            <span className="badge bg-secondary-subtle text-light font-monospace border border-secondary">
+              Batch ID: {batch.batchCode}
+            </span>
+            <span>Age: <strong className="text-light">{batch.age || '8–10 months'}</strong></span>
+            &bull;
+            <span>Height: <strong className="text-light">{batch.height || 'Approx. 2–3 ft'}</strong></span>
+          </div>
         </div>
       </section>
 

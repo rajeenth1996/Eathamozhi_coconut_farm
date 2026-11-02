@@ -86,7 +86,7 @@ export default function BatchesClientList({ initialBatches }: BatchesClientListP
                   <ImageCarousel 
                     images={b.images} 
                     title={b.name} 
-                    subtitle={`Batch ${b.batchCode} • ₹${b.price} / sapling`}
+                    subtitle={`${b.name} • Batch ID: ${b.batchCode} • ₹${b.price} / sapling`}
                     carouselId={`batch-card-${b.batchCode}`} 
                     height="240px"
                     showThumbnails={false}
@@ -97,7 +97,7 @@ export default function BatchesClientList({ initialBatches }: BatchesClientListP
                 <div className="card-body p-4 d-flex flex-column justify-content-between">
                   <div>
                     <div className="d-flex justify-content-between align-items-center mb-2">
-                      <span className="badge bg-dark bg-opacity-75">{b.batchCode}</span>
+                      <span className="badge bg-secondary-subtle text-secondary font-monospace border">Batch ID: {b.batchCode}</span>
                       <span className="text-muted extra-small">
                         {(() => {
                           const treeCodes = (b.parentPalmCodes && b.parentPalmCodes.length > 0) ? b.parentPalmCodes : [b.parentPalmCode];

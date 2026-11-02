@@ -41,7 +41,8 @@ import {
   generateFarmId,
   generateMotherTreeId,
   generateBatchId,
-  formatBatchDisplayName
+  formatBatchDisplayName,
+  toShortFarmCode
 } from '@/lib/idGenerator';
 
 // Re-export types for backward compatibility
@@ -859,13 +860,14 @@ export const DataStore = {
 
     let batchCode = newBatchData.batchCode;
     if (!batchCode) {
-      const monthNames = [
-        'January', 'February', 'March', 'April', 'May', 'June',
-        'July', 'August', 'September', 'October', 'November', 'December'
+      const shortMonthNames = [
+        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
       ];
-      const fullMonth = monthNames[(monthNum || 1) - 1] || 'November';
+      const shortMonth = shortMonthNames[(monthNum || 1) - 1] || 'Nov';
       const twoDigitYear = String(yearNum || 2026).slice(-2);
-      const prefix = `${primaryFarmCode}-${fullMonth}'${twoDigitYear}`;
+      const shortFarmCode = toShortFarmCode(primaryFarmCode);
+      const prefix = `${shortFarmCode}-${shortMonth}${twoDigitYear}`;
       let maxSeq = 0;
       for (const b of batches) {
         if (b.batchCode.startsWith(prefix + '-B')) {

@@ -121,7 +121,7 @@ export default function LiveStockTerminal({ initialBatch, initialBatches = [] }:
                   >
                     {availableBatches.map(b => (
                       <option key={b.batchCode} value={b.batchCode}>
-                        {b.batchCode} ({b.availableQuantity} left)
+                        {b.name || b.batchCode} ({b.availableQuantity} left)
                       </option>
                     ))}
                   </select>
@@ -129,7 +129,7 @@ export default function LiveStockTerminal({ initialBatch, initialBatches = [] }:
               )}
 
               <span className="badge bg-success bg-opacity-25 border border-success text-white fw-bold px-3 py-1">
-                Batch: {currentBatch?.batchCode}
+                Batch ID: {currentBatch?.batchCode}
               </span>
             </div>
           </div>
@@ -143,7 +143,7 @@ export default function LiveStockTerminal({ initialBatch, initialBatches = [] }:
                   <ImageCarousel 
                     images={currentBatch?.images || []} 
                     title={currentBatch?.name || 'Featured Batch'} 
-                    subtitle={currentBatch ? `Batch ${currentBatch.batchCode} • ₹${currentBatch.price} / sapling` : undefined}
+                    subtitle={currentBatch ? `${currentBatch.name} • Batch ID: ${currentBatch.batchCode} • ₹${currentBatch.price} / sapling` : undefined}
                     carouselId={`home-featured-${currentBatch?.batchCode || 'batch'}`} 
                     height="360px"
                     showThumbnails={false}
@@ -165,8 +165,19 @@ export default function LiveStockTerminal({ initialBatch, initialBatches = [] }:
                 <div className="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-2">
                     <div>
                       <h3 className="fw-bold text-dark mb-1">{currentBatch?.name}</h3>
+                      <div className="d-flex flex-wrap align-items-center gap-2 mb-2">
+                        <span className="badge bg-secondary-subtle text-secondary font-monospace border">
+                          Batch ID: {currentBatch?.batchCode}
+                        </span>
+                        <span className="badge bg-light text-dark border">
+                          Age: <strong className="text-dark">{currentBatch?.age || '8–10 months'}</strong>
+                        </span>
+                        <span className="badge bg-light text-dark border">
+                          Height: <strong className="text-dark">{currentBatch?.height || 'Approx. 2–3 ft'}</strong>
+                        </span>
+                      </div>
                       <p className="text-muted small mb-0">
-                        Age: <strong className="text-dark">{currentBatch?.age || '8–10 months'}</strong> &bull; Height: <strong className="text-dark">{currentBatch?.height || 'Approx. 2–3 ft'}</strong> &bull; {(() => {
+                        {(() => {
                           const treeCodes = (currentBatch?.parentPalmCodes && currentBatch.parentPalmCodes.length > 0)
                             ? currentBatch.parentPalmCodes
                             : (currentBatch?.parentPalmCode ? [currentBatch.parentPalmCode] : []);

@@ -90,10 +90,10 @@ async function runEndToEndTests() {
     console.log('\n--- 3. Testing Batch Creation with Multi-Farm Sourcing ---');
     const seededDate = '2026-11-15';
     const { batchId } = await generateBatchId(testFarmCode, seededDate);
-    assert(batchId.startsWith(`${testFarmCode}-November'26-B`), 'Generated Batch ID format', batchId);
+    assert(/^EF\d+-Nov26-B\d+$/.test(batchId), 'Generated Batch ID format', batchId);
 
     const displayName = formatBatchDisplayName(testFarmCode, batchId, seededDate);
-    assert(displayName.includes(testFarmCode) && displayName.includes('November 2026'), 'Customer display name format', displayName);
+    assert(displayName.includes('November 2026') && displayName.includes(batchId), 'Customer display name format', displayName);
 
     const newBatch = await DataStore.addBatchAsync({
       batchId,

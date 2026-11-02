@@ -138,14 +138,27 @@ export async function generateMotherTreeId(farmCode: string, existingTreeCodes: 
   return treeId;
 }
 
+import { toShortFarmCode } from '@/lib/types';
+export { toShortFarmCode };
+
 /**
- * Generates a unique Batch ID using the new naming convention:
- * <Farm ID>-<Month>'<YY>-B<Batch Number>
+ * Generates a unique Batch ID and Customer-Facing Batch Name:
+ *
+ * Batch ID format:
+ * <Farm Code>-<Month><YY>-B<Batch Number>
  * Examples:
- * - SUN-SE-F001-November'26-B1
- * - SUN-SE-F001-November'26-B2
- * - SUN-SE-F001-December'26-B1
- * - SUN-SE-F002-January'27-B1
+ * - EF01-Nov26-B1
+ * - EF01-Nov26-B2
+ * - EF01-Dec26-B1
+ * - EF02-Jan27-B1
+ *
+ * Customer-Facing Batch Name format:
+ * <Month> <Year> (<Batch ID>)
+ * Examples:
+ * - November 2026 (EF01-Nov26-B1)
+ * - November 2026 (EF01-Nov26-B2)
+ * - December 2026 (EF01-Dec26-B1)
+ * - January 2027 (EF02-Jan27-B1)
  *
  * Sequential batch number without leading zeros, sequential within farm and month.
  */
@@ -153,7 +166,15 @@ export async function generateBatchId(
   primaryFarmCode: string,
   dateOrMonthYear?: { month: number; year: number } | string,
   existingBatchCodes: string[] = []
-): Promise<{ batchId: string; monthStr: string; yearStr: string; monthNum: number; yearNum: number; fullMonthYear: string }> {
+): Promise<{
+  batchId: string;
+  displayName: string;
+  monthStr: string;
+  yearStr: string;
+  monthNum: number;
+  yearNum: number;
+  fullMonthYear: string;
+}> {
   let monthNum: number;
   let yearNum: number;
 
@@ -174,14 +195,20 @@ export async function generateBatchId(
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
+  const shortMonthNames = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+  ];
   const fullMonth = monthNames[(monthNum || 1) - 1] || 'November';
+  const shortMonth = shortMonthNames[(monthNum || 1) - 1] || 'Nov';
   const twoDigitYear = String(yearNum || 2026).slice(-2);
   const monthStr = String(monthNum).padStart(2, '0');
   const yearStr = String(yearNum);
   const fullMonthYear = `${fullMonth} ${yearNum}`;
 
-  // Prefix format: <Farm ID>-<Month>'<YY> (e.g. ETH-RA-F001-November'26)
-  const prefix = `${primaryFarmCode}-${fullMonth}'${twoDigitYear}`;
+  const shortFarmCode = toShortFarmCode(primaryFarmCode);
+  // Batch ID prefix: <Farm Code>-<Month><YY> (e.g. EF01-Nov26)
+  const prefix = `${shortFarmCode}-${shortMonth}${twoDigitYear}`;
   const counterKey = `batch-${prefix}`;
 
   let maxSeq = 0;
@@ -204,35 +231,74 @@ export async function generateBatchId(
     batchId = `${prefix}-B${nextSeq}`;
   }
 
-  return { batchId, monthStr, yearStr, monthNum, yearNum, fullMonthYear };
+  // Customer-Facing Batch Name: <Month> <Year> (<Batch ID>) e.g. November 2026 (EF01-Nov26-B1)
+  const displayName = `${fullMonth} ${yearNum} (${batchId})`;
+
+  return { batchId, displayName, monthStr, yearStr, monthNum, yearNum, fullMonthYear };
 }
 
 /**
- * Returns formatted batch customer display name:
- * "farm id batch id month and year in full as december 2026"
- * Example: "ETH-RA-F001 · ETH-RA-F001-112026-B001 · November 2026 Batch"
+ * Returns formatted customer-facing batch name:
+ * <Month> <Year> (<Batch ID>)
+ * Examples:
+ * - "November 2026 (EF01-Nov26-B1)"
+ * - "December 2026 (EF01-Dec26-B1)"
+ * - "January 2027 (EF02-Jan27-B1)"
  */
 export function formatBatchDisplayName(
-  primaryFarmCode: string,
-  batchCode: string,
-  monthOrDate: number | string = 11,
-  yearNum?: number
+  firstArg: string,
+  secondArg?: any,
+  thirdArg?: any,
+  fourthArg?: number
 ): string {
   const monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
-  let month = 11;
-  let year = yearNum || 2026;
+  const shortMonthNames = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+  ];
 
-  if (typeof monthOrDate === 'string' && monthOrDate.includes('-')) {
-    const parts = monthOrDate.split('-');
-    year = parseInt(parts[0], 10);
-    month = parseInt(parts[1], 10);
-  } else if (typeof monthOrDate === 'number') {
-    month = monthOrDate;
+  let batchCode = '';
+  let month = 11;
+  let year = fourthArg || 2026;
+
+  if (typeof secondArg === 'string' && (secondArg.includes('-B') || secondArg.startsWith('EM-') || secondArg.startsWith('EF'))) {
+    batchCode = secondArg;
+    if (typeof thirdArg === 'number') month = thirdArg;
+    else if (typeof thirdArg === 'string' && thirdArg.includes('-')) {
+      const parts = thirdArg.split('-');
+      year = parseInt(parts[0], 10);
+      month = parseInt(parts[1], 10);
+    }
+  } else {
+    batchCode = firstArg;
+    if (typeof secondArg === 'number') month = secondArg;
+    else if (typeof secondArg === 'string' && secondArg.includes('-')) {
+      const parts = secondArg.split('-');
+      year = parseInt(parts[0], 10);
+      month = parseInt(parts[1], 10);
+    }
+    if (typeof thirdArg === 'number') year = thirdArg;
   }
 
-  const fullMonth = monthNames[(month || 1) - 1] || 'December';
-  return `${primaryFarmCode} ${batchCode} ${fullMonth} ${year}`;
+  // Extract month and year from batch code if available
+  const monthMatch = batchCode.match(/-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)(\d{2})-B/i);
+  if (monthMatch) {
+    const sMonth = monthMatch[1].slice(0, 1).toUpperCase() + monthMatch[1].slice(1, 3).toLowerCase();
+    const idx = shortMonthNames.indexOf(sMonth);
+    if (idx !== -1) month = idx + 1;
+    const y = parseInt(monthMatch[2], 10);
+    if (!isNaN(y)) year = 2000 + y;
+  } else {
+    const emMatch = batchCode.match(/EM-(\d{2})(\d{2})-/i);
+    if (emMatch) {
+      month = parseInt(emMatch[1], 10);
+      year = 2000 + parseInt(emMatch[2], 10);
+    }
+  }
+
+  const fullMonth = monthNames[(month || 1) - 1] || 'November';
+  return `${fullMonth} ${year} (${batchCode})`;
 }

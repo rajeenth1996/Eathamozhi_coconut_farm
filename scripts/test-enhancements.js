@@ -78,8 +78,8 @@ async function run() {
     // Clean up created YT video
     await fetch(`${BASE_URL}/api/youtube/${createdYt.id}`, { method: 'DELETE' });
 
-    // 2. Batch Naming Convention (<Farm ID>-<Month>'<YY>-B<Seq>)
-    console.log(`\n[TEST 2] Testing Batch Naming Convention...`);
+    // 2. Batch Naming Convention & Customer-Facing Batch Name (Requirement 13)
+    console.log(`\n[TEST 2] Testing Batch ID & Customer-Facing Batch Name...`);
     const batchCreateRes = await fetch(`${BASE_URL}/api/batches`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -97,8 +97,11 @@ async function run() {
     assert(batchCreateRes.status === 201, `Create batch returns 201`);
     const createdBatch = await batchCreateRes.json();
     console.log(`  -> Generated Batch Code: ${createdBatch.batchCode}`);
-    const namingPattern = /^ETH-RA-F001-November'26-B\d+$/;
-    assert(namingPattern.test(createdBatch.batchCode), `Batch code matches pattern <Farm ID>-<Month>'<YY>-B<Seq> (${createdBatch.batchCode})`);
+    console.log(`  -> Generated Batch Name: ${createdBatch.name}`);
+    const namingPattern = /^EF\d{2}-Nov26-B\d+$/;
+    assert(namingPattern.test(createdBatch.batchCode), `Batch code matches pattern <Farm Code>-<Month><YY>-B<Seq> (${createdBatch.batchCode})`);
+    const namePattern = /^November 2026 \(EF\d{2}-Nov26-B\d+\)$/;
+    assert(namePattern.test(createdBatch.name), `Customer-facing batch name matches <Month> <Year> (<Batch ID>) (${createdBatch.name})`);
     assert(createdBatch.age === '9 months', `Batch age persisted correctly`);
     assert(createdBatch.height.includes('Approx.'), `Batch height is marked Approx.`);
 
@@ -129,6 +132,9 @@ async function run() {
     });
     const viewData3 = await viewRes3.json();
     assert(viewData3.viewsCount === viewData1.viewsCount + 1, `New unique visitorId increments viewsCount to ${viewData3.viewsCount}`);
+
+    // Cleanup test batch
+    await fetch(`${BASE_URL}/api/batches?code=${encodeURIComponent(createdBatch.batchCode)}`, { method: 'DELETE' });
 
     // 4. Farm Deletion Validation
     console.log(`\n[TEST 4] Testing Farm Deletion Validation...`);
