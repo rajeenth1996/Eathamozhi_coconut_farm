@@ -252,6 +252,33 @@ export interface VisitorJourney {
   orderId?: string;
 }
 
+export interface YouTubeVideo {
+  id: string;
+  title: string;
+  url: string;
+  videoId?: string;
+  order: number;
+  isVisible: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export function extractYouTubeVideoId(url?: string): string | null {
+  if (!url) return null;
+  const str = url.trim();
+  const patterns = [
+    /(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|shorts\/|watch\?.+&v=))([\w-]{11})/,
+    /^([\w-]{11})$/
+  ];
+  for (const regex of patterns) {
+    const match = str.match(regex);
+    if (match && match[1]) {
+      return match[1];
+    }
+  }
+  return null;
+}
+
 export interface InstagramPost {
   id: string;
   title: string;

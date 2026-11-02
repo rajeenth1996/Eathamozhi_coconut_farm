@@ -14,19 +14,6 @@
       "updatedAt": "2026-11-02T17:16:54.379Z"
     },
     {
-      "id": "farm-eth-se-f001",
-      "farmCode": "ETH-SE-F001",
-      "farmName": "Sundapattivilai Amman kovil",
-      "ownerName": "Selvakumaran",
-      "ownerCode": "SE",
-      "locationCode": "ETH",
-      "location": "Sundapattivilai",
-      "status": "Inactive",
-      "notes": "80+ years heritage trees in this farm",
-      "createdAt": "2026-11-02T17:12:50.457Z",
-      "updatedAt": "2026-11-02T17:16:55.550Z"
-    },
-    {
       "id": "farm-sun-se-f001",
       "farmCode": "SUN-SE-F001",
       "farmName": "Sundapattivilai amman kovil thattu",
@@ -76,7 +63,7 @@
       "farmName": "Eathamozhi Ancestral Heritage Coconut Farm",
       "name": "Ancestral Grand Mother Tree #1",
       "variety": "West Coast Tall (Eathamozhi Tall)",
-      "age": 88,
+      "age": "80+ years",
       "location": "Plot A - Heritage Grove North",
       "healthStatus": "Vigorous & Pest-Free",
       "yieldHistory": "Consistently 160–180 high-weight seed nuts per year over 25 monitored years.",
@@ -91,10 +78,10 @@
       "selectionStatus": "Selected",
       "verificationStatus": "Verified",
       "productionStatus": "Active for Production",
-      "notes": "",
+      "notes": "Updated approximate age",
       "isVisible": true,
       "createdAt": "2026-11-02T02:47:37.890Z",
-      "updatedAt": "2026-11-02T17:23:26.940Z"
+      "updatedAt": "2026-11-02T23:13:49.694Z"
     },
     {
       "id": "mp-2",
@@ -431,8 +418,8 @@
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792893909/eathamozhy-farm/batches/74cbbdcb-f064-459c-9267-d045737e799c-1792893907395.jpg"
       ],
       "isVisible": false,
-      "createdAt": "2026-11-02T22:53:01.050Z",
-      "updatedAt": "2026-11-02T22:53:01.050Z"
+      "createdAt": "2026-11-02T23:13:50.673Z",
+      "updatedAt": "2026-11-02T23:13:50.673Z"
     },
     {
       "id": "b-1",
@@ -467,8 +454,8 @@
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792893909/eathamozhy-farm/batches/74cbbdcb-f064-459c-9267-d045737e799c-1792893907395.jpg"
       ],
       "isVisible": false,
-      "createdAt": "2026-11-02T22:53:01.050Z",
-      "updatedAt": "2026-11-02T22:53:01.050Z"
+      "createdAt": "2026-11-02T23:13:50.673Z",
+      "updatedAt": "2026-11-02T23:13:50.673Z"
     },
     {
       "id": "b-2",
@@ -502,8 +489,8 @@
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792888376/eathamozhy-farm/batches/b76f3226-817a-4ae2-8511-d66aeb861dca-1792888375115.jpg"
       ],
       "isVisible": false,
-      "createdAt": "2026-11-02T22:53:01.050Z",
-      "updatedAt": "2026-11-02T22:53:01.050Z"
+      "createdAt": "2026-11-02T23:13:50.673Z",
+      "updatedAt": "2026-11-02T23:13:50.673Z"
     },
     {
       "id": "b-3",
@@ -536,8 +523,8 @@
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792893909/eathamozhy-farm/batches/74cbbdcb-f064-459c-9267-d045737e799c-1792893907395.jpg"
       ],
       "isVisible": false,
-      "createdAt": "2026-11-02T22:53:01.050Z",
-      "updatedAt": "2026-11-02T22:53:01.050Z"
+      "createdAt": "2026-11-02T23:13:50.673Z",
+      "updatedAt": "2026-11-02T23:13:50.673Z"
     },
     {
       "id": "b-4",
@@ -568,8 +555,8 @@
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909327/eathamozhi-farm/batches/25b2b6ad-0a44-47b6-a4b4-a45d1e426cca-1792909327401.jpg"
       ],
       "isVisible": true,
-      "createdAt": "2026-11-02T22:53:01.050Z",
-      "updatedAt": "2026-11-02T22:53:01.050Z"
+      "createdAt": "2026-11-02T23:13:50.673Z",
+      "updatedAt": "2026-11-02T23:13:50.673Z"
     },
     {
       "id": "b-5",
@@ -600,8 +587,8 @@
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909391/eathamozhi-farm/batches/5700477e-967d-4133-9a99-76560430a143-1792909391250.jpg"
       ],
       "isVisible": true,
-      "createdAt": "2026-11-02T22:53:01.050Z",
-      "updatedAt": "2026-11-02T22:53:01.050Z"
+      "createdAt": "2026-11-02T23:13:50.673Z",
+      "updatedAt": "2026-11-02T23:13:50.673Z"
     },
     {
       "id": "b-6",
@@ -632,8 +619,8 @@
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792893909/eathamozhy-farm/batches/74cbbdcb-f064-459c-9267-d045737e799c-1792893907395.jpg"
       ],
       "isVisible": true,
-      "createdAt": "2026-11-02T22:53:01.050Z",
-      "updatedAt": "2026-11-02T22:53:01.050Z"
+      "createdAt": "2026-11-02T23:13:50.673Z",
+      "updatedAt": "2026-11-02T23:13:50.673Z"
     },
     {
       "id": "b-7",
@@ -664,8 +651,8 @@
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909327/eathamozhi-farm/batches/25b2b6ad-0a44-47b6-a4b4-a45d1e426cca-1792909327401.jpg"
       ],
       "isVisible": true,
-      "createdAt": "2026-11-02T22:53:01.050Z",
-      "updatedAt": "2026-11-02T22:53:01.050Z"
+      "createdAt": "2026-11-02T23:13:50.673Z",
+      "updatedAt": "2026-11-02T23:13:50.673Z"
     },
     {
       "id": "b-8",
@@ -696,8 +683,8 @@
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909391/eathamozhi-farm/batches/5700477e-967d-4133-9a99-76560430a143-1792909391250.jpg"
       ],
       "isVisible": true,
-      "createdAt": "2026-11-02T22:53:01.050Z",
-      "updatedAt": "2026-11-02T22:53:01.050Z"
+      "createdAt": "2026-11-02T23:13:50.673Z",
+      "updatedAt": "2026-11-02T23:13:50.673Z"
     },
     {
       "id": "b-9",
@@ -728,8 +715,8 @@
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792893909/eathamozhy-farm/batches/74cbbdcb-f064-459c-9267-d045737e799c-1792893907395.jpg"
       ],
       "isVisible": true,
-      "createdAt": "2026-11-02T22:53:01.050Z",
-      "updatedAt": "2026-11-02T22:53:01.050Z"
+      "createdAt": "2026-11-02T23:13:50.673Z",
+      "updatedAt": "2026-11-02T23:13:50.673Z"
     },
     {
       "id": "b-10",
@@ -760,8 +747,8 @@
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909327/eathamozhi-farm/batches/25b2b6ad-0a44-47b6-a4b4-a45d1e426cca-1792909327401.jpg"
       ],
       "isVisible": true,
-      "createdAt": "2026-11-02T22:53:01.050Z",
-      "updatedAt": "2026-11-02T22:53:01.050Z"
+      "createdAt": "2026-11-02T23:13:50.673Z",
+      "updatedAt": "2026-11-02T23:13:50.673Z"
     },
     {
       "id": "b-1793641998639",
@@ -1813,6 +1800,94 @@
   ],
   "pageViews": [
     {
+      "id": "pv-1793661174915-5d3rh",
+      "sessionId": "sess_1793660381790_dw620v2",
+      "path": "/batches",
+      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
+      "referrer": "http://localhost:3000/batches",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-11-02T23:12:54.915Z"
+    },
+    {
+      "id": "pv-1793660486907-f87p5",
+      "sessionId": "sess_1793660381790_dw620v2",
+      "path": "/",
+      "title": "",
+      "referrer": "http://localhost:3000/admin/instagram",
+      "referrerSource": "Instagram",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-11-02T23:01:26.907Z"
+    },
+    {
+      "id": "pv-1793660483320-tkiei",
+      "sessionId": "sess_1793660381790_dw620v2",
+      "path": "/reviews",
+      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
+      "referrer": "http://localhost:3000/admin/instagram",
+      "referrerSource": "Instagram",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-11-02T23:01:23.320Z"
+    },
+    {
+      "id": "pv-1793660423226-2wu14",
+      "sessionId": "sess_1793660381790_dw620v2",
+      "path": "/reviews",
+      "title": "",
+      "referrer": "http://localhost:3000/admin/instagram",
+      "referrerSource": "Instagram",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-11-02T23:00:23.226Z"
+    },
+    {
+      "id": "pv-1793660416605-nvcpi",
+      "sessionId": "sess_1793660381790_dw620v2",
+      "path": "/guide",
+      "title": "",
+      "referrer": "http://localhost:3000/admin/instagram",
+      "referrerSource": "Instagram",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-11-02T23:00:16.605Z"
+    },
+    {
+      "id": "pv-1793660410873-eug76",
+      "sessionId": "sess_1793660381790_dw620v2",
+      "path": "/about",
+      "title": "",
+      "referrer": "http://localhost:3000/admin/instagram",
+      "referrerSource": "Instagram",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-11-02T23:00:10.874Z"
+    },
+    {
+      "id": "pv-1793660381814-mzh8d",
+      "sessionId": "sess_1793660381790_dw620v2",
+      "path": "/",
+      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
+      "referrer": "http://localhost:3000/admin/instagram",
+      "referrerSource": "Instagram",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-11-02T22:59:41.814Z"
+    },
+    {
+      "id": "pv-1793660212636-qulpg",
+      "sessionId": "sess_1793660212519_p0212kt",
+      "path": "/",
+      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
+      "referrer": "",
+      "referrerSource": "Direct / Bookmark",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-11-02T22:56:52.636Z"
+    },
+    {
       "id": "pv-1793594833466-h2d71",
       "sessionId": "sess_1793594412748_cttbv1v",
       "path": "/batches",
@@ -2439,9 +2514,34 @@
       "visitorId": "farmer_session_beta",
       "firstViewedAt": "2026-11-02T22:51:27.994Z",
       "lastViewedAt": "2026-11-02T22:51:27.994Z"
+    },
+    {
+      "id": "bv-1793661228163-514",
+      "batchCode": "ETH-RA-F001-November'26-B5",
+      "visitorId": "farmer_session_alpha",
+      "firstViewedAt": "2026-11-02T23:13:48.163Z",
+      "lastViewedAt": "2026-11-02T23:13:48.252Z"
+    },
+    {
+      "id": "bv-1793661228321-454",
+      "batchCode": "ETH-RA-F001-November'26-B5",
+      "visitorId": "farmer_session_beta",
+      "firstViewedAt": "2026-11-02T23:13:48.321Z",
+      "lastViewedAt": "2026-11-02T23:13:48.321Z"
     }
   ],
-  "instagramPosts": [],
+  "youtubeVideos": [],
+  "instagramPosts": [
+    {
+      "id": "ig-1793660459670-679",
+      "title": "Torii",
+      "url": "https://www.instagram.com/reel/DShG4NbEWoy/",
+      "order": 1,
+      "isVisible": true,
+      "createdAt": "2026-11-02T23:00:59.670Z",
+      "updatedAt": "2026-11-02T23:00:59.670Z"
+    }
+  ],
   "siteSettings": {
     "showBatchesOnMainPage": true,
     "showMotherTreesOnMainPage": true

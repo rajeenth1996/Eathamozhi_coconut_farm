@@ -13,6 +13,7 @@ import {
   InventoryAdjustmentModel,
   SiteSettingsModel,
   BatchViewModel,
+  YouTubeVideoModel,
   InstagramPostModel
 } from '@/lib/models';
 import {
@@ -30,6 +31,8 @@ import {
   SiteSettings,
   PageViewEvent,
   VisitorJourney,
+  YouTubeVideo,
+  extractYouTubeVideoId,
   InstagramPost,
   BatchView,
   formatApproximateAge
@@ -134,6 +137,7 @@ let enquiries: Enquiry[] = [];
 let pageViews: PageViewEvent[] = [];
 let visitorJourneys: VisitorJourney[] = [];
 let batchViews: BatchView[] = [];
+let youtubeVideos: YouTubeVideo[] = [];
 let instagramPosts: InstagramPost[] = [];
 let siteSettings: SiteSettings = {
   showBatchesOnMainPage: true,
@@ -189,6 +193,7 @@ function loadFromDb() {
       if (Array.isArray(data.pageViews)) pageViews = data.pageViews;
       if (Array.isArray(data.visitorJourneys)) visitorJourneys = data.visitorJourneys;
       if (Array.isArray(data.batchViews)) batchViews = data.batchViews;
+      if (Array.isArray(data.youtubeVideos)) youtubeVideos = data.youtubeVideos;
       if (Array.isArray(data.instagramPosts)) instagramPosts = data.instagramPosts;
       if (data.siteSettings) siteSettings = data.siteSettings;
     }
@@ -215,6 +220,7 @@ function saveToDb() {
       pageViews: pageViews.slice(0, 1000),
       visitorJourneys: visitorJourneys.slice(0, 500),
       batchViews,
+      youtubeVideos,
       instagramPosts,
       siteSettings
     };
@@ -268,7 +274,7 @@ async function syncFromMongo(force = false): Promise<void> {
       const conn = await connectToDatabase();
       if (!conn) return;
 
-      const [mFarms, mPalms, mBatches, mSources, mInventory, mBookings, mEnquiries, mReviews, mAdjustments, mFaqs, mSettings, mBatchViews, mInstagram] = await Promise.all([
+      const [mFarms, mPalms, mBatches, mSources, mInventory, mBookings, mEnquiries, mReviews, mAdjustments, mFaqs, mSettings, mBatchViews, mYouTube, mInstagram] = await Promise.all([
         FarmModel.find({}).lean(),
         ParentPalmModel.find({}).lean(),
         BatchModel.find({}).lean(),
@@ -281,6 +287,7 @@ async function syncFromMongo(force = false): Promise<void> {
         FAQModel.find({}).lean(),
         SiteSettingsModel.findOne({ id: 'site_settings' }).lean(),
         BatchViewModel.find({}).lean(),
+        YouTubeVideoModel.find({}).lean(),
         InstagramPostModel.find({}).lean()
       ]);
 
@@ -395,6 +402,18 @@ async function syncFromMongo(force = false): Promise<void> {
           visitorId: v.visitorId,
           firstViewedAt: v.firstViewedAt || new Date().toISOString(),
           lastViewedAt: v.lastViewedAt || new Date().toISOString()
+        }));
+      }
+      if (Array.isArray(mYouTube) && mYouTube.length > 0) {
+        youtubeVideos = mYouTube.map((yt: any) => ({
+          id: yt.id || `yt-${yt._id}`,
+          title: yt.title,
+          url: yt.url,
+          videoId: yt.videoId || extractYouTubeVideoId(yt.url) || undefined,
+          order: Number(yt.order) || 0,
+          isVisible: yt.isVisible !== false,
+          createdAt: yt.createdAt || new Date().toISOString(),
+          updatedAt: yt.updatedAt || new Date().toISOString()
         }));
       }
       if (Array.isArray(mInstagram) && mInstagram.length > 0) {
@@ -2380,6 +2399,106 @@ export const DataStore = {
       batchViews.filter(v => v.batchCode.toLowerCase() === batchCode.toLowerCase()).map(v => v.visitorId)
     ).size;
     return Math.max(Number(batch?.viewsCount) || 0, distinct);
+  },
+
+  // ─── YouTube Video Module ──────────────────────────────────────────────────
+  getYouTubeVideos: (): YouTubeVideo[] => {
+    loadFromDb();
+    return youtubeVideos.slice().sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0));
+  },
+
+  getYouTubeVideosAsync: async (): Promise<YouTubeVideo[]> => {
+    loadFromDb();
+    await syncFromMongo();
+    return DataStore.getYouTubeVideos();
+  },
+
+  addYouTubeVideo: (data: Partial<YouTubeVideo>): YouTubeVideo => {
+    loadFromDb();
+    const cleanUrl = data.url?.trim() || '';
+    const vId = extractYouTubeVideoId(cleanUrl) || undefined;
+    const created: YouTubeVideo = {
+      id: `yt-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      title: data.title?.trim() || 'Eathamozhi Coconut Farm Video',
+      url: cleanUrl,
+      videoId: vId,
+      order: Number(data.order) || (youtubeVideos.length + 1),
+      isVisible: data.isVisible !== false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    youtubeVideos.push(created);
+    saveToDb();
+    return created;
+  },
+
+  addYouTubeVideoAsync: async (data: Partial<YouTubeVideo>): Promise<YouTubeVideo> => {
+    loadFromDb();
+    await syncFromMongo();
+    const created = DataStore.addYouTubeVideo(data);
+    try {
+      const conn = await connectToDatabase();
+      if (conn) {
+        await YouTubeVideoModel.create(created);
+        lastMongoSyncTime = 0;
+      }
+    } catch (err) {
+      console.error('Failed to save YouTube video to Mongo:', err);
+    }
+    return created;
+  },
+
+  updateYouTubeVideo: (id: string, data: Partial<YouTubeVideo>): YouTubeVideo | null => {
+    loadFromDb();
+    const item = youtubeVideos.find(p => p.id === id);
+    if (!item) return null;
+    if (data.title !== undefined) item.title = data.title.trim();
+    if (data.url !== undefined) {
+      item.url = data.url.trim();
+      item.videoId = extractYouTubeVideoId(item.url) || undefined;
+    }
+    if (data.order !== undefined) item.order = Number(data.order);
+    if (data.isVisible !== undefined) item.isVisible = Boolean(data.isVisible);
+    item.updatedAt = new Date().toISOString();
+    saveToDb();
+    return item;
+  },
+
+  updateYouTubeVideoAsync: async (id: string, data: Partial<YouTubeVideo>): Promise<YouTubeVideo | null> => {
+    const updated = DataStore.updateYouTubeVideo(id, data);
+    try {
+      const conn = await connectToDatabase();
+      if (conn && updated) {
+        await YouTubeVideoModel.findOneAndUpdate({ id }, { $set: updated }, { new: true });
+        lastMongoSyncTime = 0;
+      }
+    } catch (err) {
+      console.error('Failed to update YouTube video in Mongo:', err);
+    }
+    return updated;
+  },
+
+  deleteYouTubeVideo: (id: string): boolean => {
+    loadFromDb();
+    const idx = youtubeVideos.findIndex(p => p.id === id);
+    if (idx === -1) return false;
+    youtubeVideos.splice(idx, 1);
+    saveToDb();
+    return true;
+  },
+
+  deleteYouTubeVideoAsync: async (id: string): Promise<boolean> => {
+    const success = DataStore.deleteYouTubeVideo(id);
+    try {
+      const conn = await connectToDatabase();
+      if (conn) {
+        await YouTubeVideoModel.findOneAndDelete({ id });
+        lastMongoSyncTime = 0;
+      }
+    } catch (err) {
+      console.error('Failed to delete YouTube video from Mongo:', err);
+    }
+    return success;
   },
 
   // ─── Instagram Content Module ───────────────────────────────────────────────

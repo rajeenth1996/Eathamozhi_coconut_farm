@@ -54,28 +54,29 @@ async function run() {
   }
 
   try {
-    // 1. Instagram CRUD
-    console.log(`[TEST 1] Testing Instagram CRUD...`);
-    const igPostRes = await fetch(`${BASE_URL}/api/instagram`, {
+    // 1. YouTube Video CRUD
+    console.log(`[TEST 1] Testing YouTube Video CRUD...`);
+    const ytPostRes = await fetch(`${BASE_URL}/api/youtube`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        title: 'Fresh Coconut Harvest in Kanyakumari',
-        url: 'https://www.instagram.com/reel/C7Test123/',
-        displayOrder: 1,
+        title: 'Authentic Eathamozhi Coconut Grove Walkthrough',
+        url: 'https://www.youtube.com/watch?v=ScMzIvxBSi4',
+        order: 1,
         isVisible: true
       })
     });
-    assert(igPostRes.status === 201, `Create Instagram post returns 201`);
-    const createdIg = await igPostRes.json();
-    assert(createdIg.id && createdIg.title === 'Fresh Coconut Harvest in Kanyakumari', `Created post has ID and correct title`);
+    assert(ytPostRes.status === 201, `Create YouTube video returns 201`);
+    const createdYt = await ytPostRes.json();
+    assert(createdYt.id && createdYt.title === 'Authentic Eathamozhi Coconut Grove Walkthrough', `Created video has ID and correct title`);
+    assert(createdYt.videoId === 'ScMzIvxBSi4', `Video ID extracted automatically (${createdYt.videoId})`);
 
-    const igListRes = await fetch(`${BASE_URL}/api/instagram`);
-    const igList = await igListRes.json();
-    assert(Array.isArray(igList) && igList.some(p => p.id === createdIg.id), `Instagram post is listed in GET /api/instagram`);
+    const ytListRes = await fetch(`${BASE_URL}/api/youtube`);
+    const ytList = await ytListRes.json();
+    assert(Array.isArray(ytList) && ytList.some(v => v.id === createdYt.id), `YouTube video is listed in GET /api/youtube`);
 
-    // Clean up created IG post
-    await fetch(`${BASE_URL}/api/instagram/${createdIg.id}`, { method: 'DELETE' });
+    // Clean up created YT video
+    await fetch(`${BASE_URL}/api/youtube/${createdYt.id}`, { method: 'DELETE' });
 
     // 2. Batch Naming Convention (<Farm ID>-<Month>'<YY>-B<Seq>)
     console.log(`\n[TEST 2] Testing Batch Naming Convention...`);

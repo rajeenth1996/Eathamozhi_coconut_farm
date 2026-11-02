@@ -4,7 +4,7 @@ import LiveStockTerminal from '@/components/LiveStockTerminal';
 import PlantingCalculator from '@/components/PlantingCalculator';
 import HeroVideo from '@/components/HeroVideo';
 import ImageCarousel from '@/components/ImageCarousel';
-import InstagramSection from '@/components/InstagramSection';
+import YouTubeSection from '@/components/YouTubeSection';
 import { formatApproximateAge } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
@@ -323,8 +323,8 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* 6.5 INSTAGRAM REELS & UPDATES */}
-      <InstagramSection />
+      {/* 6.5 YOUTUBE FARM VIDEOS & HARVEST TOURS */}
+      <YouTubeSection />
 
       {/* 7. CALL TO ACTION BANNER */}
       <section className="py-5 bg-dark text-white text-center position-relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #022c22 0%, #064e3b 100%)' }}>

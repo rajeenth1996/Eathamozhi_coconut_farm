@@ -259,6 +259,18 @@ const BatchViewSchema = new Schema({
 }, { timestamps: false });
 BatchViewSchema.index({ batchCode: 1, visitorId: 1 }, { unique: true });
 
+// ─── YouTubeVideo ─────────────────────────────────────────────────────────────
+const YouTubeVideoSchema = new Schema({
+  id:           { type: String, required: true, unique: true },
+  title:        { type: String, required: true },
+  url:          { type: String, required: true },
+  videoId:      { type: String, default: '' },
+  order:        { type: Number, default: 0 },
+  isVisible:    { type: Boolean, default: true, index: true },
+  createdAt:    { type: String, default: () => new Date().toISOString() },
+  updatedAt:    { type: String, default: () => new Date().toISOString() },
+}, { timestamps: false });
+
 // ─── InstagramPost ───────────────────────────────────────────────────────────
 const InstagramPostSchema = new Schema({
   id:           { type: String, required: true, unique: true },
@@ -287,4 +299,5 @@ export const PageViewModel        = models.PageView        || model('PageView', 
 export const VisitorJourneyModel  = models.VisitorJourney  || model('VisitorJourney',  VisitorJourneySchema);
 export const SiteSettingsModel    = models.SiteSettings    || model('SiteSettings',    SiteSettingsSchema);
 export const BatchViewModel       = models.BatchView       || model('BatchView',       BatchViewSchema, 'batch_views');
+export const YouTubeVideoModel    = models.YouTubeVideo    || model('YouTubeVideo',    YouTubeVideoSchema, 'youtube_videos');
 export const InstagramPostModel   = models.InstagramPost   || model('InstagramPost',   InstagramPostSchema, 'instagram_posts');
