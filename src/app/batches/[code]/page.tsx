@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import ImageCarousel from '@/components/ImageCarousel';
 import BatchViewTracker from '@/components/BatchViewTracker';
 import { formatApproximateAge } from '@/lib/types';
+import { getSaplingMetrics } from '@/lib/metrics';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,7 +41,7 @@ export default async function BatchDetailPage({
             <div>
               <div className="d-flex flex-wrap align-items-center gap-2 mb-2">
                 <span className="badge bg-success px-3 py-2">{batch.status}</span>
-                <span className="badge bg-dark bg-opacity-75 font-monospace border border-secondary px-3 py-2">
+                <span className="badge bg-dark text-warning font-monospace border border-warning px-3 py-2 fw-bold shadow-sm">
                   Batch ID: {batch.batchCode}
                 </span>
                 {/* Social Proof Views Counter */}
@@ -135,15 +136,19 @@ export default async function BatchDetailPage({
                     </tr>
                     <tr className="border-bottom">
                       <td className="text-muted py-2">Batch ID</td>
-                      <td className="fw-bold text-secondary font-monospace text-end py-2">{batch.batchCode}</td>
+                      <td className="fw-bold text-end py-2">
+                        <span className="badge bg-dark text-white font-monospace px-2 py-1 fw-bold border border-secondary">
+                          {batch.batchCode}
+                        </span>
+                      </td>
                     </tr>
                     <tr className="border-bottom">
                       <td className="text-muted py-2">Age</td>
-                      <td className="fw-bold text-dark text-end py-2"><span className="badge bg-success-subtle text-success border border-success">{batch.age || '8–10 months'}</span></td>
+                      <td className="fw-bold text-dark text-end py-2"><span className="badge bg-success-subtle text-success border border-success">{batch.age || getSaplingMetrics(batch.seededDate).age}</span></td>
                     </tr>
                     <tr className="border-bottom">
                       <td className="text-muted py-2">Height</td>
-                      <td className="fw-bold text-dark text-end py-2">{batch.height || 'Approx. 2–3 ft'}</td>
+                      <td className="fw-bold text-dark text-end py-2">{batch.height || getSaplingMetrics(batch.seededDate).height}</td>
                     </tr>
                     <tr className="border-bottom">
                       <td className="text-muted py-2">Coconut Cut Date</td>

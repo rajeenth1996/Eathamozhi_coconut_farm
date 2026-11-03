@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import ImageCarousel from '@/components/ImageCarousel';
+import { getSaplingMetrics } from '@/lib/metrics';
 
 interface BatchesClientListProps {
   initialBatches: any[];
@@ -97,7 +98,9 @@ export default function BatchesClientList({ initialBatches }: BatchesClientListP
                 <div className="card-body p-4 d-flex flex-column justify-content-between">
                   <div>
                     <div className="d-flex justify-content-between align-items-center mb-2">
-                      <span className="badge bg-secondary-subtle text-secondary font-monospace border">Batch ID: {b.batchCode}</span>
+                      <span className="badge bg-dark text-white font-monospace fw-bold px-2 py-1 shadow-sm border border-secondary">
+                        Batch ID: {b.batchCode}
+                      </span>
                       <span className="text-muted extra-small">
                         {(() => {
                           const treeCodes = (b.parentPalmCodes && b.parentPalmCodes.length > 0) ? b.parentPalmCodes : [b.parentPalmCode];
@@ -118,8 +121,8 @@ export default function BatchesClientList({ initialBatches }: BatchesClientListP
                     <h5 className="fw-bold text-dark mb-2">{b.name}</h5>
 
                     <div className="bg-light p-2 rounded-3 mb-3 small text-secondary d-flex justify-content-between">
-                      <div><i className="bi bi-calendar3 me-1 text-success"></i> Age: <strong className="text-dark">{b.age || '8–10 months'}</strong></div>
-                      <div><i className="bi bi-rulers me-1 text-success"></i> Height: <strong className="text-dark">{b.height || 'Approx. 2–3 ft'}</strong></div>
+                      <div><i className="bi bi-calendar3 me-1 text-success"></i> Age: <strong className="text-dark">{b.age || getSaplingMetrics(b.seededDate).age}</strong></div>
+                      <div><i className="bi bi-rulers me-1 text-success"></i> Height: <strong className="text-dark">{b.height || getSaplingMetrics(b.seededDate).height}</strong></div>
                     </div>
 
                     {/* Stock Stats */}

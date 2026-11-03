@@ -1,6 +1,6 @@
 // Helper to compute age & height dynamically from Seeded Date
 export function getSaplingMetrics(seededDateStr: string) {
-  if (!seededDateStr) return { age: 'N/A', height: 'N/A', monthsCount: 0 };
+  if (!seededDateStr) return { age: '4–5 months', height: 'Approx. 2–3 ft', monthsCount: 4 };
 
   const seeded = new Date(seededDateStr);
   const now = new Date();
@@ -9,18 +9,22 @@ export function getSaplingMetrics(seededDateStr: string) {
   if (now.getDate() < seeded.getDate()) {
     monthsCount = Math.max(0, monthsCount - 1);
   }
-  monthsCount = Math.max(1, monthsCount);
+  monthsCount = Math.max(0, monthsCount);
 
-  let estimatedHeight = '0.8–1.5 ft';
-  if (monthsCount >= 4 && monthsCount <= 6) estimatedHeight = '1.5–2.5 ft';
-  else if (monthsCount >= 7 && monthsCount <= 9) estimatedHeight = '2.5–4.5 ft';
-  else if (monthsCount >= 10 && monthsCount <= 12) estimatedHeight = '4.5–6.0 ft';
-  else if (monthsCount > 12) estimatedHeight = '6.0+ ft (Ready for Field Planting)';
+  const lower = monthsCount;
+  const upper = monthsCount + 1;
+  const age = `${lower}–${upper} months`;
+
+  let estimatedHeight = 'Approx. 1–2 ft';
+  if (monthsCount >= 4 && monthsCount <= 6) estimatedHeight = 'Approx. 2–3 ft';
+  else if (monthsCount >= 7 && monthsCount <= 9) estimatedHeight = 'Approx. 3–4 ft';
+  else if (monthsCount >= 10 && monthsCount <= 12) estimatedHeight = 'Approx. 4–5 ft';
+  else if (monthsCount > 12) estimatedHeight = 'Approx. 5–6 ft';
 
   return {
-    age: `${monthsCount} Month${monthsCount > 1 ? 's' : ''}`,
+    age,
     height: estimatedHeight,
-    monthsCount,
+    monthsCount: Math.max(1, monthsCount),
   };
 }
 

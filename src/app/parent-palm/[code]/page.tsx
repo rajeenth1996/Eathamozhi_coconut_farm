@@ -109,7 +109,9 @@ export default async function ParentPalmDetailPage({
                 <div key={b.id} className="col-md-4">
                   <div className="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
                     <div className="d-flex justify-content-between align-items-center mb-2">
-                      <span className="badge bg-dark">{b.batchCode}</span>
+                      <span className="badge bg-dark text-white font-monospace fw-bold px-2 py-1 shadow-sm border border-secondary">
+                        Batch ID: {b.batchCode}
+                      </span>
                       <div className="d-flex gap-1 align-items-center">
                         <span className="badge bg-success-subtle text-success border border-success extra-small">
                           {b.availableQuantity} available

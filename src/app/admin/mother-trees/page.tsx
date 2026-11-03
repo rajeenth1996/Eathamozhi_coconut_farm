@@ -57,6 +57,7 @@ export default function AdminMotherTreesPage() {
   const [editTreeImages, setEditTreeImages] = useState<string[]>([]);
   const [newTreeImageUrl, setNewTreeImageUrl] = useState('');
   const [savingImages, setSavingImages] = useState(false);
+  const [uploadingTreeEditImages, setUploadingTreeEditImages] = useState(false);
 
   const fetchInitialData = async () => {
     try {
@@ -246,6 +247,50 @@ export default function AdminMotherTreesPage() {
       alert('Failed to save changes: ' + e.message);
     } finally {
       setSavingImages(false);
+    }
+  };
+
+  const handleBrowseAndUploadTreeEditImages = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setUploadingTreeEditImages(true);
+    try {
+      const formData = new FormData();
+      formData.append('category', 'parent-palms');
+      Array.from(files).forEach(f => formData.append('files', f));
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      if (res.ok && data.urls && Array.isArray(data.urls)) {
+        setEditTreeImages(prev => [...prev, ...data.urls]);
+        alert(`✓ Successfully uploaded and added ${data.urls.length} photo(s) to mother tree!`);
+      } else {
+        throw new Error(data.error || 'Failed to upload images');
+      }
+    } catch (err: any) {
+      alert('Upload error: ' + err.message);
+    } finally {
+      setUploadingTreeEditImages(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleDeleteTreeEditImage = async (imgUrl: string, idx: number) => {
+    if (!confirm('Are you sure you want to remove this photograph? It will be permanently deleted from cloud storage to save space.')) {
+      return;
+    }
+
+    setEditTreeImages(prev => prev.filter((_, i) => i !== idx));
+
+    try {
+      await fetch(`/api/upload?url=${encodeURIComponent(imgUrl)}`, {
+        method: 'DELETE'
+      });
+    } catch (err) {
+      console.error('Failed to delete image from storage:', err);
     }
   };
 
@@ -791,30 +836,64 @@ export default function AdminMotherTreesPage() {
                 </div>
 
                 {/* Photos Gallery Manager */}
-                <div className="p-3 bg-light rounded-3 mb-3">
-                  <h6 className="fw-bold text-dark mb-2">Photographs ({editTreeImages.length})</h6>
-                  <div className="d-flex flex-wrap gap-2 mb-3">
-                    {editTreeImages.map((imgUrl, idx) => (
-                      <div key={idx} className="position-relative border rounded overflow-hidden" style={{ width: '80px', height: '80px' }}>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={imgUrl} alt={`Photo ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        <button
-                          type="button"
-                          className="btn btn-danger btn-sm p-0 position-absolute top-0 end-0 rounded-circle m-1 d-flex align-items-center justify-content-center"
-                          style={{ width: '20px', height: '20px', fontSize: '10px' }}
-                          onClick={() => setEditTreeImages(prev => prev.filter((_, i) => i !== idx))}
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    ))}
+                <div className="p-3 bg-light rounded-3 mb-3 border">
+                  <div className="d-flex justify-content-between align-items-center mb-2">
+                    <h6 className="fw-bold text-dark mb-0">Photographs ({editTreeImages.length})</h6>
+                    <small className="text-muted extra-small">Hover &amp; click ✕ to delete from cloud storage</small>
                   </div>
 
+                  {editTreeImages.length > 0 && (
+                    <div className="d-flex flex-wrap gap-2 mb-3">
+                      {editTreeImages.map((imgUrl, idx) => (
+                        <div key={idx} className="position-relative border rounded overflow-hidden shadow-sm bg-white" style={{ width: '80px', height: '80px' }}>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={imgUrl} alt={`Photo ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          <button
+                            type="button"
+                            className="btn btn-danger btn-sm p-0 position-absolute top-0 end-0 rounded-circle m-1 d-flex align-items-center justify-content-center shadow-sm"
+                            style={{ width: '22px', height: '22px', fontSize: '11px' }}
+                            title="Delete photo permanently from cloud storage"
+                            onClick={() => handleDeleteTreeEditImage(imgUrl, idx)}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Browse & Upload Photos (Device File Picker) */}
+                  <div className="mb-3">
+                    <label className="form-label fw-bold small text-secondary">
+                      <i className="bi bi-cloud-arrow-up me-1 text-success"></i> Browse &amp; Upload Photos from Device
+                    </label>
+                    <div className="input-group">
+                      <input
+                        type="file"
+                        className="form-control"
+                        multiple
+                        accept="image/*"
+                        onChange={handleBrowseAndUploadTreeEditImages}
+                        disabled={uploadingTreeEditImages}
+                      />
+                      {uploadingTreeEditImages && (
+                        <span className="input-group-text bg-light text-success fw-bold small">
+                          <span className="spinner-border spinner-border-sm me-1" role="status"></span> Uploading to Cloud...
+                        </span>
+                      )}
+                    </div>
+                    <small className="text-muted extra-small">
+                      Browse and select one or multiple photos to upload and attach to this mother tree.
+                    </small>
+                  </div>
+
+                  {/* Direct URL input fallback */}
+                  <label className="form-label fw-bold small text-secondary">Or Add Photo by Direct URL</label>
                   <div className="input-group">
                     <input
                       type="text"
                       className="form-control"
-                      placeholder="Add image URL or Cloudinary URL..."
+                      placeholder="Paste image URL or Cloudinary URL..."
                       value={newTreeImageUrl}
                       onChange={(e) => setNewTreeImageUrl(e.target.value)}
                     />

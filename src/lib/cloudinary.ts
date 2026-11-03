@@ -99,22 +99,30 @@ export async function uploadToCloudinary(
 }
 
 /**
- * Extracts public_id from Cloudinary URL and deletes the asset
+ * Extracts public_id from Cloudinary URL and deletes the asset from cloud storage
  */
 export async function deleteFromCloudinary(urlOrPublicId: string): Promise<boolean> {
   if (!isCloudinaryConfigured || !urlOrPublicId) return false;
 
   try {
-    let publicId = urlOrPublicId;
-    if (urlOrPublicId.includes('res.cloudinary.com')) {
-      // Extract everything between '/upload/v...' and the file extension
-      const matches = urlOrPublicId.match(/\/upload\/(?:v\d+\/)?([^.]+)/);
-      if (matches && matches[1]) {
-        publicId = matches[1];
+    let publicId = urlOrPublicId.trim();
+    if (publicId.includes('res.cloudinary.com')) {
+      const parts = publicId.split('/upload/');
+      if (parts.length >= 2) {
+        const after = parts[1];
+        // Match after optional transformations and version e.g. v12345/
+        const m = after.match(/(?:(?:[a-z]_[^/]+,?)+\/)?(?:v\d+\/)?([^.]+)/);
+        if (m && m[1]) {
+          publicId = m[1];
+        } else {
+          publicId = after.replace(/\.[^.]+$/, '');
+        }
       }
     }
 
+    console.log(`[Cloudinary] Deleting asset with publicId: "${publicId}"`);
     const res = await cloudinary.uploader.destroy(publicId);
+    console.log(`[Cloudinary] Destroy result for "${publicId}":`, res);
     return res.result === 'ok';
   } catch (err) {
     console.error('Cloudinary destroy error:', err);

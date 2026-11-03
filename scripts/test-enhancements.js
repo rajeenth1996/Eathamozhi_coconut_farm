@@ -199,6 +199,37 @@ async function run() {
     const homeHtml = await homeRes.text();
     assert(!homeHtml.includes('100% Synced with Farm DB'), `"100% Synced with Farm DB" is removed from home page`);
 
+    // 8. Test Sapling Age Calculation from Seeding Date (in months, e.g. 4-5 months)
+    console.log(`\n[TEST 8] Testing Sapling Age Calculation from Seeding Date...`);
+    const batchAutoAgeRes = await fetch(`${BASE_URL}/api/batches`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        primaryFarmCode: 'ETH-RA-F001',
+        harvestDate: '2026-06-01',
+        seededDate: '2026-06-15',
+        price: 150,
+        totalQuantity: 200
+      })
+    });
+    assert(batchAutoAgeRes.status === 201, `Create batch with auto-calculated age returns 201`);
+    const autoAgeBatch = await batchAutoAgeRes.json();
+    console.log(`  -> Auto-calculated Age for 2026-06-15: ${autoAgeBatch.age}`);
+    assert(autoAgeBatch.age === '4–5 months', `Sapling age calculated as 4–5 months (got ${autoAgeBatch.age})`);
+    assert(autoAgeBatch.height.includes('Approx.'), `Sapling height marked approximate: ${autoAgeBatch.height}`);
+
+    // Clean up auto age test batch
+    await fetch(`${BASE_URL}/api/batches?code=${encodeURIComponent(autoAgeBatch.batchCode)}`, { method: 'DELETE' });
+
+    // 9. Test Cloud Storage Image Deletion API
+    console.log(`\n[TEST 9] Testing Cloud Storage Image Deletion...`);
+    const deleteImgRes = await fetch(`${BASE_URL}/api/upload?url=${encodeURIComponent('https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909327/eathamozhi-farm/batches/test-temp-delete-me.jpg')}`, {
+      method: 'DELETE'
+    });
+    assert(deleteImgRes.status === 200, `Delete image from storage returns 200 status`);
+    const delImgJson = await deleteImgRes.json();
+    assert(delImgJson.success === true, `Delete API returns success: true`);
+
     // Clean up created test batch
     await fetch(`${BASE_URL}/api/batches?code=${encodeURIComponent(createdBatch.batchCode)}`, { method: 'DELETE' });
 

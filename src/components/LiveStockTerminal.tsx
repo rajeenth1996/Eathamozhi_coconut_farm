@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import ImageCarousel from '@/components/ImageCarousel';
+import { getSaplingMetrics } from '@/lib/metrics';
 
 interface LiveStockTerminalProps {
   initialBatch?: any;
@@ -128,7 +129,7 @@ export default function LiveStockTerminal({ initialBatch, initialBatches = [] }:
                 </div>
               )}
 
-              <span className="badge bg-success bg-opacity-25 border border-success text-white fw-bold px-3 py-1">
+              <span className="badge bg-light text-dark font-monospace fw-bold px-3 py-1 shadow-sm">
                 Batch ID: {currentBatch?.batchCode}
               </span>
             </div>
@@ -166,14 +167,14 @@ export default function LiveStockTerminal({ initialBatch, initialBatches = [] }:
                     <div>
                       <h3 className="fw-bold text-dark mb-1">{currentBatch?.name}</h3>
                       <div className="d-flex flex-wrap align-items-center gap-2 mb-2">
-                        <span className="badge bg-secondary-subtle text-secondary font-monospace border">
+                        <span className="badge bg-dark text-white font-monospace fw-bold px-2 py-1 shadow-sm border border-secondary">
                           Batch ID: {currentBatch?.batchCode}
                         </span>
                         <span className="badge bg-light text-dark border">
-                          Age: <strong className="text-dark">{currentBatch?.age || '8–10 months'}</strong>
+                          Age: <strong className="text-dark">{currentBatch?.age || getSaplingMetrics(currentBatch?.seededDate).age}</strong>
                         </span>
                         <span className="badge bg-light text-dark border">
-                          Height: <strong className="text-dark">{currentBatch?.height || 'Approx. 2–3 ft'}</strong>
+                          Height: <strong className="text-dark">{currentBatch?.height || getSaplingMetrics(currentBatch?.seededDate).height}</strong>
                         </span>
                       </div>
                       <p className="text-muted small mb-0">

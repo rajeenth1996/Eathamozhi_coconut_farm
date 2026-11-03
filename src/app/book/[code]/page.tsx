@@ -3,6 +3,7 @@
 import { useState, useEffect, use } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { getSaplingMetrics } from '@/lib/metrics';
 
 export default function BookingFlowPage({
   params
@@ -265,12 +266,12 @@ Please confirm our order and dispatch details. Thank you!`;
           <span className="badge bg-success mb-1">EASY 3-STEP BOOKING</span>
           <h2 className="fw-bold mb-1 text-light">Booking {batch.name || `Batch ${batch.batchCode}`}</h2>
           <div className="text-white-50 extra-small d-flex flex-wrap align-items-center gap-2">
-            <span className="badge bg-secondary-subtle text-light font-monospace border border-secondary">
+            <span className="badge bg-light text-dark font-monospace fw-bold px-2 py-1 shadow-sm border border-white">
               Batch ID: {batch.batchCode}
             </span>
-            <span>Age: <strong className="text-light">{batch.age || '8–10 months'}</strong></span>
+            <span>Age: <strong className="text-light">{batch.age || getSaplingMetrics(batch.seededDate).age}</strong></span>
             &bull;
-            <span>Height: <strong className="text-light">{batch.height || 'Approx. 2–3 ft'}</strong></span>
+            <span>Height: <strong className="text-light">{batch.height || getSaplingMetrics(batch.seededDate).height}</strong></span>
           </div>
         </div>
       </section>
