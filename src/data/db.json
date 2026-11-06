@@ -64,6 +64,19 @@
       "notes": "",
       "createdAt": "2026-11-02T23:49:10.492Z",
       "updatedAt": "2026-11-02T23:49:10.492Z"
+    },
+    {
+      "id": "farm-kaa-ka-f001",
+      "farmCode": "KAA-KA-F001",
+      "farmName": "Kaatuvilai",
+      "ownerName": "Kalaivani",
+      "ownerCode": "KA",
+      "locationCode": "KAA",
+      "location": "Kaatuvilai",
+      "status": "Active",
+      "notes": "",
+      "createdAt": "2026-11-04T10:44:37.020Z",
+      "updatedAt": "2026-11-04T10:44:37.020Z"
     }
   ],
   "parentPalms": [
@@ -94,7 +107,7 @@
       "notes": "Updated approximate age",
       "isVisible": true,
       "createdAt": "2026-11-02T02:47:37.890Z",
-      "updatedAt": "2026-11-03T06:54:35.539Z"
+      "updatedAt": "2026-11-06T18:26:16.078Z"
     },
     {
       "id": "mp-2",
@@ -395,6 +408,33 @@
       "isVisible": true,
       "createdAt": "2026-11-02T17:28:33.091Z",
       "updatedAt": "2026-11-02T17:28:33.091Z"
+    },
+    {
+      "id": "mp-1793789242361",
+      "motherTreeCode": "KAA-KA-F001-MT001",
+      "code": "KAA-KA-F001-MT001",
+      "farmId": "farm-kaa-ka-f001",
+      "farmCode": "KAA-KA-F001",
+      "farmName": "Kaatuvilai",
+      "name": "Hight yield heritage mother",
+      "variety": "West Coast Tall (Eathamozhi Tall)",
+      "age": "40+ years",
+      "location": "Heritage Grove",
+      "healthStatus": "Excellent (100% Disease Resistant)",
+      "yieldHistory": "Consistently 250-300 high-weight seed nuts per year over 25 monitored years.",
+      "description": "Selected for heavy canopy, disease immunity, and large copra content.",
+      "nutCharacteristics": "Large spherical nuts with high coconut water volume and thick kernel.",
+      "whySelected": "Consistently high yield with exceptional seedling germination rate (>94%).",
+      "images": [
+        "/images/placeholder.png"
+      ],
+      "selectionStatus": "Selected",
+      "verificationStatus": "Verified",
+      "productionStatus": "Active for Production",
+      "notes": "",
+      "isVisible": true,
+      "createdAt": "2026-11-04T10:47:22.361Z",
+      "updatedAt": "2026-11-04T10:47:22.361Z"
     }
   ],
   "batches": [
@@ -431,8 +471,8 @@
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792893909/eathamozhy-farm/batches/74cbbdcb-f064-459c-9267-d045737e799c-1792893907395.jpg"
       ],
       "isVisible": false,
-      "createdAt": "2026-11-03T07:09:16.460Z",
-      "updatedAt": "2026-11-03T07:09:16.460Z"
+      "createdAt": "2026-11-06T18:28:24.009Z",
+      "updatedAt": "2026-11-06T18:28:24.009Z"
     },
     {
       "id": "b-1",
@@ -467,8 +507,8 @@
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792893909/eathamozhy-farm/batches/74cbbdcb-f064-459c-9267-d045737e799c-1792893907395.jpg"
       ],
       "isVisible": false,
-      "createdAt": "2026-11-03T07:09:16.460Z",
-      "updatedAt": "2026-11-03T07:09:16.460Z"
+      "createdAt": "2026-11-06T18:28:24.009Z",
+      "updatedAt": "2026-11-06T18:28:24.009Z"
     },
     {
       "id": "b-2",
@@ -502,8 +542,8 @@
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792888376/eathamozhy-farm/batches/b76f3226-817a-4ae2-8511-d66aeb861dca-1792888375115.jpg"
       ],
       "isVisible": false,
-      "createdAt": "2026-11-03T07:09:16.460Z",
-      "updatedAt": "2026-11-03T07:09:16.460Z"
+      "createdAt": "2026-11-06T18:28:24.009Z",
+      "updatedAt": "2026-11-06T18:28:24.009Z"
     },
     {
       "id": "b-3",
@@ -536,8 +576,8 @@
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792893909/eathamozhy-farm/batches/74cbbdcb-f064-459c-9267-d045737e799c-1792893907395.jpg"
       ],
       "isVisible": false,
-      "createdAt": "2026-11-03T07:09:16.460Z",
-      "updatedAt": "2026-11-03T07:09:16.460Z"
+      "createdAt": "2026-11-06T18:28:24.009Z",
+      "updatedAt": "2026-11-06T18:28:24.009Z"
     },
     {
       "id": "b-4",
@@ -557,19 +597,21 @@
       "name": "April 2026 Central Batch (EM-0426-D)",
       "harvestDate": "2025-12-01",
       "seededDate": "2025-12-15",
+      "age": "10–11 months",
+      "height": "Approx. 1-2 ft",
       "totalQuantity": 400,
-      "bookedQuantity": 0,
+      "bookedQuantity": 228,
       "inventoryAdjustments": 0,
       "price": 155,
       "status": "AVAILABLE",
       "description": "Heavy collar saplings raised under drip irrigation with balanced organic compost nutrition.",
-      "viewsCount": 2,
+      "viewsCount": 4,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909327/eathamozhi-farm/batches/25b2b6ad-0a44-47b6-a4b4-a45d1e426cca-1792909327401.jpg"
       ],
       "isVisible": true,
-      "createdAt": "2026-11-03T07:09:16.460Z",
-      "updatedAt": "2026-11-03T07:09:16.460Z"
+      "createdAt": "2026-11-03T09:34:14.722Z",
+      "updatedAt": "2026-11-03T09:34:27.859Z"
     },
     {
       "id": "b-5",
@@ -595,13 +637,13 @@
       "price": 150,
       "status": "AVAILABLE",
       "description": "Hardened saplings with high heat tolerance. Excellent candidate for dry zone planting.",
-      "viewsCount": 0,
+      "viewsCount": 1,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909391/eathamozhi-farm/batches/5700477e-967d-4133-9a99-76560430a143-1792909391250.jpg"
       ],
       "isVisible": true,
-      "createdAt": "2026-11-03T07:09:16.460Z",
-      "updatedAt": "2026-11-03T07:09:16.460Z"
+      "createdAt": "2026-11-06T18:28:24.009Z",
+      "updatedAt": "2026-11-06T18:28:24.009Z"
     },
     {
       "id": "b-6",
@@ -632,8 +674,8 @@
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792893909/eathamozhy-farm/batches/74cbbdcb-f064-459c-9267-d045737e799c-1792893907395.jpg"
       ],
       "isVisible": true,
-      "createdAt": "2026-11-03T07:09:16.460Z",
-      "updatedAt": "2026-11-03T07:09:16.460Z"
+      "createdAt": "2026-11-06T18:28:24.009Z",
+      "updatedAt": "2026-11-06T18:28:24.009Z"
     },
     {
       "id": "b-7",
@@ -664,8 +706,8 @@
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909327/eathamozhi-farm/batches/25b2b6ad-0a44-47b6-a4b4-a45d1e426cca-1792909327401.jpg"
       ],
       "isVisible": true,
-      "createdAt": "2026-11-03T07:09:16.460Z",
-      "updatedAt": "2026-11-03T07:09:16.460Z"
+      "createdAt": "2026-11-06T18:28:24.009Z",
+      "updatedAt": "2026-11-06T18:28:24.009Z"
     },
     {
       "id": "b-8",
@@ -696,8 +738,8 @@
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909391/eathamozhi-farm/batches/5700477e-967d-4133-9a99-76560430a143-1792909391250.jpg"
       ],
       "isVisible": true,
-      "createdAt": "2026-11-03T07:09:16.460Z",
-      "updatedAt": "2026-11-03T07:09:16.460Z"
+      "createdAt": "2026-11-06T18:28:24.009Z",
+      "updatedAt": "2026-11-06T18:28:24.009Z"
     },
     {
       "id": "b-9",
@@ -728,8 +770,8 @@
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792893909/eathamozhy-farm/batches/74cbbdcb-f064-459c-9267-d045737e799c-1792893907395.jpg"
       ],
       "isVisible": true,
-      "createdAt": "2026-11-03T07:09:16.460Z",
-      "updatedAt": "2026-11-03T07:09:16.460Z"
+      "createdAt": "2026-11-06T18:28:24.009Z",
+      "updatedAt": "2026-11-06T18:28:24.009Z"
     },
     {
       "id": "b-10",
@@ -749,19 +791,23 @@
       "name": "October 2026 Sweet Water Batch (EM-1026-J)",
       "harvestDate": "2026-06-01",
       "seededDate": "2026-06-15",
+      "age": "4–5 months",
+      "height": "Approx. 2–3 ft",
       "totalQuantity": 600,
       "bookedQuantity": 0,
       "inventoryAdjustments": 0,
       "price": 160,
       "status": "AVAILABLE",
       "description": "Dual-purpose saplings. Ideal for both tender coconut harvesting and copra production.",
-      "viewsCount": 1,
+      "viewsCount": 2,
       "images": [
-        "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909327/eathamozhi-farm/batches/25b2b6ad-0a44-47b6-a4b4-a45d1e426cca-1792909327401.jpg"
+        "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909327/eathamozhi-farm/batches/25b2b6ad-0a44-47b6-a4b4-a45d1e426cca-1792909327401.jpg",
+        "https://res.cloudinary.com/ub9fl2yg/image/upload/v1793690121/eathamozhi-farm/batches/2d38fddf-d9ca-4e65-ac0f-b4d5ee176c07-1793690120210.jpg",
+        "https://res.cloudinary.com/ub9fl2yg/image/upload/v1793690130/eathamozhi-farm/batches/90a665c4-374e-438d-bb15-810fcaf921f7-1793690129046.jpg"
       ],
       "isVisible": true,
-      "createdAt": "2026-11-03T07:09:16.460Z",
-      "updatedAt": "2026-11-03T07:09:16.460Z"
+      "createdAt": "2026-11-03T07:10:29.445Z",
+      "updatedAt": "2026-11-03T07:15:37.266Z"
     },
     {
       "id": "b-1793641998639",
@@ -787,7 +833,7 @@
       "price": 150,
       "status": "AVAILABLE",
       "description": "",
-      "viewsCount": 15,
+      "viewsCount": 17,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1793641992/eathamozhi-farm/batches/f45865a9-978f-4d32-8d4f-7b730ba9f103-1793641992496.jpg"
       ],
@@ -1305,11 +1351,11 @@
       "_id": "6ae7f9cb255f95e3a2fb68b4",
       "id": "bi-bs-EM-0426-D-ETH-RA-F001-MT004",
       "__v": 0,
-      "availableQuantity": 400,
+      "availableQuantity": 390,
       "batchCode": "EM-0426-D",
       "batchId": "b-4",
       "batchSourceId": "bs-EM-0426-D-ETH-RA-F001-MT004",
-      "bookedQuantity": 0,
+      "bookedQuantity": 10,
       "damagedQuantity": 0,
       "dispatchedQuantity": 0,
       "farmCode": "ETH-RA-F001",
@@ -1318,17 +1364,17 @@
       "motherTreeId": "mp-4",
       "rejectedQuantity": 0,
       "seedlingsProduced": 400,
-      "updatedAt": "2026-11-02T02:47:37.891Z"
+      "updatedAt": "2026-11-03T08:22:53.402Z"
     },
     {
       "_id": "6ae7f9cb255f95e3a2fb68b5",
       "id": "bi-bs-EM-0526-E-ETH-RA-F001-MT005",
       "__v": 0,
-      "availableQuantity": 350,
+      "availableQuantity": 100,
       "batchCode": "EM-0526-E",
       "batchId": "b-5",
       "batchSourceId": "bs-EM-0526-E-ETH-RA-F001-MT005",
-      "bookedQuantity": 0,
+      "bookedQuantity": 250,
       "damagedQuantity": 0,
       "dispatchedQuantity": 0,
       "farmCode": "ETH-RA-F001",
@@ -1337,7 +1383,7 @@
       "motherTreeId": "mp-5",
       "rejectedQuantity": 0,
       "seedlingsProduced": 350,
-      "updatedAt": "2026-11-02T02:47:37.891Z"
+      "updatedAt": "2026-11-03T07:22:23.683Z"
     },
     {
       "_id": "6ae7f9cc255f95e3a2fb68b6",
@@ -1788,6 +1834,98 @@
       "subtotal": 13950,
       "totalAmount": 13950,
       "whatsapp": "9486880641"
+    },
+    {
+      "_id": "6ae98baf255f95e3a2fb977d",
+      "bookingId": "EM-0526-E-6679",
+      "__v": 0,
+      "address": "Kanyakumari, Tamil Nadu - 629501",
+      "allocations": [
+        {
+          "batchSourceId": "bs-EM-0526-E-ETH-RA-F001-MT005",
+          "farmId": "farm-eth-ra-f001",
+          "farmCode": "ETH-RA-F001",
+          "motherTreeId": "mp-5",
+          "motherTreeCode": "ETH-RA-F001-MT005",
+          "quantity": 250,
+          "_id": "6ae98baf9ec3ff2ec4853386"
+        }
+      ],
+      "balanceAmount": 0,
+      "batchCode": "EM-0526-E",
+      "bookingStatus": "Payment review",
+      "createdAt": "2026-11-03T07:22:23.684Z",
+      "customerName": "Rajeenth",
+      "deliveryCharge": 0,
+      "deliveryService": "MSS Parcel Service",
+      "district": "Kanyakumari",
+      "email": "",
+      "expectedDeliveryDate": "2026-11-10",
+      "farmLocation": "",
+      "id": "bk-1793690543684",
+      "isMixedSource": false,
+      "isPreOrder": false,
+      "mobile": "9486880641",
+      "nearestHub": "nagercoil",
+      "orderType": "COMPLETE",
+      "paidAmount": 37500,
+      "paymentScreenshotUrl": "https://res.cloudinary.com/ub9fl2yg/image/upload/v1793690540/eathamozhi-farm/receipts/de3cfb79-04c8-40ac-9547-5377cf1006a0-1793690538712.jpg",
+      "paymentStatus": "PENDING_VERIFICATION",
+      "pinCode": "629501",
+      "quantity": 250,
+      "sourceFarmCode": "ETH-RA-F001",
+      "sourceMotherTreeCode": "ETH-RA-F001-MT005",
+      "specialInstructions": "",
+      "state": "Tamil Nadu",
+      "subtotal": 37500,
+      "totalAmount": 37500,
+      "whatsapp": "9486880641"
+    },
+    {
+      "_id": "6ae999dd255f95e3a2fb988f",
+      "bookingId": "EM-0426-D-2251",
+      "__v": 0,
+      "address": "Kanyakumari, Tamil Nadu - 629501",
+      "allocations": [
+        {
+          "batchSourceId": "bs-EM-0426-D-ETH-RA-F001-MT004",
+          "farmId": "farm-eth-ra-f001",
+          "farmCode": "ETH-RA-F001",
+          "motherTreeId": "mp-4",
+          "motherTreeCode": "ETH-RA-F001-MT004",
+          "quantity": 10,
+          "_id": "6ae999dd2f671005e2fb089d"
+        }
+      ],
+      "balanceAmount": 0,
+      "batchCode": "EM-0426-D",
+      "bookingStatus": "Payment review",
+      "createdAt": "2026-11-03T08:22:53.402Z",
+      "customerName": "Rajeenth S V",
+      "deliveryCharge": 250,
+      "deliveryService": "MSS Parcel Service",
+      "district": "Kanyakumari",
+      "email": "",
+      "expectedDeliveryDate": "2026-11-10",
+      "farmLocation": "",
+      "id": "bk-1793694173402",
+      "isMixedSource": false,
+      "isPreOrder": false,
+      "mobile": "9486880641",
+      "nearestHub": "Nagercoil",
+      "orderType": "COMPLETE",
+      "paidAmount": 1800,
+      "paymentScreenshotUrl": "https://res.cloudinary.com/ub9fl2yg/image/upload/v1793694168/eathamozhi-farm/receipts/a4361b59-ffd9-42a9-a19d-4a7b094ec4cc-1793694168679.png",
+      "paymentStatus": "PENDING_VERIFICATION",
+      "pinCode": "629501",
+      "quantity": 10,
+      "sourceFarmCode": "ETH-RA-F001",
+      "sourceMotherTreeCode": "ETH-RA-F001-MT004",
+      "specialInstructions": "",
+      "state": "Tamil Nadu",
+      "subtotal": 1550,
+      "totalAmount": 1800,
+      "whatsapp": "9486880641"
     }
   ],
   "adjustments": [],
@@ -1812,6 +1950,314 @@
     }
   ],
   "pageViews": [
+    {
+      "id": "pv-1793989429504-saf4w",
+      "sessionId": "sess_1793660212519_p0212kt",
+      "path": "/",
+      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
+      "referrer": "http://localhost:3000/admin/mother-trees",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-11-06T18:23:49.504Z"
+    },
+    {
+      "id": "pv-1793989420758-yj7yo",
+      "sessionId": "sess_1793660212519_p0212kt",
+      "path": "/reviews",
+      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
+      "referrer": "http://localhost:3000/admin/mother-trees",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-11-06T18:23:40.758Z"
+    },
+    {
+      "id": "pv-1793693308460-4f1mt",
+      "sessionId": "sess_1793660212519_p0212kt",
+      "path": "/",
+      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
+      "referrer": "http://localhost:3000/admin/mother-trees",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-11-03T08:08:28.460Z"
+    },
+    {
+      "id": "pv-1793692534854-3ef7x",
+      "sessionId": "sess_1793660212519_p0212kt",
+      "path": "/",
+      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
+      "referrer": "http://localhost:3000/admin/mother-trees",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-11-03T07:55:34.854Z"
+    },
+    {
+      "id": "pv-1793691669350-whipr",
+      "sessionId": "sess_1793660212519_p0212kt",
+      "path": "/reviews",
+      "title": "",
+      "referrer": "http://localhost:3000/admin/mother-trees",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-11-03T07:41:09.350Z"
+    },
+    {
+      "id": "pv-1793691659971-ik1q3",
+      "sessionId": "sess_1793660212519_p0212kt",
+      "path": "/guide",
+      "title": "",
+      "referrer": "http://localhost:3000/admin/mother-trees",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-11-03T07:40:59.971Z"
+    },
+    {
+      "id": "pv-1793691621859-byywg",
+      "sessionId": "sess_1793660212519_p0212kt",
+      "path": "/reviews",
+      "title": "",
+      "referrer": "http://localhost:3000/admin/mother-trees",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-11-03T07:40:21.859Z"
+    },
+    {
+      "id": "pv-1793691618204-tdj0w",
+      "sessionId": "sess_1793660212519_p0212kt",
+      "path": "/guide",
+      "title": "",
+      "referrer": "http://localhost:3000/admin/mother-trees",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-11-03T07:40:18.205Z"
+    },
+    {
+      "id": "pv-1793691613794-elwjy",
+      "sessionId": "sess_1793660212519_p0212kt",
+      "path": "/about",
+      "title": "",
+      "referrer": "http://localhost:3000/admin/mother-trees",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-11-03T07:40:13.794Z"
+    },
+    {
+      "id": "pv-1793691597091-1bflb",
+      "sessionId": "sess_1793660212519_p0212kt",
+      "path": "/farm",
+      "title": "",
+      "referrer": "http://localhost:3000/admin/mother-trees",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-11-03T07:39:57.091Z"
+    },
+    {
+      "id": "pv-1793691334520-9ys3k",
+      "sessionId": "sess_1793660212519_p0212kt",
+      "path": "/batches",
+      "title": "",
+      "referrer": "http://localhost:3000/admin/mother-trees",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-11-03T07:35:34.520Z"
+    },
+    {
+      "id": "pv-1793691186921-4jdo1",
+      "sessionId": "sess_1793660212519_p0212kt",
+      "path": "/",
+      "title": "",
+      "referrer": "http://localhost:3000/admin/mother-trees",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-11-03T07:33:06.921Z"
+    },
+    {
+      "id": "pv-1793690647681-6mgxg",
+      "sessionId": "sess_1793660212519_p0212kt",
+      "path": "/tracking",
+      "title": "",
+      "referrer": "http://localhost:3000/admin/mother-trees",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-11-03T07:24:07.681Z"
+    },
+    {
+      "id": "pv-1793690630489-3q09r",
+      "sessionId": "sess_1793660212519_p0212kt",
+      "path": "/reviews",
+      "title": "",
+      "referrer": "http://localhost:3000/admin/mother-trees",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-11-03T07:23:50.489Z"
+    },
+    {
+      "id": "pv-1793690624516-niqm7",
+      "sessionId": "sess_1793660212519_p0212kt",
+      "path": "/tracking",
+      "title": "",
+      "referrer": "http://localhost:3000/admin/mother-trees",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-11-03T07:23:44.516Z"
+    },
+    {
+      "id": "pv-1793690570021-bpmkx",
+      "sessionId": "sess_1793660212519_p0212kt",
+      "path": "/confirmation/EM-0526-E-6679",
+      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
+      "referrer": "http://localhost:3000/admin/mother-trees",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-11-03T07:22:50.021Z"
+    },
+    {
+      "id": "pv-1793690545606-zrxw7",
+      "sessionId": "sess_1793660212519_p0212kt",
+      "path": "/confirmation/EM-0526-E-6679",
+      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
+      "referrer": "http://localhost:3000/admin/mother-trees",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-11-03T07:22:25.606Z"
+    },
+    {
+      "id": "pv-1793690480896-h8jbf",
+      "sessionId": "sess_1793660212519_p0212kt",
+      "path": "/book/EM-0526-E",
+      "title": "",
+      "referrer": "http://localhost:3000/admin/mother-trees",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-11-03T07:21:20.896Z"
+    },
+    {
+      "id": "pv-1793690467766-g8p55",
+      "sessionId": "sess_1793660212519_p0212kt",
+      "path": "/batches/EM-0526-E",
+      "title": "",
+      "referrer": "http://localhost:3000/admin/mother-trees",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-11-03T07:21:07.766Z"
+    },
+    {
+      "id": "pv-1793690460216-yi805",
+      "sessionId": "sess_1793660212519_p0212kt",
+      "path": "/batches",
+      "title": "",
+      "referrer": "http://localhost:3000/admin/mother-trees",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-11-03T07:21:00.216Z"
+    },
+    {
+      "id": "pv-1793690458711-ykoc4",
+      "sessionId": "sess_1793660212519_p0212kt",
+      "path": "/farm",
+      "title": "",
+      "referrer": "http://localhost:3000/admin/mother-trees",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-11-03T07:20:58.711Z"
+    },
+    {
+      "id": "pv-1793690457136-r9a8h",
+      "sessionId": "sess_1793660212519_p0212kt",
+      "path": "/about",
+      "title": "",
+      "referrer": "http://localhost:3000/admin/mother-trees",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-11-03T07:20:57.136Z"
+    },
+    {
+      "id": "pv-1793690455133-mloop",
+      "sessionId": "sess_1793660212519_p0212kt",
+      "path": "/batches",
+      "title": "",
+      "referrer": "http://localhost:3000/admin/mother-trees",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-11-03T07:20:55.133Z"
+    },
+    {
+      "id": "pv-1793690344310-2t199",
+      "sessionId": "sess_1793660212519_p0212kt",
+      "path": "/farm",
+      "title": "",
+      "referrer": "http://localhost:3000/admin/mother-trees",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-11-03T07:19:04.310Z"
+    },
+    {
+      "id": "pv-1793690160943-b6qpu",
+      "sessionId": "sess_1793660212519_p0212kt",
+      "path": "/batches/EM-1026-J",
+      "title": "",
+      "referrer": "http://localhost:3000/admin/mother-trees",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-11-03T07:16:00.943Z"
+    },
+    {
+      "id": "pv-1793690150284-lcg0y",
+      "sessionId": "sess_1793660212519_p0212kt",
+      "path": "/batches",
+      "title": "",
+      "referrer": "http://localhost:3000/admin/mother-trees",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-11-03T07:15:50.284Z"
+    },
+    {
+      "id": "pv-1793690144557-ucav9",
+      "sessionId": "sess_1793660212519_p0212kt",
+      "path": "/",
+      "title": "",
+      "referrer": "http://localhost:3000/admin/mother-trees",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-11-03T07:15:44.557Z"
+    },
+    {
+      "id": "pv-1793689798074-pxuep",
+      "sessionId": "sess_1793660212519_p0212kt",
+      "path": "/book/EM-0426-D",
+      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
+      "referrer": "http://localhost:3000/book/EM-0426-D",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-11-03T07:09:58.074Z"
+    },
     {
       "id": "pv-1793688143818-k9rdh",
       "sessionId": "sess_1793660212519_p0212kt",
@@ -2835,6 +3281,62 @@
       "visitorId": "farmer_session_beta",
       "firstViewedAt": "2026-11-03T06:54:34.774Z",
       "lastViewedAt": "2026-11-03T06:54:34.774Z"
+    },
+    {
+      "id": "bv-1793690161101-121",
+      "batchCode": "EM-1026-J",
+      "visitorId": "v_suy64p0tv6_1793682534037",
+      "firstViewedAt": "2026-11-03T07:16:01.101Z",
+      "lastViewedAt": "2026-11-03T07:16:01.102Z"
+    },
+    {
+      "id": "bv-1793690467815-636",
+      "batchCode": "EM-0526-E",
+      "visitorId": "v_suy64p0tv6_1793682534037",
+      "firstViewedAt": "2026-11-03T07:21:07.815Z",
+      "lastViewedAt": "2026-11-03T07:21:07.815Z"
+    },
+    {
+      "id": "bv-1793694265461-676",
+      "batchCode": "EM-0426-D",
+      "visitorId": "v_za1ddedhwe_1793694266490",
+      "firstViewedAt": "2026-11-03T08:24:25.461Z",
+      "lastViewedAt": "2026-11-03T08:24:25.461Z"
+    },
+    {
+      "id": "bv-1793694290874-686",
+      "batchCode": "EM-0426-D",
+      "visitorId": "v_de3unhowjy_1793694291915",
+      "firstViewedAt": "2026-11-03T08:24:50.874Z",
+      "lastViewedAt": "2026-11-05T07:21:16.293Z"
+    },
+    {
+      "id": "bv-1793773669331-655",
+      "batchCode": "SUN-SE-F001-112026-B001",
+      "visitorId": "v_2dy0082kaf_1793773667051",
+      "firstViewedAt": "2026-11-04T06:27:49.331Z",
+      "lastViewedAt": "2026-11-04T06:29:13.914Z"
+    },
+    {
+      "id": "bv-1793948748316-825",
+      "batchCode": "SUN-SE-F001-112026-B001",
+      "visitorId": "v_52f0hzgvyy_1793948747434",
+      "firstViewedAt": "2026-11-06T07:05:48.316Z",
+      "lastViewedAt": "2026-11-06T07:05:48.316Z"
+    },
+    {
+      "id": "bv-1793989500238-524",
+      "batchCode": "EF01-Nov26-B5",
+      "visitorId": "farmer_session_alpha",
+      "firstViewedAt": "2026-11-06T18:25:00.238Z",
+      "lastViewedAt": "2026-11-06T18:25:13.324Z"
+    },
+    {
+      "id": "bv-1793989537170-174",
+      "batchCode": "EF01-Nov26-B5",
+      "visitorId": "farmer_session_beta",
+      "firstViewedAt": "2026-11-06T18:25:37.170Z",
+      "lastViewedAt": "2026-11-06T18:25:37.170Z"
     }
   ],
   "youtubeVideos": [

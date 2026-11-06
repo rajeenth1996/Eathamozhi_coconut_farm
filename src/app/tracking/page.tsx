@@ -3,8 +3,10 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { useLanguage } from '@/context/LanguageContext';
 
 function TrackingContent() {
+  const { isTamil } = useLanguage();
   const searchParams = useSearchParams();
   const initialMobile = searchParams.get('mobile') || searchParams.get('id') || searchParams.get('bookingId') || '';
 
@@ -59,9 +61,17 @@ function TrackingContent() {
     <>
       <section className="hero-ambient-mesh text-white py-5 position-relative overflow-hidden border-bottom border-success border-opacity-25">
         <div className="container position-relative py-3">
-          <span className="badge bg-warning text-dark px-3 py-2 rounded-pill mb-2 fw-bold">REAL-TIME ORDER TRACKER</span>
-          <h1 className="fw-bold mb-0 text-light">Track Your Sapling Orders</h1>
-          <p className="text-light opacity-75 small mt-1">Enter your phone number to view all your coconut sapling orders and status</p>
+          <span className="badge bg-warning text-dark px-3 py-2 rounded-pill mb-2 fw-bold">
+            {isTamil ? 'நேரடி ஆர்டர் கண்காணிப்பு' : 'REAL-TIME ORDER TRACKER'}
+          </span>
+          <h1 className="fw-bold mb-0 text-light">
+            {isTamil ? 'உங்கள் தென்னங்கன்றுகள் ஆர்டரை கண்காணிக்க' : 'Track Your Sapling Orders'}
+          </h1>
+          <p className="text-light opacity-75 small mt-1">
+            {isTamil 
+              ? 'உங்கள் கைபேசி எண்ணை உள்ளிட்டு ஆர்டர் விவரங்கள் மற்றும் பார்சல் நிலையை காண்க' 
+              : 'Enter your phone number to view all your coconut sapling orders and status'}
+          </p>
         </div>
       </section>
 
@@ -70,13 +80,16 @@ function TrackingContent() {
           
           {/* Phone Number Only Search Card */}
           <div className="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
-            <h5 className="fw-bold text-dark mb-3"><i className="bi bi-phone-vibrate me-2 text-success"></i> Enter Your Phone Number</h5>
+            <h5 className="fw-bold text-dark mb-3">
+              <i className="bi bi-phone-vibrate me-2 text-success"></i> 
+              {isTamil ? 'உங்கள் கைபேசி எண்ணை உள்ளிடவும்' : 'Enter Your Phone Number'}
+            </h5>
             <form onSubmit={handleSearch} className="row g-2 align-items-center">
               <div className="col-md-9">
                 <input 
                   type="tel" 
                   className="form-control form-control-lg border-2 border-success" 
-                  placeholder="Enter 10-digit Phone / WhatsApp Number..."
+                  placeholder={isTamil ? '10 இலக்க தொலைபேசி / வாட்ஸ்அப் எண்...' : 'Enter 10-digit Phone / WhatsApp Number...'}
                   value={mobile}
                   onChange={e => setMobile(e.target.value)}
                   required
@@ -86,9 +99,9 @@ function TrackingContent() {
               <div className="col-md-3">
                 <button type="submit" className="btn btn-success btn-lg fw-bold w-100 shadow-sm" disabled={loading}>
                   {loading ? (
-                    <span><span className="spinner-border spinner-border-sm me-1"></span> Searching...</span>
+                    <span><span className="spinner-border spinner-border-sm me-1"></span> {isTamil ? 'தேடுகிறது...' : 'Searching...'}</span>
                   ) : (
-                    <span><i className="bi bi-search me-1"></i> Track Orders</span>
+                    <span><i className="bi bi-search me-1"></i> {isTamil ? 'ஆர்டரை காண்க' : 'Track Orders'}</span>
                   )}
                 </button>
               </div>

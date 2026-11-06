@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import ImageCarousel from '@/components/ImageCarousel';
 import { getSaplingMetrics } from '@/lib/metrics';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface LiveStockTerminalProps {
   initialBatch?: any;
@@ -11,6 +12,7 @@ interface LiveStockTerminalProps {
 }
 
 export default function LiveStockTerminal({ initialBatch, initialBatches = [] }: LiveStockTerminalProps) {
+  const { t, isTamil } = useLanguage();
   const [batches, setBatches] = useState<any[]>(initialBatches);
   const [selectedBatchCode, setSelectedBatchCode] = useState<string>(initialBatch?.batchCode || '');
   const [loading, setLoading] = useState<boolean>(false);
@@ -99,8 +101,12 @@ export default function LiveStockTerminal({ initialBatch, initialBatches = [] }:
           <div className="py-3 px-4 d-flex flex-wrap justify-content-between align-items-center gap-2" style={{ background: 'linear-gradient(135deg, #022c22 0%, #064e3b 100%)' }}>
             <div className="d-flex align-items-center gap-2 flex-wrap">
               <span className="pulse-indicator"></span>
-              <span className="badge bg-warning text-dark fw-bold px-2 py-1">LIVE STOCK TERMINAL</span>
-              <span className="text-light fw-bold small">Ready for Immediate Booking &amp; Dispatch</span>
+              <span className="badge bg-warning text-dark fw-bold px-2 py-1">
+                {isTamil ? 'நேரடி நாற்றுப்பண்ணை இருப்பு' : 'LIVE STOCK TERMINAL'}
+              </span>
+              <span className="text-light fw-bold small">
+                {isTamil ? 'உடனடி முன்பதிவு & நேரடி விநியோகம்' : 'Ready for Immediate Booking & Dispatch'}
+              </span>
               {loading && (
                 <span className="spinner-border spinner-border-sm text-success" role="status" title="Syncing live farm stock..."></span>
               )}
@@ -111,7 +117,7 @@ export default function LiveStockTerminal({ initialBatch, initialBatches = [] }:
               {availableBatches.length > 1 && (
                 <div className="d-flex align-items-center gap-1">
                   <label htmlFor="terminal-batch-select" className="text-light opacity-75 extra-small fw-semibold d-none d-md-inline">
-                    Select Batch:
+                    {isTamil ? 'தொகுதி தேர்வு:' : 'Select Batch:'}
                   </label>
                   <select
                     id="terminal-batch-select"
@@ -122,7 +128,7 @@ export default function LiveStockTerminal({ initialBatch, initialBatches = [] }:
                   >
                     {availableBatches.map(b => (
                       <option key={b.batchCode} value={b.batchCode}>
-                        {b.name || b.batchCode} ({b.availableQuantity} left)
+                        {b.name || b.batchCode} ({b.availableQuantity} {isTamil ? 'மீதம்' : 'left'})
                       </option>
                     ))}
                   </select>
@@ -153,10 +159,10 @@ export default function LiveStockTerminal({ initialBatch, initialBatches = [] }:
                 </div>
                 <div className="d-flex justify-content-between align-items-center mt-2 px-1">
                   <span className="badge bg-light text-secondary border extra-small">
-                    <i className="bi bi-camera-fill me-1"></i> Real Batch Photos
+                    <i className="bi bi-camera-fill me-1"></i> {isTamil ? 'உண்மையான நாற்றுப் புகைப்படங்கள்' : 'Real Batch Photos'}
                   </span>
                   <span className="text-danger small fw-semibold">
-                    <i className="bi bi-eye-fill me-1"></i> 🔥 {currentBatch?.viewsCount ?? 0} farmers viewed
+                    <i className="bi bi-eye-fill me-1"></i> 🔥 {currentBatch?.viewsCount ?? 0} {isTamil ? 'விவசாயிகள் பார்த்துள்ளனர்' : 'farmers viewed'}
                   </span>
                 </div>
               </div>
@@ -171,10 +177,10 @@ export default function LiveStockTerminal({ initialBatch, initialBatches = [] }:
                           Batch ID: {currentBatch?.batchCode}
                         </span>
                         <span className="badge bg-light text-dark border">
-                          Age: <strong className="text-dark">{currentBatch?.age || getSaplingMetrics(currentBatch?.seededDate).age}</strong>
+                          {isTamil ? 'வயது' : 'Age'}: <strong className="text-dark">{currentBatch?.age || getSaplingMetrics(currentBatch?.seededDate).age}</strong>
                         </span>
                         <span className="badge bg-light text-dark border">
-                          Height: <strong className="text-dark">{currentBatch?.height || getSaplingMetrics(currentBatch?.seededDate).height}</strong>
+                          {isTamil ? 'உயரம்' : 'Height'}: <strong className="text-dark">{currentBatch?.height || getSaplingMetrics(currentBatch?.seededDate).height}</strong>
                         </span>
                       </div>
                       <p className="text-muted small mb-0">
@@ -184,7 +190,7 @@ export default function LiveStockTerminal({ initialBatch, initialBatches = [] }:
                             : (currentBatch?.parentPalmCode ? [currentBatch.parentPalmCode] : []);
                           return (
                             <>
-                              Mother {treeCodes.length > 1 ? 'Trees' : 'Tree'}: {(treeCodes as string[]).map((c: string, i: number) => (
+                              {isTamil ? 'தாய் மரம்' : `Mother ${treeCodes.length > 1 ? 'Trees' : 'Tree'}`}: {(treeCodes as string[]).map((c: string, i: number) => (
                                 <span key={c}>
                                   <Link href={`/parent-palm/${c}`} className="text-success fw-bold text-decoration-none hover-underline">
                                     {c} <i className="bi bi-arrow-up-right-square small"></i>
@@ -199,36 +205,42 @@ export default function LiveStockTerminal({ initialBatch, initialBatches = [] }:
                     </div>
                   <div className="text-end">
                     <span className="display-6 fw-bold text-success">₹{currentBatch?.price}</span>
-                    <small className="text-muted d-block extra-small">per sapling</small>
+                    <small className="text-muted d-block extra-small">{isTamil ? 'ஒரு கன்று' : 'per sapling'}</small>
                   </div>
                 </div>
 
                 {/* Stock Stats Grid */}
                 <div className="row text-center bg-light p-3 rounded-4 mb-3 border g-2">
                   <div className="col-4 border-end">
-                    <small className="text-muted d-block extra-small text-uppercase fw-bold">Net Stock</small>
+                    <small className="text-muted d-block extra-small text-uppercase fw-bold">
+                      {isTamil ? 'மொத்த உற்பத்தி' : 'Net Stock'}
+                    </small>
                     <span className="fs-4 fw-bold text-dark">{netProduced}</span>
                     {adj !== 0 && (
                       <small className="text-muted extra-small d-block text-nowrap">({adj > 0 ? `+${adj}` : adj} audit)</small>
                     )}
                   </div>
                   <div className="col-4 border-end">
-                    <small className="text-muted d-block extra-small text-uppercase fw-bold">Booked / Sold</small>
+                    <small className="text-muted d-block extra-small text-uppercase fw-bold">
+                      {isTamil ? 'முன்பதிவானவை' : 'Booked / Sold'}
+                    </small>
                     <span className="fs-4 fw-bold text-primary">{bookedQty}</span>
-                    <small className="text-muted extra-small d-block">confirmed</small>
+                    <small className="text-muted extra-small d-block">{isTamil ? 'உறுதியானது' : 'confirmed'}</small>
                   </div>
                   <div className="col-4">
-                    <small className="text-muted d-block extra-small text-uppercase fw-bold">Available Now</small>
+                    <small className="text-muted d-block extra-small text-uppercase fw-bold">
+                      {isTamil ? 'தற்போது இருப்பு' : 'Available Now'}
+                    </small>
                     <span className="fs-4 fw-bold text-success">{availQty}</span>
-                    <small className="text-success extra-small d-block fw-semibold">ready</small>
+                    <small className="text-success extra-small d-block fw-semibold">{isTamil ? 'தயார்' : 'ready'}</small>
                   </div>
                 </div>
 
                 {/* Booking Progress Bar */}
                 <div className="mb-4">
                   <div className="d-flex justify-content-between small fw-bold mb-1">
-                    <span className="text-secondary">Batch Booking Progress</span>
-                    <span className="text-success">{bookedPct}% Booked ({availQty} saplings left)</span>
+                    <span className="text-secondary">{isTamil ? 'தொகுதி முன்பதிவு முன்னேற்றம்' : 'Batch Booking Progress'}</span>
+                    <span className="text-success">{bookedPct}% {isTamil ? 'முன்பதிவு' : 'Booked'} ({availQty} {isTamil ? 'கன்றுகள் மீதம்' : 'saplings left'})</span>
                   </div>
                   <div className="progress" style={{ height: '12px', borderRadius: '9999px', backgroundColor: '#e2e8f0' }}>
                     <div 
@@ -246,22 +258,22 @@ export default function LiveStockTerminal({ initialBatch, initialBatches = [] }:
                 <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 pt-2 border-top">
                   <div className="d-flex align-items-center text-muted small">
                     <i className="bi bi-truck text-success fs-5 me-2"></i>
-                    <span>Dispatched securely within 24-48 hours of confirmation</span>
+                    <span>{isTamil ? 'ஆர்டர் உறுதிசெய்த 24-48 மணிநேரத்திற்குள் பாதுகாப்பான பார்சலில் அனுப்பப்படும்' : 'Dispatched securely within 24-48 hours of confirmation'}</span>
                   </div>
 
                   <div className="d-flex gap-2">
                     <Link href={`/batches/${currentBatch?.batchCode}`} className="btn btn-outline-secondary px-3 py-2 rounded-3 fw-semibold">
-                      View Pedigree
+                      {isTamil ? 'மர பாரம்பரியம்' : 'View Pedigree'}
                     </Link>
                     <Link href={`/book/${currentBatch?.batchCode}`} className="btn-emerald text-decoration-none px-4 py-2 rounded-3 fs-6">
-                      <i className="bi bi-cart-check-fill"></i> Book Now
+                      <i className="bi bi-cart-check-fill"></i> {isTamil ? 'இப்போதே முன்பதிவு செய்க' : 'Book Now'}
                     </Link>
                   </div>
                 </div>
 
                 <div className="d-flex justify-content-end align-items-center mt-3 pt-2 text-muted extra-small border-top border-light">
                   <span>
-                    Status: <strong className="text-dark">{currentBatch?.status || 'AVAILABLE'}</strong> &bull; Total Available across all batches: <strong className="text-success">{batches.reduce((acc, b) => acc + (b.availableQuantity || 0), 0)}</strong>
+                    {isTamil ? 'நிலை:' : 'Status:'} <strong className="text-dark">{currentBatch?.status || 'AVAILABLE'}</strong> &bull; {isTamil ? 'அனைத்து தொகுப்பு மொத்த இருப்பு:' : 'Total Available across all batches:'} <strong className="text-success">{batches.reduce((acc, b) => acc + (b.availableQuantity || 0), 0)}</strong>
                   </span>
                 </div>
 

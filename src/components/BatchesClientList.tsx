@@ -4,12 +4,14 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import ImageCarousel from '@/components/ImageCarousel';
 import { getSaplingMetrics } from '@/lib/metrics';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface BatchesClientListProps {
   initialBatches: any[];
 }
 
 export default function BatchesClientList({ initialBatches }: BatchesClientListProps) {
+  const { isTamil } = useLanguage();
   const [batches, setBatches] = useState<any[]>(initialBatches);
   const [filter, setFilter] = useState<string>('ALL');
 
@@ -39,11 +41,11 @@ export default function BatchesClientList({ initialBatches }: BatchesClientListP
       {/* Status Filter Bar */}
       <div className="d-flex flex-wrap justify-content-center gap-2 mb-5">
         {[
-          { id: 'ALL', label: 'All Batches', cls: 'btn-dark' },
-          { id: 'AVAILABLE', label: 'Available Now', cls: 'btn-success' },
-          { id: 'LIMITED', label: 'Limited Stock', cls: 'btn-warning text-dark' },
-          { id: 'COMING_SOON', label: 'Upcoming Batches', cls: 'btn-info text-dark' },
-          { id: 'SOLD_OUT', label: 'Sold Out', cls: 'btn-danger' }
+          { id: 'ALL', label: isTamil ? 'அனைத்து தொகுப்புகள்' : 'All Batches', cls: 'btn-dark' },
+          { id: 'AVAILABLE', label: isTamil ? 'கிடைக்கும் நாற்றுகள்' : 'Available Now', cls: 'btn-success' },
+          { id: 'LIMITED', label: isTamil ? 'குறைந்த இருப்பு' : 'Limited Stock', cls: 'btn-warning text-dark' },
+          { id: 'COMING_SOON', label: isTamil ? 'வரவிருக்கும் நாற்றுகள்' : 'Upcoming Batches', cls: 'btn-info text-dark' },
+          { id: 'SOLD_OUT', label: isTamil ? 'முடிவடைந்தவை' : 'Sold Out', cls: 'btn-danger' }
         ].map(tab => (
           <button 
             key={tab.id}
@@ -77,10 +79,10 @@ export default function BatchesClientList({ initialBatches }: BatchesClientListP
                 
                 {/* Status Badge Ribbon */}
                 <div className="position-absolute top-0 end-0 m-3 z-1" style={{ pointerEvents: 'none' }}>
-                  {b.status === 'AVAILABLE' && <span className="badge bg-success shadow-sm px-3 py-2"><i className="bi bi-check-circle-fill me-1"></i> AVAILABLE</span>}
-                  {b.status === 'LIMITED' && <span className="badge bg-warning text-dark shadow-sm px-3 py-2"><i className="bi bi-exclamation-triangle-fill me-1"></i> LIMITED</span>}
-                  {b.status === 'COMING_SOON' && <span className="badge bg-info text-dark shadow-sm px-3 py-2"><i className="bi bi-clock-history me-1"></i> UPCOMING</span>}
-                  {b.status === 'SOLD_OUT' && <span className="badge bg-danger shadow-sm px-3 py-2">SOLD OUT</span>}
+                  {b.status === 'AVAILABLE' && <span className="badge bg-success shadow-sm px-3 py-2"><i className="bi bi-check-circle-fill me-1"></i> {isTamil ? 'கிடைக்கிறது' : 'AVAILABLE'}</span>}
+                  {b.status === 'LIMITED' && <span className="badge bg-warning text-dark shadow-sm px-3 py-2"><i className="bi bi-exclamation-triangle-fill me-1"></i> {isTamil ? 'குறைந்த இருப்பு' : 'LIMITED'}</span>}
+                  {b.status === 'COMING_SOON' && <span className="badge bg-info text-dark shadow-sm px-3 py-2"><i className="bi bi-clock-history me-1"></i> {isTamil ? 'வரவிருக்கிறது' : 'UPCOMING'}</span>}
+                  {b.status === 'SOLD_OUT' && <span className="badge bg-danger shadow-sm px-3 py-2">{isTamil ? 'முடிவடைந்தது' : 'SOLD OUT'}</span>}
                 </div>
 
                 <div className="overflow-hidden bg-light position-relative w-100" style={{ height: '240px' }}>
@@ -121,8 +123,8 @@ export default function BatchesClientList({ initialBatches }: BatchesClientListP
                     <h5 className="fw-bold text-dark mb-2">{b.name}</h5>
 
                     <div className="bg-light p-2 rounded-3 mb-3 small text-secondary d-flex justify-content-between">
-                      <div><i className="bi bi-calendar3 me-1 text-success"></i> Age: <strong className="text-dark">{b.age || getSaplingMetrics(b.seededDate).age}</strong></div>
-                      <div><i className="bi bi-rulers me-1 text-success"></i> Height: <strong className="text-dark">{b.height || getSaplingMetrics(b.seededDate).height}</strong></div>
+                      <div><i className="bi bi-calendar3 me-1 text-success"></i> {isTamil ? 'வயது' : 'Age'}: <strong className="text-dark">{b.age || getSaplingMetrics(b.seededDate).age}</strong></div>
+                      <div><i className="bi bi-rulers me-1 text-success"></i> {isTamil ? 'உயரம்' : 'Height'}: <strong className="text-dark">{b.height || getSaplingMetrics(b.seededDate).height}</strong></div>
                     </div>
 
                     {/* Stock Stats */}
@@ -133,18 +135,18 @@ export default function BatchesClientList({ initialBatches }: BatchesClientListP
                         <>
                           <div className="row text-center border-top border-bottom py-2 mb-3 g-0 bg-light rounded-2">
                             <div className="col-4 border-end">
-                              <small className="text-muted d-block extra-small text-uppercase fw-bold">Net Stock</small>
+                              <small className="text-muted d-block extra-small text-uppercase fw-bold">{isTamil ? 'மொத்த உற்பத்தி' : 'Net Stock'}</small>
                               <span className="fw-bold text-dark">{netStock}</span>
                               {adj !== 0 && (
                                 <small className="text-muted extra-small d-block text-nowrap">({adj > 0 ? `+${adj}` : adj} audit)</small>
                               )}
                             </div>
                             <div className="col-4 border-end">
-                              <small className="text-muted d-block extra-small text-uppercase fw-bold">Booked</small>
+                              <small className="text-muted d-block extra-small text-uppercase fw-bold">{isTamil ? 'முன்பதிவு' : 'Booked'}</small>
                               <span className="fw-bold text-primary">{b.bookedQuantity}</span>
                             </div>
                             <div className="col-4">
-                              <small className="text-muted d-block extra-small text-uppercase fw-bold">Available</small>
+                              <small className="text-muted d-block extra-small text-uppercase fw-bold">{isTamil ? 'இருப்பு' : 'Available'}</small>
                               <span className="fw-bold text-success">{b.availableQuantity}</span>
                             </div>
                           </div>
@@ -158,8 +160,8 @@ export default function BatchesClientList({ initialBatches }: BatchesClientListP
                               ></div>
                             </div>
                             <div className="d-flex justify-content-between text-muted extra-small mt-1">
-                              <span>{b.bookedPercentage}% booked</span>
-                              <span className="fw-bold text-success">{b.availableQuantity} saplings available</span>
+                              <span>{b.bookedPercentage}% {isTamil ? 'முன்பதிவு' : 'booked'}</span>
+                              <span className="fw-bold text-success">{b.availableQuantity} {isTamil ? 'கன்றுகள் இருப்பு' : 'saplings available'}</span>
                             </div>
                           </div>
                         </>
@@ -170,15 +172,15 @@ export default function BatchesClientList({ initialBatches }: BatchesClientListP
                   <div className="pt-3 border-top d-flex justify-content-between align-items-center">
                     <div>
                       <span className="fs-4 fw-bold text-success">₹{b.price}</span>
-                      <small className="text-muted"> / sapling</small>
+                      <small className="text-muted"> {isTamil ? '/ கன்று' : '/ sapling'}</small>
                     </div>
                     <div className="d-flex gap-2">
                       <Link href={`/batches/${b.batchCode}`} className="btn btn-sm btn-outline-secondary rounded-3">
-                        Details
+                        {isTamil ? 'விவரங்கள்' : 'Details'}
                       </Link>
                       {b.status !== 'SOLD_OUT' && (
                         <Link href={`/book/${b.batchCode}`} className="btn btn-sm btn-emerald text-decoration-none rounded-3 px-3">
-                          Book Now
+                          {isTamil ? 'முன்பதிவு' : 'Book Now'}
                         </Link>
                       )}
                     </div>

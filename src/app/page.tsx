@@ -6,6 +6,7 @@ import HeroVideo from '@/components/HeroVideo';
 import ImageCarousel from '@/components/ImageCarousel';
 import YouTubeSection from '@/components/YouTubeSection';
 import { formatApproximateAge } from '@/lib/types';
+import { Trans } from '@/context/LanguageContext';
 
 export const dynamic = 'force-dynamic';
 
@@ -46,10 +47,12 @@ export default async function Home() {
               {/* Trust Badge */}
               <div className="d-inline-flex align-items-center gap-2 mb-3">
                 <span className="badge-gi-pill d-inline-flex align-items-center gap-1 shadow-sm">
-                  <i className="bi bi-patch-check-fill text-warning"></i> GOVERNMENT GI TAG REGISTERED
+                  <i className="bi bi-patch-check-fill text-warning"></i>{' '}
+                  <Trans en="GOVERNMENT GI TAG REGISTERED" ta="மத்திய அரசு புவிசார் குறியீடு (GI Tag) பெற்றது" />
                 </span>
                 <span className="badge-farm-pill d-none d-sm-inline-flex align-items-center gap-1 shadow-sm">
-                  <i className="bi bi-shield-lock-fill text-success"></i> 100% FARM-RAISED IN KANYAKUMARI
+                  <i className="bi bi-shield-lock-fill text-success"></i>{' '}
+                  <Trans en="100% FARM-RAISED IN KANYAKUMARI" ta="100% கன்னியாகுமரி பாரம்பரிய பண்ணை உற்பத்தி" />
                 </span>
               </div>
 
@@ -57,25 +60,29 @@ export default async function Home() {
               <h1 className="fw-extrabold mb-3 text-light tracking-tight" style={{ fontSize: 'clamp(2.2rem, 5vw, 3.85rem)', lineHeight: 1.18 }}>
                 <span className="d-block text-gradient-gold text-uppercase fw-extrabold mb-2" style={{ fontSize: 'clamp(0.95rem, 2.2vw, 1.35rem)', letterSpacing: '0.14em' }}>
                   <i className="bi bi-award-fill text-warning me-2"></i>
-                  Mainland India’s Only GI-Tagged Coconut Variety
+                  <Trans en="Mainland India’s Only GI-Tagged Coconut Variety" ta="இந்திய நிலப்பரப்பின் ஒரே புவிசார் குறியீடு பெற்ற தென்னை ரகம்" />
                 </span>
-                <span className="text-white">Authentic </span>
-                <span className="text-gradient-emerald">Eathamozhi Tall</span>
-                <span className="text-white"> Coconut Seedlings & Saplings</span>
+                <span className="text-white"><Trans en="Authentic " ta="பாரம்பரிய " /></span>
+                <span className="text-gradient-emerald"><Trans en="Eathamozhi Tall" ta="ஈத்தாமொழி நெட்டை" /></span>
+                <span className="text-white"><Trans en=" Coconut Seedlings & Saplings" ta=" தென்னங்கன்றுகள் & நாற்றுகள்" /></span>
               </h1>
 
               <p className="lead text-light opacity-90 mb-4 mx-auto" style={{ maxWidth: '820px', fontSize: '1.2rem' }}>
-                Buy authentic GI-Tagged coconut seedlings and saplings directly from our family farm in Kanyakumari. 
-                100% farm-grown with certified mother tree traceability, transparent live nursery batches, and secure pan-India delivery.
+                <Trans 
+                  en="Buy authentic GI-Tagged coconut seedlings and saplings directly from our family farm in Kanyakumari. 100% farm-grown with certified mother tree traceability, transparent live nursery batches, and secure pan-India delivery." 
+                  ta="கன்னியாகுமரி மாவட்டம் ஈத்தாமொழி பாரம்பரிய பண்ணையிலிருந்து நேரடியாக உயர்தர புவிசார் குறியீடு பெற்ற தென்னங்கன்றுகளைப் பெறுங்கள். 100% தாய் மர பாரம்பரிய உத்தரவாதம், வெளிப்படையான நாற்றுப்பண்ணை இருப்பு மற்றும் பாதுகாப்பான விநியோகம்."
+                />
               </p>
 
               {/* Action Buttons */}
               <div className="d-flex flex-wrap justify-content-center gap-3 mb-5">
                 <Link href="/batches" className="btn-emerald text-decoration-none px-4 py-3 fs-6">
-                  <i className="bi bi-grid-fill"></i> View Live Batches ({batches.length} Available)
+                  <i className="bi bi-grid-fill"></i>{' '}
+                  <Trans en={`View Live Batches (${batches.length} Available)`} ta={`நேரடி நாற்றுகளை காண்க (${batches.length} தொகுப்புகள்)`} />
                 </Link>
                 <Link href="/farm" className="btn-glass text-decoration-none px-4 py-3 fs-6">
-                  <i className="bi bi-tree"></i> Trace Our Mother Trees
+                  <i className="bi bi-tree"></i>{' '}
+                  <Trans en="Trace Our Mother Trees" ta="தாய் மரங்களை காண" />
                 </Link>
                 <a 
                   href={`https://wa.me/${process.env.NEXT_PUBLIC_FARM_WHATSAPP || '919486880641'}?text=Hello%20Eathamozhi%20Farm,%20I%20want%20to%20inquire%20about%20coconut%20seedlings%20and%20saplings`}
@@ -83,7 +90,7 @@ export default async function Home() {
                   rel="noreferrer"
                   className="btn btn-outline-success border-success text-success fw-semibold px-4 py-3 d-inline-flex align-items-center gap-2 rounded-3"
                 >
-                  <i className="bi bi-whatsapp"></i> Chat on WhatsApp
+                  <i className="bi bi-whatsapp"></i> <Trans en="Chat on WhatsApp" ta="வாட்ஸ்அப்பில் பேச" />
                 </a>
               </div>
 
@@ -92,25 +99,33 @@ export default async function Home() {
                 <div className="col-6 col-md-3">
                   <div className="glass-card-dark p-3 text-center hover-lift-subtle">
                     <span className="display-6 fw-bold text-gradient-gold d-block">80+</span>
-                    <small className="text-light opacity-80 extra-small text-uppercase fw-semibold">Years Ancestral Grove</small>
+                    <small className="text-light opacity-80 extra-small text-uppercase fw-semibold">
+                      <Trans en="Years Ancestral Grove" ta="ஆண்டுகள் பாரம்பரிய தோப்பு" />
+                    </small>
                   </div>
                 </div>
                 <div className="col-6 col-md-3">
                   <div className="glass-card-dark p-3 text-center hover-lift-subtle">
                     <span className="display-6 fw-bold text-gradient-emerald d-block">100%</span>
-                    <small className="text-light opacity-80 extra-small text-uppercase fw-semibold">Farm Grown Seedlings</small>
+                    <small className="text-light opacity-80 extra-small text-uppercase fw-semibold">
+                      <Trans en="Farm Grown Seedlings" ta="சொந்த பண்ணை நாற்றுகள்" />
+                    </small>
                   </div>
                 </div>
                 <div className="col-6 col-md-3">
                   <div className="glass-card-dark p-3 text-center hover-lift-subtle">
                     <span className="display-6 fw-bold text-light d-block">{motherPalms.length}+</span>
-                    <small className="text-light opacity-80 extra-small text-uppercase fw-semibold">Verified Mother Trees</small>
+                    <small className="text-light opacity-80 extra-small text-uppercase fw-semibold">
+                      <Trans en="Verified Mother Trees" ta="சான்றளிக்கப்பட்ட தாய் மரங்கள்" />
+                    </small>
                   </div>
                 </div>
                 <div className="col-6 col-md-3">
                   <div className="glass-card-dark p-3 text-center hover-lift-subtle">
                     <span className="display-6 fw-bold text-info d-block">100%</span>
-                    <small className="text-light opacity-80 extra-small text-uppercase fw-semibold">Transparent Stock</small>
+                    <small className="text-light opacity-80 extra-small text-uppercase fw-semibold">
+                      <Trans en="Transparent Stock" ta="நேரடி வெளிப்படையான இருப்பு" />
+                    </small>
                   </div>
                 </div>
               </div>
@@ -128,11 +143,14 @@ export default async function Home() {
         <div className="container">
           <div className="text-center mb-4">
             <span className="badge-farm-pill mb-2">
-              <i className="bi bi-compass-fill me-1"></i> GROVE PLANNING ENGINE
+              <i className="bi bi-compass-fill me-1"></i> <Trans en="GROVE PLANNING ENGINE" ta="தோட்ட திட்டமிடல் கால்குலேட்டர்" />
             </span>
-            <h2 className="fw-bold text-dark">Plan Your Coconut Plantation</h2>
+            <h2 className="fw-bold text-dark"><Trans en="Plan Your Coconut Plantation" ta="உங்கள் தென்னந்தோப்பை திட்டமிடுங்கள்" /></h2>
             <p className="text-muted mx-auto" style={{ maxWidth: '650px' }}>
-              Estimate spacing, required sapling count, and total investment for your acreage in seconds.
+              <Trans 
+                en="Estimate spacing, required sapling count, and total investment for your acreage in seconds." 
+                ta="உங்கள் நிலப்பரப்பிற்கு தேவையான தென்னங்கன்றுகளின் எண்ணிக்கை, நடவு இடைவெளி மற்றும் மதிப்பீட்டை உடனே கணக்கிடுங்கள்." 
+              />
             </p>
           </div>
 
@@ -145,12 +163,14 @@ export default async function Home() {
         <div className="container">
           <div className="text-center mb-5">
             <span className="badge-gi-pill mb-2">
-              <i className="bi bi-tree-fill me-1"></i> MOTHER TREE REGISTRY
+              <i className="bi bi-tree-fill me-1"></i> <Trans en="MOTHER TREE REGISTRY" ta="தாய் மரங்கள் பதிவு" />
             </span>
-            <h2 className="fw-bold text-dark">Verified Mother Trees (Pedigree Origin)</h2>
+            <h2 className="fw-bold text-dark"><Trans en="Verified Mother Trees (Pedigree Origin)" ta="சான்றளிக்கப்பட்ட தாய் மரங்கள் (பாரம்பரியம்)" /></h2>
             <p className="text-muted mx-auto" style={{ maxWidth: '680px' }}>
-              Every sapling is harvested directly from verified mother palms monitored for decades in our own grove.
-              We never source from untraceable commercial intermediaries.
+              <Trans 
+                en="Every sapling is harvested directly from verified mother palms monitored for decades in our own grove. We never source from untraceable commercial intermediaries." 
+                ta="ஒவ்வொரு தென்னங்கன்றும் எங்களின் சொந்த தோப்பில் பல தசாப்தங்களாக கண்காணிக்கப்படும் சிறந்த தாய் மரங்களிலிருந்து மட்டுமே பெறப்படுகிறது." 
+              />
             </p>
           </div>
 
@@ -200,7 +220,7 @@ export default async function Home() {
                           href={`/parent-palm/${palm.code}`} 
                           className="btn btn-outline-success btn-sm w-100 fw-semibold rounded-3"
                         >
-                          Inspect Full Profile <i className="bi bi-arrow-right ms-1"></i>
+                          <Trans en="Inspect Full Profile" ta="முழு விவரம் காண்க" /> <i className="bi bi-arrow-right ms-1"></i>
                         </Link>
                       </div>
                     </div>
@@ -212,7 +232,7 @@ export default async function Home() {
             {motherPalms.length > 0 && (
               <div className="text-center mt-4">
                 <Link href="/farm" className="btn btn-outline-dark px-4 py-2 rounded-3 fw-semibold">
-                  Explore All {motherPalms.length} Verified Mother Trees <i className="bi bi-arrow-right ms-1"></i>
+                  <Trans en={`Explore All ${motherPalms.length} Verified Mother Trees`} ta={`அனைத்து ${motherPalms.length} தாய் மரங்களையும் காண்க`} /> <i className="bi bi-arrow-right ms-1"></i>
                 </Link>
               </div>
             )}
@@ -223,9 +243,9 @@ export default async function Home() {
       <section className="py-5 bg-white border-top border-bottom">
         <div className="container py-3">
           <div className="text-center mb-5">
-            <span className="badge-gi-pill mb-2">PROVEN PERFORMANCE</span>
-            <h2 className="fw-bold text-dark">Why Farmers Choose Eathamozhi Tall</h2>
-            <p className="text-muted">Unique agronomic traits of mainland India's only GI-Tagged coconut</p>
+            <span className="badge-gi-pill mb-2"><Trans en="PROVEN PERFORMANCE" ta="உறுதிப்படுத்தப்பட்ட மகசூல்" /></span>
+            <h2 className="fw-bold text-dark"><Trans en="Why Farmers Choose Eathamozhi Tall" ta="விவசாயிகள் ஏன் ஈத்தாமொழி நெட்டையை தேர்வு செய்கிறார்கள்?" /></h2>
+            <p className="text-muted"><Trans en="Unique agronomic traits of mainland India's only GI-Tagged coconut" ta="இந்திய நிலப்பரப்பின் ஒரே புவிசார் குறியீடு பெற்ற ஈத்தாமொழி தென்னையின் சிறப்புகள்" /></p>
           </div>
 
           <div className="row g-4">
@@ -234,8 +254,13 @@ export default async function Home() {
                 <div className="bg-success bg-opacity-10 text-success rounded-circle d-inline-flex align-items-center justify-content-center mx-auto mb-3" style={{ width: '64px', height: '64px' }}>
                   <i className="bi bi-shield-shaded fs-2"></i>
                 </div>
-                <h5 className="fw-bold text-dark mb-2">High Drought Resilience</h5>
-                <p className="text-secondary small mb-0">Deep vertical taproot system adapted to fluctuating coastal water tables and prolonged dry seasons.</p>
+                <h5 className="fw-bold text-dark mb-2"><Trans en="High Drought Resilience" ta="வறட்சியை தாங்கும் அதீத திறன்" /></h5>
+                <p className="text-secondary small mb-0">
+                  <Trans 
+                    en="Deep vertical taproot system adapted to fluctuating coastal water tables and prolonged dry seasons." 
+                    ta="ஆழமான வேரமைப்பு நிலத்தடி நீர் மட்டம் குறையும் கோடை காலங்களிலும் வறட்சியை எளிதில் தாங்கி நிலைத்து நிற்கிறது." 
+                  />
+                </p>
               </div>
             </div>
 
@@ -244,8 +269,13 @@ export default async function Home() {
                 <div className="bg-warning bg-opacity-10 text-warning rounded-circle d-inline-flex align-items-center justify-content-center mx-auto mb-3" style={{ width: '64px', height: '64px' }}>
                   <i className="bi bi-droplet-half fs-2 text-warning"></i>
                 </div>
-                <h5 className="fw-bold text-dark mb-2">Superior Copra & Oil</h5>
-                <p className="text-secondary small mb-0">Yields 170g+ copra per nut with an oil content exceeding 68%, commanding premium market prices.</p>
+                <h5 className="fw-bold text-dark mb-2"><Trans en="Superior Copra & Oil" ta="அதிக கொப்பரை & தரமான எண்ணெய்" /></h5>
+                <p className="text-secondary small mb-0">
+                  <Trans 
+                    en="Yields 170g+ copra per nut with an oil content exceeding 68%, commanding premium market prices." 
+                    ta="ஒரு காய்க்கு 170 கிராமுக்கு மேல் பருப்பு மற்றும் 68% க்கும் அதிகமான உயர்தர எண்ணெய் அளவு கிடைக்கிறது." 
+                  />
+                </p>
               </div>
             </div>
 
@@ -254,8 +284,13 @@ export default async function Home() {
                 <div className="bg-info bg-opacity-10 text-info rounded-circle d-inline-flex align-items-center justify-content-center mx-auto mb-3" style={{ width: '64px', height: '64px' }}>
                   <i className="bi bi-wind fs-2 text-info"></i>
                 </div>
-                <h5 className="fw-bold text-dark mb-2">Wind & Storm Stability</h5>
-                <p className="text-secondary small mb-0">Thick trunk bole base circumference protects against coastal cyclone winds and root uprooting.</p>
+                <h5 className="fw-bold text-dark mb-2"><Trans en="Wind & Storm Stability" ta="புயல் & காற்றை தாங்கும் வலிமை" /></h5>
+                <p className="text-secondary small mb-0">
+                  <Trans 
+                    en="Thick trunk bole base circumference protects against coastal cyclone winds and root uprooting." 
+                    ta="கடற்கரை காற்று மற்றும் பலத்த சூறாவளியையும் தாங்கி உறுதியாக நிற்கும் நெகிழ்வான பலமான தண்டுப்பகுதி." 
+                  />
+                </p>
               </div>
             </div>
 
@@ -264,8 +299,13 @@ export default async function Home() {
                 <div className="bg-success bg-opacity-10 text-success rounded-circle d-inline-flex align-items-center justify-content-center mx-auto mb-3" style={{ width: '64px', height: '64px' }}>
                   <i className="bi bi-award-fill fs-2 text-success"></i>
                 </div>
-                <h5 className="fw-bold text-dark mb-2">GI Authenticity Certificate</h5>
-                <p className="text-secondary small mb-0">Every consignment is accompanied by our farm provenance verification seal.</p>
+                <h5 className="fw-bold text-dark mb-2"><Trans en="GI Authenticity Certificate" ta="புவிசார் குறியீடு சான்றிதழ்" /></h5>
+                <p className="text-secondary small mb-0">
+                  <Trans 
+                    en="Every consignment is accompanied by our farm provenance verification seal." 
+                    ta="ஒவ்வொரு கன்று பார்சலுடனும் எங்களின் நேரடி பண்ணை பாரம்பரிய சான்றிதழ் இணைக்கப்படும்." 
+                  />
+                </p>
               </div>
             </div>
           </div>
@@ -276,16 +316,16 @@ export default async function Home() {
       <section className="py-5 bg-light">
         <div className="container">
           <div className="text-center mb-5">
-            <span className="badge-farm-pill mb-2">FARMER TESTIMONIALS</span>
-            <h2 className="fw-bold text-dark">Trusted by Farmers Across South India</h2>
-            <p className="text-muted">Real feedback from plantation owners who planted our Eathamozhi batches</p>
+            <span className="badge-farm-pill mb-2"><Trans en="FARMER TESTIMONIALS" ta="விவசாயிகளின் நற்சான்றிதழ்கள்" /></span>
+            <h2 className="fw-bold text-dark"><Trans en="Trusted by Farmers Across South India" ta="தென்னிந்திய விவசாயிகளின் நம்பிக்கையைப் பெற்றது" /></h2>
+            <p className="text-muted"><Trans en="Real feedback from plantation owners who planted our Eathamozhi batches" ta="எங்கள் ஈத்தாமொழி நெட்டை கன்றுகளை நட்ட விவசாயிகளின் நேரடி அனுபவம்" /></p>
           </div>
 
           <div className="row g-4">
             {reviews.length === 0 ? (
               <div className="col-12 text-center py-4 text-muted">
                 <i className="bi bi-chat-heart text-muted fs-2 mb-2 d-block"></i>
-                <p className="mb-0">Verified farmer reviews will be posted as plantation consignments are harvested.</p>
+                <p className="mb-0"><Trans en="Verified farmer reviews will be posted as plantation consignments are harvested." ta="விவசாயிகளின் கருத்துக்கள் விரைவில் புதுப்பிக்கப்படும்." /></p>
               </div>
             ) : (
               reviews.map(rev => (
@@ -297,7 +337,7 @@ export default async function Home() {
                         <small className="text-muted"><i className="bi bi-geo-alt me-1"></i> {rev.location}</small>
                       </div>
                       <span className="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1">
-                        <i className="bi bi-check-circle-fill me-1"></i> Verified Buyer ({rev.quantity} Saplings)
+                        <i className="bi bi-check-circle-fill me-1"></i> <Trans en="Verified Buyer" ta="சான்றளிக்கப்பட்ட வாடிக்கையாளர்" /> ({rev.quantity} <Trans en="Saplings" ta="கன்றுகள்" />)
                       </span>
                     </div>
 
@@ -329,14 +369,17 @@ export default async function Home() {
       {/* 7. CALL TO ACTION BANNER */}
       <section className="py-5 bg-dark text-white text-center position-relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #022c22 0%, #064e3b 100%)' }}>
         <div className="container py-4 position-relative z-1">
-          <span className="badge-gi-pill mb-3 d-inline-block">LIMITED SEASONAL HARVEST</span>
-          <h2 className="display-5 fw-bold mb-3">Ready to Plant an Authentic Eathamozhi Grove?</h2>
+          <span className="badge-gi-pill mb-3 d-inline-block"><Trans en="LIMITED SEASONAL HARVEST" ta="பருவகால நேரடி உற்பத்தி" /></span>
+          <h2 className="display-5 fw-bold mb-3"><Trans en="Ready to Plant an Authentic Eathamozhi Grove?" ta="பாரம்பரிய ஈத்தாமொழி தென்னந்தோப்பை நடவு செய்ய தயாரா?" /></h2>
           <p className="lead opacity-90 mx-auto mb-4" style={{ maxWidth: '650px' }}>
-            Pre-book your required saplings directly from upcoming verified batches or request custom crate logistics.
+            <Trans 
+              en="Pre-book your required saplings directly from upcoming verified batches or request custom crate logistics." 
+              ta="உங்களுக்கு தேவையான தரமான தென்னங்கன்றுகளை நேரடியாக முன்பதிவு செய்து பாதுகாப்பான பார்சலில் பெற்றிடுங்கள்." 
+            />
           </p>
           <div className="d-flex flex-wrap justify-content-center gap-3">
             <Link href="/batches" className="btn-gold px-4 py-3 fs-6 text-decoration-none">
-              <i className="bi bi-bag-check-fill"></i> View Available Batches Now
+              <i className="bi bi-bag-check-fill"></i> <Trans en="View Available Batches Now" ta="கிடைக்கும் நாற்றுகளை காண்க" />
             </Link>
             <a 
               href={`https://wa.me/${process.env.NEXT_PUBLIC_FARM_WHATSAPP || '919486880641'}?text=Hello,%20I%20want%20to%20place%20an%20order%20for%20Eathamozhi%20coconut%20seedlings%20and%20saplings`}
@@ -344,7 +387,7 @@ export default async function Home() {
               rel="noreferrer"
               className="btn btn-outline-light px-4 py-3 fs-6 rounded-3 fw-bold"
             >
-              <i className="bi bi-whatsapp me-1 text-success"></i> Speak with Farm Manager
+              <i className="bi bi-whatsapp me-1 text-success"></i> <Trans en="Speak with Farm Manager" ta="பண்ணை மேலாளருடன் பேச" />
             </a>
           </div>
         </div>

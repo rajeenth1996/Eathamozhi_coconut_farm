@@ -3,8 +3,10 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import PatternVisualizer from '@/components/PatternVisualizer';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function PlantingCalculator() {
+  const { isTamil } = useLanguage();
   const [acres, setAcres] = useState<number>(1);
   const [spacingDistance, setSpacingDistance] = useState<number>(25);
   const [spacingType, setSpacingType] = useState<'triangular' | 'square'>('triangular');
@@ -32,19 +34,25 @@ export default function PlantingCalculator() {
         <div className="col-lg-6">
           <div className="d-flex align-items-center gap-2 mb-2">
             <span className="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-1 rounded-pill fw-bold">
-              <i className="bi bi-calculator me-1"></i> FARM PLANNING UTILITY
+              <i className="bi bi-calculator me-1"></i> {isTamil ? 'தோட்ட திட்டமிடல் கால்குலேட்டர்' : 'FARM PLANNING UTILITY'}
             </span>
           </div>
 
-          <h3 className="fw-bold text-dark mb-2">Coconut Grove Planning Calculator</h3>
+          <h3 className="fw-bold text-dark mb-2">
+            {isTamil ? 'தென்னந்தோப்பு திட்டமிடல் கணக்கீடு' : 'Coconut Grove Planning Calculator'}
+          </h3>
           <p className="text-secondary small mb-3">
-            Calculate exact sapling quantity, plantation spacing, pit size, and estimated cost for your agricultural land.
+            {isTamil 
+              ? 'உங்கள் நிலப்பரப்பிற்கு தேவையான தென்னங்கன்றுகளின் துல்லியமான எண்ணிக்கை, இடைவெளி, குழி அளவு மற்றும் மதிப்பீட்டை கணக்கிடுங்கள்.' 
+              : 'Calculate exact sapling quantity, plantation spacing, pit size, and estimated cost for your agricultural land.'}
           </p>
 
           {/* 1. Acreage Slider & Input */}
           <div className="mb-3">
             <div className="d-flex justify-content-between align-items-center mb-2">
-              <label className="fw-bold text-dark small">1. Your Land Area (Acres):</label>
+              <label className="fw-bold text-dark small">
+                {isTamil ? '1. உங்கள் நிலப்பரப்பு (ஏக்கர்):' : '1. Your Land Area (Acres):'}
+              </label>
               <div className="input-group" style={{ maxWidth: '140px' }}>
                 <input 
                   type="number" 
@@ -55,7 +63,9 @@ export default function PlantingCalculator() {
                   onChange={(e) => setAcres(Math.max(0.5, parseFloat(e.target.value) || 0.5))}
                   className="form-control text-center fw-bold"
                 />
-                <span className="input-group-text small bg-light">Acre{acres > 1 ? 's' : ''}</span>
+                <span className="input-group-text small bg-light">
+                  {isTamil ? 'ஏக்கர்' : `Acre${acres > 1 ? 's' : ''}`}
+                </span>
               </div>
             </div>
 
@@ -276,36 +286,52 @@ export default function PlantingCalculator() {
 
             <div className="row g-3 py-3 border-top border-bottom border-success border-opacity-25 my-3">
               <div className="col-6 border-end border-success border-opacity-25">
-                <small className="text-light opacity-75 d-block extra-small text-uppercase">Saplings Required</small>
+                <small className="text-light opacity-75 d-block extra-small text-uppercase">
+                  {isTamil ? 'தேவையான கன்றுகள்' : 'Saplings Required'}
+                </small>
                 <span className="display-6 fw-bold text-gradient-emerald">{totalTrees}</span>
-                <small className="d-block text-light opacity-75 extra-small">palms (~{treesPerAcre}/acre @ {spacingDistance} ft)</small>
+                <small className="d-block text-light opacity-75 extra-small">
+                  {isTamil ? `கன்றுகள் (~${treesPerAcre}/ஏக்கர் @ ${spacingDistance} அடி)` : `palms (~${treesPerAcre}/acre @ ${spacingDistance} ft)`}
+                </small>
               </div>
 
               <div className="col-6">
-                <small className="text-light opacity-75 d-block extra-small text-uppercase">Estimated Value</small>
+                <small className="text-light opacity-75 d-block extra-small text-uppercase">
+                  {isTamil ? 'தோராய மதிப்பு' : 'Estimated Value'}
+                </small>
                 <span className="display-6 fw-bold text-warning">₹{totalCost.toLocaleString('en-IN')}</span>
-                <small className="d-block text-light opacity-75 extra-small">@ ₹{unitPrice} / sapling</small>
+                <small className="d-block text-light opacity-75 extra-small">
+                  {isTamil ? `@ ₹${unitPrice} / கன்று` : `@ ₹${unitPrice} / sapling`}
+                </small>
               </div>
 
               <div className="col-6 border-end border-success border-opacity-25 pt-2">
-                <small className="text-light opacity-75 d-block extra-small text-uppercase">Pit Dimensions</small>
+                <small className="text-light opacity-75 d-block extra-small text-uppercase">
+                  {isTamil ? 'குழி அளவு' : 'Pit Dimensions'}
+                </small>
                 <span className="fw-bold text-light">{pitSize}</span>
-                <small className="d-block text-light opacity-75 extra-small">Depth & width</small>
+                <small className="d-block text-light opacity-75 extra-small">
+                  {isTamil ? 'ஆழம் & அகலம்' : 'Depth & width'}
+                </small>
               </div>
 
               <div className="col-6 pt-2">
-                <small className="text-light opacity-75 d-block extra-small text-uppercase">Batches Needed</small>
-                <span className="fw-bold text-light">~{batchesNeeded} Batches</span>
-                <small className="d-block text-light opacity-75 extra-small">25 saplings / batch</small>
+                <small className="text-light opacity-75 d-block extra-small text-uppercase">
+                  {isTamil ? 'தேவையான தொகுதிகள்' : 'Batches Needed'}
+                </small>
+                <span className="fw-bold text-light">~{batchesNeeded} {isTamil ? 'தொகுதி' : 'Batches'}</span>
+                <small className="d-block text-light opacity-75 extra-small">
+                  {isTamil ? '25 கன்றுகள் / தொகுதி' : '25 saplings / batch'}
+                </small>
               </div>
             </div>
 
             <div className="p-2 rounded-3 bg-dark bg-opacity-40 mb-3 border border-success border-opacity-25 small text-light opacity-90">
               <i className="bi bi-info-circle-fill text-warning me-1"></i>
               {spacingType === 'triangular' ? (
-                <span><strong>Triangular Benefit ({spacingDistance} ft):</strong> Alternating rows staggered by {(spacingDistance / 2).toFixed(1)} ft gives equal {spacingDistance} ft canopy spread between all adjacent palms with zero light obstruction.</span>
+                <span><strong>{isTamil ? 'முக்கோண நடவு நன்மை' : 'Triangular Benefit'} ({spacingDistance} {isTamil ? 'அடி' : 'ft'}):</strong> {isTamil ? `வரிசைகள் ${(spacingDistance / 2).toFixed(1)} அடி இடைவெளியில் சீராக அமைவதால் அனைத்து கன்றுகளுக்கும் முழு சூரிய ஒளி கிடைக்கிறது.` : `Alternating rows staggered by ${(spacingDistance / 2).toFixed(1)} ft gives equal ${spacingDistance} ft canopy spread between all adjacent palms with zero light obstruction.`}</span>
               ) : (
-                <span><strong>Square Benefit ({spacingDistance} ft):</strong> Aligned {spacingDistance} ft grid creates straight perpendicular lanes for easier tractor operation and intercrop cultivation.</span>
+                <span><strong>{isTamil ? 'சதுர நடவு நன்மை' : 'Square Benefit'} ({spacingDistance} {isTamil ? 'அடி' : 'ft'}):</strong> {isTamil ? `நேரான வரிசைகள் டிராக்டர் உழவு மற்றும் ஊடுபயிர் சாகுபடிக்கு எளிதான பாதைகளை அமைக்கிறது.` : `Aligned ${spacingDistance} ft grid creates straight perpendicular lanes for easier tractor operation and intercrop cultivation.`}</span>
               )}
             </div>
 
@@ -314,7 +340,7 @@ export default function PlantingCalculator() {
                 href={`/batches`} 
                 className="btn-gold flex-fill text-decoration-none py-2 text-center"
               >
-                <i className="bi bi-cart-check-fill me-1"></i> Book {totalTrees} Saplings Now
+                <i className="bi bi-cart-check-fill me-1"></i> {isTamil ? `இப்போதே ${totalTrees} கன்றுகள் முன்பதிவு செய்க` : `Book ${totalTrees} Saplings Now`}
               </Link>
               <a 
                 href={`https://wa.me/919486880641?text=Hello%20Eathamozhi%20Farm,%20I%20am%20planning%20a%20${acres}%20acre%20coconut%20plantation%20using%20the%20${spacingType}%20pattern%20with%20${spacingDistance}%20ft%20spacing%20(${totalTrees}%20saplings).%20Please%20guide%20me.`}
@@ -322,7 +348,7 @@ export default function PlantingCalculator() {
                 rel="noreferrer"
                 className="btn btn-outline-light border-opacity-50 py-2 px-3 text-nowrap"
               >
-                <i className="bi bi-whatsapp me-1 text-success"></i> Farm Advice
+                <i className="bi bi-whatsapp me-1 text-success"></i> {isTamil ? 'விவசாய ஆலோசனை' : 'Farm Advice'}
               </a>
             </div>
           </div>

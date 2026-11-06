@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface YouTubeVideoItem {
   id: string;
@@ -13,6 +14,7 @@ interface YouTubeVideoItem {
 }
 
 export default function YouTubeSection() {
+  const { isTamil } = useLanguage();
   const [videos, setVideos] = useState<YouTubeVideoItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [activePlayingId, setActivePlayingId] = useState<string | null>(null);
@@ -40,14 +42,19 @@ export default function YouTubeSection() {
         <div className="text-center mb-5">
           <div className="d-inline-flex align-items-center gap-2 mb-2">
             <span className="badge-farm-pill d-inline-flex align-items-center gap-1 shadow-sm">
-              <i className="bi bi-youtube text-danger"></i> FARM VIDEO TOURS &amp; HARVESTS
+              <i className="bi bi-youtube text-danger"></i>{' '}
+              {isTamil ? 'நேரடி பண்ணை வீடியோக்கள் & களப்பயணம்' : 'FARM VIDEO TOURS & HARVESTS'}
             </span>
           </div>
           <h2 className="display-6 fw-bold text-dark mb-2">
-            See Our Grove, Harvest &amp; Nursery in Action
+            {isTamil 
+              ? 'எங்கள் தோப்பு, காய் அறுவடை & நாற்றுப்பண்ணை நேரலை காட்சிகள்' 
+              : 'See Our Grove, Harvest & Nursery in Action'}
           </h2>
           <p className="lead text-secondary opacity-90 mx-auto" style={{ maxWidth: '720px', fontSize: '1.08rem' }}>
-            Watch genuine walkthroughs of our ancestral coconut farm in Kanyakumari &mdash; from tree-climbing harvests and mother tree selection to live sapling packaging.
+            {isTamil 
+              ? 'கன்னியாகுமரி பாரம்பரிய பண்ணை, தாய் மர தேர்வு மற்றும் நாற்று பார்சல் பேக்கிங் முறைகளை நேரடி வீடியோவில் பாருங்கள்.' 
+              : 'Watch genuine walkthroughs of our ancestral coconut farm in Kanyakumari — from tree-climbing harvests and mother tree selection to live sapling packaging.'}
           </p>
         </div>
 
@@ -161,7 +168,7 @@ export default function YouTubeSection() {
                             onClick={() => setActivePlayingId(null)}
                             className="btn btn-sm btn-outline-secondary extra-small fw-semibold py-1 px-2"
                           >
-                            <i className="bi bi-x-circle me-1"></i> Close Video
+                            <i className="bi bi-x-circle me-1"></i> {isTamil ? 'வீடியோவை மூடுக' : 'Close Video'}
                           </button>
                         ) : (
                           <button
@@ -169,7 +176,7 @@ export default function YouTubeSection() {
                             onClick={() => videoId && setActivePlayingId(video.id)}
                             className="btn btn-sm btn-success extra-small fw-bold py-1 px-3 rounded-pill shadow-sm"
                           >
-                            <i className="bi bi-play-fill me-1"></i> Watch Now
+                            <i className="bi bi-play-fill me-1"></i> {isTamil ? 'இப்போதே பார்க்க' : 'Watch Now'}
                           </button>
                         )}
 
@@ -194,7 +201,8 @@ export default function YouTubeSection() {
         <div className="text-center mt-5 pt-2">
           <div className="d-inline-flex flex-wrap align-items-center justify-content-center gap-2 p-3 bg-light rounded-4 border">
             <span className="small text-secondary fw-semibold">
-              <i className="bi bi-bell-fill text-danger me-1"></i> Want more coconut farming tips &amp; harvest updates?
+              <i className="bi bi-bell-fill text-danger me-1"></i>{' '}
+              {isTamil ? 'தென்னை விவசாய குறிப்புகள் & புதிய பதிவுகளை பெற:' : 'Want more coconut farming tips & harvest updates?'}
             </span>
             <a
               href="https://www.youtube.com/@eathamozhicoconutfarm"
@@ -202,7 +210,7 @@ export default function YouTubeSection() {
               rel="noreferrer"
               className="btn btn-sm btn-danger fw-bold px-3 py-1 rounded-pill d-inline-flex align-items-center gap-1 shadow-sm"
             >
-              <i className="bi bi-youtube"></i> Subscribe on YouTube
+              <i className="bi bi-youtube"></i> {isTamil ? 'சேனலை சப்ஸ்கிரைப் செய்க' : 'Subscribe on YouTube'}
             </a>
           </div>
         </div>

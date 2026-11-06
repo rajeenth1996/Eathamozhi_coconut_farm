@@ -4,6 +4,7 @@ import { useState, useEffect, use } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getSaplingMetrics } from '@/lib/metrics';
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function BookingFlowPage({
   params
@@ -12,6 +13,7 @@ export default function BookingFlowPage({
 }) {
   const { code } = use(params);
   const router = useRouter();
+  const { isTamil } = useLanguage();
 
   const [batch, setBatch] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -263,15 +265,19 @@ Please confirm our order and dispatch details. Thank you!`;
     <>
       <section className="bg-dark text-white py-4">
         <div className="container">
-          <span className="badge bg-success mb-1">EASY 3-STEP BOOKING</span>
-          <h2 className="fw-bold mb-1 text-light">Booking {batch.name || `Batch ${batch.batchCode}`}</h2>
+          <span className="badge bg-success mb-1">
+            {isTamil ? 'எளிய 3-படி முன்பதிவு' : 'EASY 3-STEP BOOKING'}
+          </span>
+          <h2 className="fw-bold mb-1 text-light">
+            {isTamil ? 'தென்னங்கன்றுகள் முன்பதிவு' : 'Booking'} {batch.name || `Batch ${batch.batchCode}`}
+          </h2>
           <div className="text-white-50 extra-small d-flex flex-wrap align-items-center gap-2">
             <span className="badge bg-light text-dark font-monospace fw-bold px-2 py-1 shadow-sm border border-white">
               Batch ID: {batch.batchCode}
             </span>
-            <span>Age: <strong className="text-light">{batch.age || getSaplingMetrics(batch.seededDate).age}</strong></span>
+            <span>{isTamil ? 'வயது' : 'Age'}: <strong className="text-light">{batch.age || getSaplingMetrics(batch.seededDate).age}</strong></span>
             &bull;
-            <span>Height: <strong className="text-light">{batch.height || getSaplingMetrics(batch.seededDate).height}</strong></span>
+            <span>{isTamil ? 'உயரம்' : 'Height'}: <strong className="text-light">{batch.height || getSaplingMetrics(batch.seededDate).height}</strong></span>
           </div>
         </div>
       </section>
@@ -283,17 +289,17 @@ Please confirm our order and dispatch details. Thank you!`;
           <div className="row text-center mb-4 g-2">
             <div className="col-4">
               <div className={`p-2 rounded-3 fw-bold small ${step >= 1 ? 'bg-success text-white' : 'bg-secondary-subtle text-muted'}`}>
-                1. Quantity &amp; Payment Type
+                {isTamil ? '1. கன்றுகள் & முன்பணம்' : '1. Quantity & Payment Type'}
               </div>
             </div>
             <div className="col-4">
               <div className={`p-2 rounded-3 fw-bold small ${step >= 2 ? 'bg-success text-white' : 'bg-secondary-subtle text-muted'}`}>
-                2. Customer Details
+                {isTamil ? '2. முகவரி விவரங்கள்' : '2. Customer Details'}
               </div>
             </div>
             <div className="col-4">
               <div className={`p-2 rounded-3 fw-bold small ${step >= 3 ? 'bg-success text-white' : 'bg-secondary-subtle text-muted'}`}>
-                3. Scan UPI QR &amp; Pay
+                {isTamil ? '3. UPI கட்டணம்' : '3. Scan UPI QR & Pay'}
               </div>
             </div>
           </div>
