@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import AdminNav from '@/components/AdminNav';
 import AdminLogoutButton from '@/components/AdminLogoutButton';
+import AdminPagination from '@/components/AdminPagination';
 
 interface AnalyticsData {
   kpis: {
@@ -47,6 +48,14 @@ export default function AdminAnalyticsPage() {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState<'daily' | 'weekly' | 'monthly' | 'all'>('weekly');
+
+  // Pagination for user journeys
+  const [journeyPage, setJourneyPage] = useState(1);
+  const [journeyPageSize, setJourneyPageSize] = useState(10);
+
+  useEffect(() => {
+    setJourneyPage(1);
+  }, [timeRange]);
 
   const fetchAnalytics = async () => {
     try {
@@ -479,49 +488,61 @@ export default function AdminAnalyticsPage() {
 
             <div className="d-flex flex-column gap-3">
               {data?.recentJourneys && data.recentJourneys.length > 0 ? (
-                data.recentJourneys.map((journey, idx) => (
-                  <div
-                    key={idx}
-                    className={`p-3 rounded-4 border ${journey.convertedToOrder ? 'border-success bg-success-subtle bg-opacity-25' : 'bg-light'}`}
-                  >
-                    <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
-                      <div className="d-flex align-items-center gap-2 flex-wrap">
-                        <span className="badge bg-dark font-monospace extra-small">{journey.sessionId.slice(0, 14)}...</span>
-                        <span className="badge bg-secondary extra-small">
-                          <i className={`bi bi-${journey.device === 'mobile' ? 'phone' : 'laptop'} me-1`}></i>
-                          {journey.device}
-                        </span>
-                        <span className="badge bg-light text-dark border extra-small">
-                          Source: {journey.referrerSource}
-                        </span>
-                        {journey.convertedToOrder && (
-                          <span className="badge bg-success extra-small">
-                            <i className="bi bi-check-circle-fill me-1"></i>
-                            ORDER CONVERTED {journey.orderId ? `(${journey.orderId})` : ''}
+                <>
+                  {data.recentJourneys.slice((journeyPage - 1) * journeyPageSize, journeyPage * journeyPageSize).map((journey, idx) => (
+                    <div
+                      key={idx}
+                      className={`p-3 rounded-4 border ${journey.convertedToOrder ? 'border-success bg-success-subtle bg-opacity-25' : 'bg-light'}`}
+                    >
+                      <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+                        <div className="d-flex align-items-center gap-2 flex-wrap">
+                          <span className="badge bg-dark font-monospace extra-small">{journey.sessionId.slice(0, 14)}...</span>
+                          <span className="badge bg-secondary extra-small">
+                            <i className={`bi bi-${journey.device === 'mobile' ? 'phone' : 'laptop'} me-1`}></i>
+                            {journey.device}
                           </span>
-                        )}
-                      </div>
-                      <small className="text-muted extra-small">
-                        {new Date(journey.lastActiveAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </small>
-                    </div>
-
-                    {/* Step-by-step trail pills */}
-                    <div className="d-flex align-items-center gap-1 flex-wrap">
-                      <span className="text-muted extra-small me-1">Path:</span>
-                      {journey.steps.map((step, sIdx) => (
-                        <span key={sIdx} className="d-inline-flex align-items-center">
-                          <span className="badge bg-white text-dark border font-monospace extra-small py-1 px-2">
-                            {step}
+                          <span className="badge bg-light text-dark border extra-small">
+                            Source: {journey.referrerSource}
                           </span>
-                          {sIdx < journey.steps.length - 1 && (
-                            <i className="bi bi-arrow-right text-muted mx-1 extra-small"></i>
+                          {journey.convertedToOrder && (
+                            <span className="badge bg-success extra-small">
+                              <i className="bi bi-check-circle-fill me-1"></i>
+                              ORDER CONVERTED {journey.orderId ? `(${journey.orderId})` : ''}
+                            </span>
                           )}
-                        </span>
-                      ))}
+                        </div>
+                        <small className="text-muted extra-small">
+                          {new Date(journey.lastActiveAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </small>
+                      </div>
+
+                      {/* Step-by-step trail pills */}
+                      <div className="d-flex align-items-center gap-1 flex-wrap">
+                        <span className="text-muted extra-small me-1">Path:</span>
+                        {journey.steps.map((step, sIdx) => (
+                          <span key={sIdx} className="d-inline-flex align-items-center">
+                            <span className="badge bg-white text-dark border font-monospace extra-small py-1 px-2">
+                              {step}
+                            </span>
+                            {sIdx < journey.steps.length - 1 && (
+                              <i className="bi bi-arrow-right text-muted mx-1 extra-small"></i>
+                            )}
+                          </span>
+                        ))}
+                      </div>
                     </div>
+                  ))}
+
+                  <div className="pt-3 border-top mt-2">
+                    <AdminPagination
+                      currentPage={journeyPage}
+                      totalItems={data.recentJourneys.length}
+                      pageSize={journeyPageSize}
+                      onPageChange={setJourneyPage}
+                      onPageSizeChange={setJourneyPageSize}
+                    />
                   </div>
-                ))
+                </>
               ) : (
                 <div className="text-center py-5 text-muted">
                   <i className="bi bi-compass fs-1 d-block mb-2 text-secondary opacity-50"></i>

@@ -99,6 +99,31 @@ function TrackerContent() {
     }
   }, [pathname, searchParams]);
 
+  // Flush and synchronize farmer session values to table at end of session
+  useEffect(() => {
+    const handleSessionEnd = () => {
+      const sessionId = sessionStorage.getItem('eathamozhi_session_id');
+      if (!sessionId || !lastTrackedPath.current) return;
+      const endPayload = JSON.stringify({
+        sessionId,
+        path: lastTrackedPath.current,
+        isSessionEnd: true,
+        title: typeof document !== 'undefined' ? document.title : '',
+      });
+      if (navigator.sendBeacon) {
+        const blob = new Blob([endPayload], { type: 'application/json' });
+        navigator.sendBeacon('/api/analytics', blob);
+      }
+    };
+
+    window.addEventListener('pagehide', handleSessionEnd);
+    window.addEventListener('beforeunload', handleSessionEnd);
+    return () => {
+      window.removeEventListener('pagehide', handleSessionEnd);
+      window.removeEventListener('beforeunload', handleSessionEnd);
+    };
+  }, []);
+
   return null;
 }
 

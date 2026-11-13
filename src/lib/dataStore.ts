@@ -135,6 +135,7 @@ function loadFromDb() {
 
     if (filePath && fsModule.existsSync(filePath)) {
       const raw = fsModule.readFileSync(filePath, 'utf-8');
+      if (!raw || !raw.trim()) return;
       const data = JSON.parse(raw);
       if (Array.isArray(data.farms)) farms = data.farms;
       if (Array.isArray(data.parentPalms)) parentPalms = data.parentPalms;
@@ -281,6 +282,9 @@ async function syncFromMongo(force = false): Promise<void> {
           nutCharacteristics: p.nutCharacteristics || '',
           whySelected: p.whySelected || '',
           images: Array.isArray(p.images) ? p.images : [],
+          youtubeVideoUrl: p.youtubeVideoUrl || '',
+          youtubeVideoId: p.youtubeVideoId || extractYouTubeVideoId(p.youtubeVideoUrl) || '',
+          youtubeVideoPosition: Number(p.youtubeVideoPosition) || 1,
           selectionStatus: p.selectionStatus || 'Selected',
           verificationStatus: p.verificationStatus || 'Verified',
           productionStatus: p.productionStatus || 'Active for Production',
@@ -738,10 +742,12 @@ export const DataStore = {
 
       let availableQuantity = 0;
       const netStock = Math.max(0, b.totalQuantity + (b.inventoryAdjustments || 0));
+      const remainingNetStock = Math.max(0, netStock - computedBookedQuantity);
       if (bInventory.length > 0) {
-        availableQuantity = bInventory.reduce((sum, i) => sum + (Number(i.availableQuantity) || 0), 0);
+        const invAvailable = bInventory.reduce((sum, i) => sum + (Number(i.availableQuantity) || 0), 0);
+        availableQuantity = Math.max(0, Math.min(remainingNetStock, invAvailable));
       } else {
-        availableQuantity = Math.max(0, netStock - computedBookedQuantity);
+        availableQuantity = remainingNetStock;
       }
 
       const bookedPercentage = netStock > 0 ? Math.min(100, Math.round((computedBookedQuantity / netStock) * 100)) : 100;
@@ -752,10 +758,13 @@ export const DataStore = {
       if (!height.toLowerCase().startsWith('approx')) {
         height = `Approx. ${height}`;
       }
-      const uniqueViewsCount = Math.max(
-        Number(b.viewsCount) || 0,
-        new Set(batchViews.filter(v => v.batchCode.toLowerCase() === b.batchCode.toLowerCase()).map(v => v.visitorId)).size
-      );
+      const distinctViews = new Set(
+        batchViews.filter(v => v.batchCode && v.batchCode.toLowerCase() === b.batchCode.toLowerCase()).map(v => v.visitorId)
+      ).size;
+      const uniqueViewsCount = Math.max(Number(b.viewsCount) || 0, distinctViews);
+      if (b.viewsCount !== uniqueViewsCount) {
+        b.viewsCount = uniqueViewsCount;
+      }
 
       return {
         ...b,
@@ -1185,6 +1194,9 @@ export const DataStore = {
       nutCharacteristics: data.nutCharacteristics || 'Large spherical nuts with high copra yield.',
       whySelected: data.whySelected || 'Verified vigorous ancestral genetics.',
       images: Array.isArray(data.images) ? data.images : [],
+      youtubeVideoUrl: data.youtubeVideoUrl || '',
+      youtubeVideoId: data.youtubeVideoId || extractYouTubeVideoId(data.youtubeVideoUrl) || '',
+      youtubeVideoPosition: Number(data.youtubeVideoPosition) || 1,
       selectionStatus: data.selectionStatus || 'Selected',
       verificationStatus: data.verificationStatus || 'Verified',
       productionStatus: data.productionStatus || 'Active for Production',
@@ -1265,6 +1277,13 @@ export const DataStore = {
     if (updatedFields.nutCharacteristics !== undefined) palm.nutCharacteristics = updatedFields.nutCharacteristics;
     if (updatedFields.whySelected !== undefined) palm.whySelected = updatedFields.whySelected;
     if (updatedFields.images) palm.images = updatedFields.images;
+    if (updatedFields.youtubeVideoUrl !== undefined) {
+      palm.youtubeVideoUrl = updatedFields.youtubeVideoUrl;
+      palm.youtubeVideoId = extractYouTubeVideoId(updatedFields.youtubeVideoUrl) || '';
+    }
+    if (updatedFields.youtubeVideoPosition !== undefined) {
+      palm.youtubeVideoPosition = Math.max(1, Number(updatedFields.youtubeVideoPosition) || 1);
+    }
     if (updatedFields.isVisible !== undefined) palm.isVisible = Boolean(updatedFields.isVisible);
     if (updatedFields.selectionStatus) palm.selectionStatus = updatedFields.selectionStatus;
     if (updatedFields.verificationStatus) palm.verificationStatus = updatedFields.verificationStatus;
@@ -1502,8 +1521,18 @@ export const DataStore = {
   createBooking: (data: Omit<Booking, 'id' | 'bookingId' | 'createdAt' | 'paymentStatus' | 'bookingStatus'> & { paymentScreenshotUrl?: string; bookingStatus?: string }): Booking => {
     loadFromDb();
     const batch = DataStore.getBatchByCode(data.batchCode);
-    if (!batch || (batch.availableQuantity !== undefined && batch.availableQuantity < data.quantity)) {
-      throw new Error('Requested quantity exceeds available stock.');
+    if (!batch) {
+      throw new Error(`Batch "${data.batchCode}" not found.`);
+    }
+    const avail = Number(batch.availableQuantity) || 0;
+    if (batch.status === 'SOLD_OUT' || avail <= 0) {
+      throw new Error(`Batch "${data.batchCode}" is sold out and no longer available for booking.`);
+    }
+    if (data.quantity <= 0) {
+      throw new Error('Booking quantity must be at least 1.');
+    }
+    if (data.quantity > avail) {
+      throw new Error(`Requested quantity (${data.quantity}) exceeds available stock (${avail}) for batch ${data.batchCode}.`);
     }
 
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);
@@ -1570,6 +1599,13 @@ export const DataStore = {
     };
 
     bookings.unshift(newBooking);
+
+    const targetBatch = batches.find(b => b.batchCode.toLowerCase() === data.batchCode.toLowerCase());
+    if (targetBatch) {
+      targetBatch.bookedQuantity = (Number(targetBatch.bookedQuantity) || 0) + data.quantity;
+      targetBatch.updatedAt = new Date().toISOString();
+    }
+
     saveToDb();
     return newBooking;
   },

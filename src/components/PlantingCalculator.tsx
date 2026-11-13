@@ -1,17 +1,51 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import PatternVisualizer from '@/components/PatternVisualizer';
 import { useLanguage } from '@/context/LanguageContext';
 
-export default function PlantingCalculator() {
+interface PlantingCalculatorProps {
+  initialRate?: number;
+  oldestBatchCode?: string;
+}
+
+export default function PlantingCalculator({ initialRate, oldestBatchCode }: PlantingCalculatorProps = {}) {
   const { isTamil } = useLanguage();
   const [acres, setAcres] = useState<number>(1);
   const [spacingDistance, setSpacingDistance] = useState<number>(25);
   const [spacingType, setSpacingType] = useState<'triangular' | 'square'>('triangular');
   const [showComparisonModal, setShowComparisonModal] = useState<boolean>(false);
-  const unitPrice = 150; // Standard price per sapling
+  const [unitPrice, setUnitPrice] = useState<number>(initialRate ?? 150);
+  const [activeBatchCode, setActiveBatchCode] = useState<string | undefined>(oldestBatchCode);
+
+  useEffect(() => {
+    if (initialRate) {
+      setUnitPrice(initialRate);
+      if (oldestBatchCode) setActiveBatchCode(oldestBatchCode);
+      return;
+    }
+
+    // Dynamic client-side fallback: fetch oldest available batch price
+    fetch('/api/batches')
+      .then(res => res.json())
+      .then(batches => {
+        if (Array.isArray(batches) && batches.length > 0) {
+          const available = batches.filter((b: any) => b.isVisible !== false && (b.availableQuantity ?? 0) > 0 && b.status !== 'SOLD_OUT');
+          const pool = available.length > 0 ? available : batches.filter((b: any) => b.isVisible !== false);
+          pool.sort((a: any, b: any) => {
+            const dateA = new Date(a.seededDate || a.harvestDate || 0).getTime();
+            const dateB = new Date(b.seededDate || b.harvestDate || 0).getTime();
+            return dateA - dateB;
+          });
+          if (pool[0]) {
+            if (pool[0].price) setUnitPrice(pool[0].price);
+            if (pool[0].batchCode) setActiveBatchCode(pool[0].batchCode);
+          }
+        }
+      })
+      .catch(err => console.error('Failed to load batch rate for calculator:', err));
+  }, [initialRate, oldestBatchCode]);
 
   const [hoveredPattern, setHoveredPattern] = useState<'triangular' | 'square' | null>(null);
 
@@ -23,7 +57,6 @@ export default function PlantingCalculator() {
   const treesPerAcre = spacingType === 'triangular' ? triangularPerAcre : squarePerAcre;
   const totalTrees = Math.round(acres * treesPerAcre);
   const totalCost = totalTrees * unitPrice;
-  const batchesNeeded = Math.ceil(totalTrees / 25);
   const pitSize = spacingDistance <= 22 ? '2.5 ft × 2.5 ft × 2.5 ft' : '3 ft × 3 ft × 3 ft';
 
   return (
@@ -317,11 +350,11 @@ export default function PlantingCalculator() {
 
               <div className="col-6 pt-2">
                 <small className="text-light opacity-75 d-block extra-small text-uppercase">
-                  {isTamil ? 'தேவையான தொகுதிகள்' : 'Batches Needed'}
+                  {isTamil ? 'நடவு இடைவெளி' : 'Planting Spacing'}
                 </small>
-                <span className="fw-bold text-light">~{batchesNeeded} {isTamil ? 'தொகுதி' : 'Batches'}</span>
+                <span className="fw-bold text-light">{spacingDistance} ft × {spacingDistance} ft</span>
                 <small className="d-block text-light opacity-75 extra-small">
-                  {isTamil ? '25 கன்றுகள் / தொகுதி' : '25 saplings / batch'}
+                  {spacingType === 'triangular' ? (isTamil ? 'முக்கோண முறை' : 'Triangular Quincunx') : (isTamil ? 'சதுர முறை' : 'Square Grid')}
                 </small>
               </div>
             </div>
@@ -337,13 +370,13 @@ export default function PlantingCalculator() {
 
             <div className="d-flex flex-wrap gap-2 pt-1">
               <Link 
-                href={`/batches`} 
+                href={activeBatchCode ? `/book/${activeBatchCode}?qty=${totalTrees}` : `/batches`} 
                 className="btn-gold flex-fill text-decoration-none py-2 text-center"
               >
                 <i className="bi bi-cart-check-fill me-1"></i> {isTamil ? `இப்போதே ${totalTrees} கன்றுகள் முன்பதிவு செய்க` : `Book ${totalTrees} Saplings Now`}
               </Link>
               <a 
-                href={`https://wa.me/919486880641?text=Hello%20Eathamozhi%20Farm,%20I%20am%20planning%20a%20${acres}%20acre%20coconut%20plantation%20using%20the%20${spacingType}%20pattern%20with%20${spacingDistance}%20ft%20spacing%20(${totalTrees}%20saplings).%20Please%20guide%20me.`}
+                href={`https://wa.me/919486880641?text=Hello%20Eathamozhi%20Farm,%20I%20am%20planning%20a%20${acres}%20acre%20coconut%20plantation%20using%20the%20${spacingType}%20pattern%20with%20${spacingDistance}%20ft%20spacing%20(${totalTrees}%20saplings%20@%20₹${unitPrice}%20each,%20est.%20₹${totalCost.toLocaleString('en-IN')}).%20Please%20guide%20me.`}
                 target="_blank"
                 rel="noreferrer"
                 className="btn btn-outline-light border-opacity-50 py-2 px-3 text-nowrap"

@@ -60,6 +60,14 @@ export default function BookingFlowPage({
           return;
         }
         setBatch(data);
+        if (data.availableQuantity !== undefined) {
+          const avail = Math.max(0, Number(data.availableQuantity) || 0);
+          if (avail > 0 && quantity > avail) {
+            setQuantity(avail);
+          } else if (avail === 0) {
+            setQuantity(0);
+          }
+        }
         setLoading(false);
       });
   }, [code]);
@@ -154,8 +162,35 @@ export default function BookingFlowPage({
     }
   };
 
+  const handleProceedToStep2 = () => {
+    const avail = Number(batch?.availableQuantity) || 0;
+    if (batch?.status === 'SOLD_OUT' || avail <= 0) {
+      alert('⚠️ This batch is completely sold out. No saplings are available for booking.');
+      return;
+    }
+    if (quantity <= 0) {
+      alert('⚠️ Please select at least 1 sapling.');
+      return;
+    }
+    if (quantity > avail) {
+      alert(`⚠️ You cannot book more than the available quantity!\n\nAvailable Stock: ${avail} Saplings\nRequested: ${quantity} Saplings\n\nPlease select ${avail} or fewer.`);
+      setQuantity(avail);
+      return;
+    }
+    setStep(2);
+  };
+
   const handleSubmitBooking = async (e: React.FormEvent) => {
     e.preventDefault();
+    const avail = Number(batch?.availableQuantity) || 0;
+    if (batch?.status === 'SOLD_OUT' || avail <= 0) {
+      alert('⚠️ This batch is completely sold out.');
+      return;
+    }
+    if (quantity > avail) {
+      alert(`⚠️ You cannot book more than the available quantity (${avail} saplings). Please adjust your quantity.`);
+      return;
+    }
     setSubmitting(true);
 
     const finalCourier = courierOption === 'Self Pickup (Farm Direct - Eathamozhi)'
@@ -546,12 +581,23 @@ Please confirm our order and dispatch details. Thank you!`;
                   )}
                 </div>
 
-                <button 
-                  className="btn btn-success btn-lg w-100 fw-bold shadow py-3"
-                  onClick={() => setStep(2)}
-                >
-                  Continue to Customer Details <i className="bi bi-arrow-right ms-1"></i>
-                </button>
+                {(batch.status === 'SOLD_OUT' || (batch.availableQuantity !== undefined && batch.availableQuantity <= 0)) ? (
+                  <div className="alert alert-danger text-center p-3 mb-3 rounded-3 shadow-sm">
+                    <h5 className="fw-bold mb-1"><i className="bi bi-x-circle-fill me-2"></i> Batch Sold Out</h5>
+                    <p className="mb-2 small">All saplings from this batch have been completely booked. Please explore other available batches.</p>
+                    <Link href="/batches" className="btn btn-outline-danger btn-sm fw-bold">
+                      View Other Available Batches
+                    </Link>
+                  </div>
+                ) : (
+                  <button 
+                    type="button"
+                    className="btn btn-success btn-lg w-100 fw-bold shadow py-3"
+                    onClick={handleProceedToStep2}
+                  >
+                    Continue to Customer Details <i className="bi bi-arrow-right ms-1"></i>
+                  </button>
+                )}
               </div>
             )}
 

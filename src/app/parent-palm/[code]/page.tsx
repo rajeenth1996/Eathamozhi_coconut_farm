@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { DataStore } from '@/lib/dataStore';
 import { notFound } from 'next/navigation';
 import ImageCarousel from '@/components/ImageCarousel';
-import { formatApproximateAge } from '@/lib/types';
+import { formatApproximateAge, extractYouTubeVideoId } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -56,6 +56,9 @@ export default async function ParentPalmDetailPage({
                 height="420px"
                 showThumbnails={true}
                 objectFit="cover"
+                videoUrl={palm.youtubeVideoUrl}
+                videoId={palm.youtubeVideoId}
+                videoPosition={palm.youtubeVideoPosition || 1}
               />
             </div>
 
@@ -100,6 +103,42 @@ export default async function ParentPalmDetailPage({
             <h5 className="fw-bold text-dark mb-2"><i className="bi bi-award-fill me-2 text-warning"></i> Why This Palm Was Selected as a Mother Tree</h5>
             <p className="text-secondary mb-0">{palm.whySelected}</p>
           </div>
+
+          {/* Mother Tree YouTube Video Showcase & Player */}
+          {(() => {
+            const videoId = palm.youtubeVideoId || extractYouTubeVideoId(palm.youtubeVideoUrl);
+            if (!videoId) return null;
+            return (
+              <div className="card border-0 shadow-sm rounded-4 p-4 mb-5 bg-white border-top border-danger border-4">
+                <div className="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+                  <div>
+                    <span className="badge bg-danger mb-1">
+                      <i className="bi bi-youtube me-1"></i> MOTHER TREE VIDEO TOUR
+                    </span>
+                    <h4 className="fw-bold text-dark mb-0">Watch Mother Tree Video Showcase</h4>
+                    <small className="text-secondary">Watch complete video footage of Mother Palm {palm.code} growing at {palm.farmName || 'our grove'}.</small>
+                  </div>
+                  <a 
+                    href={`https://www.youtube.com/watch?v=${videoId}`} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="btn btn-outline-danger btn-sm fw-bold d-inline-flex align-items-center gap-1 shadow-sm"
+                  >
+                    <i className="bi bi-box-arrow-up-right"></i> Open on YouTube
+                  </a>
+                </div>
+
+                <div className="ratio ratio-16x9 rounded-4 overflow-hidden shadow border" style={{ maxHeight: '520px' }}>
+                  <iframe
+                    src={`https://www.youtube-nocookie.com/embed/${videoId}?rel=0&modestbranding=1`}
+                    title={`Video of Mother Tree ${palm.name}`}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                  ></iframe>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Related Batches From This Tree */}
           <div className="mb-4">

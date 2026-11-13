@@ -30,6 +30,23 @@ export async function POST(request: Request) {
 
     const bookingPayload = { ...validation.data };
 
+    // Strict Stock Validation to Prevent Overbooking
+    const batch = await DataStore.getBatchByCodeAsync(bookingPayload.batchCode);
+    if (!batch) {
+      return NextResponse.json({ error: `Batch "${bookingPayload.batchCode}" does not exist.` }, { status: 400 });
+    }
+    const avail = Number(batch.availableQuantity) || 0;
+    if (batch.status === 'SOLD_OUT' || avail <= 0) {
+      return NextResponse.json({
+        error: `Batch "${bookingPayload.batchCode}" is currently Sold Out. No saplings are available for booking.`
+      }, { status: 400 });
+    }
+    if (bookingPayload.quantity > avail) {
+      return NextResponse.json({
+        error: `Requested quantity (${bookingPayload.quantity} saplings) exceeds available stock (${avail} available) for Batch ${bookingPayload.batchCode}. Please adjust your quantity.`
+      }, { status: 400 });
+    }
+
     // If paymentScreenshotUrl was provided as base64 data URI, upload it to Cloudinary
     if (bookingPayload.paymentScreenshotUrl && bookingPayload.paymentScreenshotUrl.startsWith('data:image/')) {
       try {

@@ -7,6 +7,7 @@ import AdminLogoutButton from '@/components/AdminLogoutButton';
 import { getSaplingMetrics } from '@/lib/metrics';
 import ImageCarousel from '@/components/ImageCarousel';
 import { toShortFarmCode } from '@/lib/types';
+import AdminPagination from '@/components/AdminPagination';
 
 interface SourceItem {
   farmId: string;
@@ -386,6 +387,19 @@ export default function AdminBatchesPage() {
 
     return matchSearch && matchFarm && matchVis;
   });
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, farmFilter, visibilityFilter]);
+
+  const paginatedBatches = filteredBatches.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
 
   const totalCoconutsSourced = sourcesList.reduce((sum, s) => sum + s.coconutQuantity, 0);
   const contributingFarmsCount = new Set(sourcesList.map(s => s.farmCode)).size;
@@ -847,7 +861,7 @@ export default function AdminBatchesPage() {
                       </td>
                     </tr>
                   ) : (
-                    filteredBatches.map(batch => {
+                    paginatedBatches.map(batch => {
                       const metrics = getSaplingMetrics(batch.seededDate);
                       return (
                         <tr key={batch.batchCode}>
@@ -965,6 +979,19 @@ export default function AdminBatchesPage() {
                 </tbody>
               </table>
             </div>
+
+            {/* Pagination Controls */}
+            {!loading && filteredBatches.length > 0 && (
+              <div className="p-3 border-top bg-light">
+                <AdminPagination
+                  currentPage={currentPage}
+                  totalItems={filteredBatches.length}
+                  pageSize={pageSize}
+                  onPageChange={setCurrentPage}
+                  onPageSizeChange={setPageSize}
+                />
+              </div>
+            )}
           </div>
 
         </div>

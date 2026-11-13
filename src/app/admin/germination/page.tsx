@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import AdminNav from '@/components/AdminNav';
 import AdminLogoutButton from '@/components/AdminLogoutButton';
+import AdminPagination from '@/components/AdminPagination';
 
 export default function AdminGerminationPage() {
   const [records, setRecords] = useState<any[]>([]);
@@ -110,6 +111,19 @@ export default function AdminGerminationPage() {
 
     return matchSearch && matchBatch && matchFarm;
   });
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, batchFilter, farmFilter]);
+
+  const paginatedRecords = filteredRecords.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
 
   const totalCollected = filteredRecords.reduce((sum, r) => sum + (Number(r.coconutQuantity) || 0), 0);
   const totalSown = filteredRecords.reduce((sum, r) => sum + (Number(r.coconutsSown) || 0), 0);
@@ -253,7 +267,7 @@ export default function AdminGerminationPage() {
                       </td>
                     </tr>
                   ) : (
-                    filteredRecords.map(r => {
+                    paginatedRecords.map(r => {
                       const sown = Number(r.coconutsSown || r.coconutQuantity) || 0;
                       const germ = Number(r.germinatedQuantity) || 0;
                       const rate = sown > 0 ? Math.round((germ / sown) * 100) : 0;
@@ -308,6 +322,19 @@ export default function AdminGerminationPage() {
                 </tbody>
               </table>
             </div>
+
+            {/* Pagination Controls */}
+            {!loading && filteredRecords.length > 0 && (
+              <div className="p-3 border-top bg-light">
+                <AdminPagination
+                  currentPage={currentPage}
+                  totalItems={filteredRecords.length}
+                  pageSize={pageSize}
+                  onPageChange={setCurrentPage}
+                  onPageSizeChange={setPageSize}
+                />
+              </div>
+            )}
           </div>
 
         </div>

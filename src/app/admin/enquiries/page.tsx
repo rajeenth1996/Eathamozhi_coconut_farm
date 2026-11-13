@@ -2,11 +2,20 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import AdminPagination from '@/components/AdminPagination';
 
 export default function AdminEnquiriesPage() {
   const [enquiries, setEnquiries] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState('ALL');
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterStatus]);
 
   const fetchEnquiries = async () => {
     try {
@@ -43,6 +52,11 @@ export default function AdminEnquiriesPage() {
     if (filterStatus === 'ALL') return true;
     return e.status === filterStatus;
   });
+
+  const paginatedEnquiries = filteredEnquiries.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
 
   return (
     <>
@@ -109,45 +123,58 @@ export default function AdminEnquiriesPage() {
               No customer enquiries found matching the selected filter.
             </div>
           ) : (
-            <div className="d-flex flex-column gap-3">
-              {filteredEnquiries.map((enq) => {
-                const waUrl = `https://wa.me/91${enq.mobile}?text=${encodeURIComponent(`Hello ${enq.name}, thank you for contacting Eathamozhi Coconut Farm! Regarding your enquiry: "${enq.message.slice(0, 50)}..."`)}`;
+            <>
+              <div className="d-flex flex-column gap-3 mb-4">
+                {paginatedEnquiries.map((enq) => {
+                  const waUrl = `https://wa.me/91${enq.mobile}?text=${encodeURIComponent(`Hello ${enq.name}, thank you for contacting Eathamozhi Coconut Farm! Regarding your enquiry: "${enq.message.slice(0, 50)}..."`)}`;
 
-                return (
-                  <div key={enq.id} className="card border-0 shadow-sm rounded-4 p-4 bg-white">
-                    <div className="d-flex flex-wrap justify-content-between align-items-center border-bottom pb-2 mb-3">
-                      <div>
-                        <h5 className="fw-bold text-dark mb-0">{enq.name}</h5>
-                        <small className="text-muted"><i className="bi bi-phone me-1"></i>{enq.mobile} {enq.location ? `| ${enq.location}` : ''}</small>
+                  return (
+                    <div key={enq.id} className="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                      <div className="d-flex flex-wrap justify-content-between align-items-center border-bottom pb-2 mb-3">
+                        <div>
+                          <h5 className="fw-bold text-dark mb-0">{enq.name}</h5>
+                          <small className="text-muted"><i className="bi bi-phone me-1"></i>{enq.mobile} {enq.location ? `| ${enq.location}` : ''}</small>
+                        </div>
+                        <div className="d-flex align-items-center gap-2">
+                          <small className="text-muted">{new Date(enq.createdAt).toLocaleDateString()}</small>
+                          <select 
+                            className={`form-select form-select-sm fw-bold ${enq.status === 'NEW' ? 'border-danger text-danger bg-danger-subtle' : enq.status === 'CONTACTED' ? 'border-primary text-primary' : 'border-success text-success'}`}
+                            value={enq.status}
+                            onChange={(e) => handleStatusUpdate(enq.id, e.target.value)}
+                          >
+                            <option value="NEW">NEW LEAD</option>
+                            <option value="CONTACTED">CONTACTED</option>
+                            <option value="RESOLVED">RESOLVED</option>
+                          </select>
+                        </div>
                       </div>
-                      <div className="d-flex align-items-center gap-2">
-                        <small className="text-muted">{new Date(enq.createdAt).toLocaleDateString()}</small>
-                        <select 
-                          className={`form-select form-select-sm fw-bold ${enq.status === 'NEW' ? 'border-danger text-danger bg-danger-subtle' : enq.status === 'CONTACTED' ? 'border-primary text-primary' : 'border-success text-success'}`}
-                          value={enq.status}
-                          onChange={(e) => handleStatusUpdate(enq.id, e.target.value)}
-                        >
-                          <option value="NEW">NEW LEAD</option>
-                          <option value="CONTACTED">CONTACTED</option>
-                          <option value="RESOLVED">RESOLVED</option>
-                        </select>
+
+                      <p className="text-dark bg-light p-3 rounded-3 border mb-3">{enq.message}</p>
+
+                      <div className="d-flex justify-content-end gap-2">
+                        <a href={`tel:+91${enq.mobile}`} className="btn btn-sm btn-outline-dark fw-bold">
+                          <i className="bi bi-telephone me-1"></i> Call Customer
+                        </a>
+                        <a href={waUrl} target="_blank" rel="noreferrer" className="btn btn-sm btn-success fw-bold">
+                          <i className="bi bi-whatsapp me-1"></i> Reply via WhatsApp
+                        </a>
                       </div>
                     </div>
+                  );
+                })}
+              </div>
 
-                    <p className="text-dark bg-light p-3 rounded-3 border mb-3">{enq.message}</p>
-
-                    <div className="d-flex justify-content-end gap-2">
-                      <a href={`tel:+91${enq.mobile}`} className="btn btn-sm btn-outline-dark fw-bold">
-                        <i className="bi bi-telephone me-1"></i> Call Customer
-                      </a>
-                      <a href={waUrl} target="_blank" rel="noreferrer" className="btn btn-sm btn-success fw-bold">
-                        <i className="bi bi-whatsapp me-1"></i> Reply via WhatsApp
-                      </a>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+              {/* Pagination Controls */}
+              <div className="card border-0 shadow-sm rounded-4 p-3 bg-white">
+                <AdminPagination
+                  currentPage={currentPage}
+                  totalItems={filteredEnquiries.length}
+                  pageSize={pageSize}
+                  onPageChange={setCurrentPage}
+                  onPageSizeChange={setPageSize}
+                />
+              </div>
+            </>
           )}
 
         </div>

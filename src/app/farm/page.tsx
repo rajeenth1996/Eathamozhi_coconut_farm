@@ -134,6 +134,9 @@ export default async function MotherTreesPage() {
                           height="240px"
                           showThumbnails={false}
                           objectFit="cover"
+                          videoUrl={palm.youtubeVideoUrl}
+                          videoId={palm.youtubeVideoId}
+                          videoPosition={palm.youtubeVideoPosition || 1}
                         />
 
                         {/* Overlays */}

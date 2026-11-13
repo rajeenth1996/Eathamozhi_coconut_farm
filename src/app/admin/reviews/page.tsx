@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import AdminPagination from '@/components/AdminPagination';
 
 interface Review {
   id: string;
@@ -215,6 +216,19 @@ export default function AdminReviewsPage() {
     if (sortBy === 'lowest') return a.rating - b.rating;
     return 0;
   });
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, filterRating, filterVerified, sortBy]);
+
+  const paginatedReviews = filteredReviews.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
 
   // Calculate Metrics
   const totalReviews = reviews.length;
@@ -644,7 +658,7 @@ export default function AdminReviewsPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredReviews.map(rev => (
+                    {paginatedReviews.map(rev => (
                       <tr key={rev.id}>
                         {/* Farmer & Location */}
                         <td>
@@ -745,6 +759,19 @@ export default function AdminReviewsPage() {
                     ))}
                   </tbody>
                 </table>
+              </div>
+            )}
+
+            {/* Pagination Controls */}
+            {!loading && filteredReviews.length > 0 && (
+              <div className="p-3 border-top bg-light">
+                <AdminPagination
+                  currentPage={currentPage}
+                  totalItems={filteredReviews.length}
+                  pageSize={pageSize}
+                  onPageChange={setCurrentPage}
+                  onPageSizeChange={setPageSize}
+                />
               </div>
             )}
           </div>

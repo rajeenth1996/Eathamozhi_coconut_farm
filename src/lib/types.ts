@@ -41,6 +41,9 @@ export interface MotherTree {
   nutCharacteristics: string;
   whySelected: string;
   images: string[];
+  youtubeVideoUrl?: string;
+  youtubeVideoId?: string;
+  youtubeVideoPosition?: number; // 1-based position in photos carousel
   selectionStatus: 'Selected' | 'Registered';
   verificationStatus: 'Verified' | 'Pending';
   productionStatus: 'Active for Production' | 'Inactive' | 'Retired';

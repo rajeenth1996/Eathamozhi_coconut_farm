@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import AdminNav from '@/components/AdminNav';
 import AdminLogoutButton from '@/components/AdminLogoutButton';
+import AdminPagination from '@/components/AdminPagination';
 import { extractYouTubeVideoId } from '@/lib/types';
 
 interface YouTubeVideoItem {
@@ -171,6 +172,19 @@ export default function AdminYouTubePage() {
     v.url.toLowerCase().includes(search.toLowerCase())
   );
 
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
+
+  const paginatedVideos = filteredVideos.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
   return (
     <>
       {/* Header */}
@@ -318,7 +332,7 @@ export default function AdminYouTubePage() {
                       </td>
                     </tr>
                   ) : (
-                    filteredVideos.map((video) => {
+                    paginatedVideos.map((video) => {
                       const vId = video.videoId || extractYouTubeVideoId(video.url);
                       const thumb = vId
                         ? `https://img.youtube.com/vi/${vId}/hqdefault.jpg`
@@ -415,6 +429,19 @@ export default function AdminYouTubePage() {
                 </tbody>
               </table>
             </div>
+
+            {/* Pagination Controls */}
+            {!loading && filteredVideos.length > 0 && (
+              <div className="p-3 border-top bg-light">
+                <AdminPagination
+                  currentPage={currentPage}
+                  totalItems={filteredVideos.length}
+                  pageSize={pageSize}
+                  onPageChange={setCurrentPage}
+                  onPageSizeChange={setPageSize}
+                />
+              </div>
+            )}
           </div>
         </div>
       </section>

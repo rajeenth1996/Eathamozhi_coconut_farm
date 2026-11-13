@@ -37,6 +37,17 @@ export async function POST(request: Request) {
       orderId,
     });
 
+    // 1.1 Automatically capture farmer batch views for batch & booking pages
+    const batchMatch = path.match(/^\/(?:batches|book)\/([^/?#]+)/i);
+    if (batchMatch && batchMatch[1]) {
+      const batchCode = decodeURIComponent(batchMatch[1]);
+      try {
+        await DataStore.recordBatchViewAsync(batchCode, sessionId);
+      } catch (bvErr) {
+        // non-fatal
+      }
+    }
+
     // 2. Asynchronously save to MongoDB Atlas if connected
     if (process.env.MONGODB_URI) {
       (async () => {

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import AdminNav from '@/components/AdminNav';
 import AdminLogoutButton from '@/components/AdminLogoutButton';
+import AdminPagination from '@/components/AdminPagination';
 
 export default function AdminFarmRegistryPage() {
   const [farms, setFarms] = useState<any[]>([]);
@@ -36,7 +37,11 @@ export default function AdminFarmRegistryPage() {
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 10;
+  const [pageSize, setPageSize] = useState(10);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, statusFilter, locationFilter]);
 
   const fetchFarms = async () => {
     try {
@@ -422,37 +427,16 @@ export default function AdminFarmRegistryPage() {
               </table>
             </div>
 
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="d-flex justify-content-between align-items-center p-3 border-top">
-                <small className="text-muted">
-                  Page {currentPage} of {totalPages}
-                </small>
-                <div className="btn-group btn-group-sm">
-                  <button
-                    className="btn btn-outline-secondary"
-                    disabled={currentPage === 1}
-                    onClick={() => setCurrentPage(p => p - 1)}
-                  >
-                    Previous
-                  </button>
-                  {Array.from({ length: totalPages }).map((_, i) => (
-                    <button
-                      key={i}
-                      className={`btn ${currentPage === i + 1 ? 'btn-success text-white' : 'btn-outline-secondary'}`}
-                      onClick={() => setCurrentPage(i + 1)}
-                    >
-                      {i + 1}
-                    </button>
-                  ))}
-                  <button
-                    className="btn btn-outline-secondary"
-                    disabled={currentPage === totalPages}
-                    onClick={() => setCurrentPage(p => p + 1)}
-                  >
-                    Next
-                  </button>
-                </div>
+            {/* Pagination Controls */}
+            {!loading && filteredFarms.length > 0 && (
+              <div className="p-3 border-top bg-light">
+                <AdminPagination
+                  currentPage={currentPage}
+                  totalItems={filteredFarms.length}
+                  pageSize={pageSize}
+                  onPageChange={setCurrentPage}
+                  onPageSizeChange={setPageSize}
+                />
               </div>
             )}
           </div>

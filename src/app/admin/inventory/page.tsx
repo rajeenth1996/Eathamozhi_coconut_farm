@@ -2,11 +2,18 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import AdminPagination from '@/components/AdminPagination';
 
 export default function AdminInventoryAdjustmentPage() {
   const [batches, setBatches] = useState<any[]>([]);
   const [adjustments, setAdjustments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Pagination States
+  const [batchPage, setBatchPage] = useState(1);
+  const [batchPageSize, setBatchPageSize] = useState(10);
+  const [logPage, setLogPage] = useState(1);
+  const [logPageSize, setLogPageSize] = useState(10);
 
   const [selectedBatch, setSelectedBatch] = useState('EM-0926-A');
   const [change, setChange] = useState<number>(-10);
@@ -179,7 +186,7 @@ export default function AdminInventoryAdjustmentPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {batches.map(b => (
+                  {batches.slice((batchPage - 1) * batchPageSize, batchPage * batchPageSize).map(b => (
                     <tr key={b.batchCode}>
                       <td><strong className="text-success">{b.batchCode}</strong></td>
                       <td>{b.totalQuantity}</td>
@@ -195,6 +202,18 @@ export default function AdminInventoryAdjustmentPage() {
                 </tbody>
               </table>
             </div>
+
+            {batches.length > 0 && (
+              <div className="pt-3 border-top mt-2">
+                <AdminPagination
+                  currentPage={batchPage}
+                  totalItems={batches.length}
+                  pageSize={batchPageSize}
+                  onPageChange={setBatchPage}
+                  onPageSizeChange={setBatchPageSize}
+                />
+              </div>
+            )}
           </div>
 
           {/* Historical Audit Log Table */}
@@ -213,7 +232,7 @@ export default function AdminInventoryAdjustmentPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {adjustments.map(log => (
+                  {adjustments.slice((logPage - 1) * logPageSize, logPage * logPageSize).map(log => (
                     <tr key={log.id}>
                       <td className="small text-muted">{new Date(log.createdAt).toLocaleString()}</td>
                       <td><strong className="text-success">{log.batchCode}</strong></td>
@@ -229,6 +248,18 @@ export default function AdminInventoryAdjustmentPage() {
                 </tbody>
               </table>
             </div>
+
+            {adjustments.length > 0 && (
+              <div className="pt-3 border-top mt-2">
+                <AdminPagination
+                  currentPage={logPage}
+                  totalItems={adjustments.length}
+                  pageSize={logPageSize}
+                  onPageChange={setLogPage}
+                  onPageSizeChange={setLogPageSize}
+                />
+              </div>
+            )}
           </div>
 
         </div>

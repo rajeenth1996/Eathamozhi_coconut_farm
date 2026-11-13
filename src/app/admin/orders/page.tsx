@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import AdminNav from '@/components/AdminNav';
+import AdminPagination from '@/components/AdminPagination';
 import * as XLSX from 'xlsx';
 
 export default function AdminOrdersPage() {
@@ -17,6 +18,10 @@ export default function AdminOrdersPage() {
   const [deliveryStartDate, setDeliveryStartDate] = useState('');
   const [deliveryEndDate, setDeliveryEndDate] = useState('');
 
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
   // Modal / Dispatch State
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [courierName, setCourierName] = useState('Professional Couriers');
@@ -24,6 +29,107 @@ export default function AdminOrdersPage() {
 
   // Screenshot Preview Modal
   const [previewScreenshot, setPreviewScreenshot] = useState<string | null>(null);
+
+  // Full Customer Details & Order Edit Modal State
+  const [viewingOrder, setViewingOrder] = useState<any | null>(null);
+  const [editForm, setEditForm] = useState<any>({});
+  const [uploadingReceipt, setUploadingReceipt] = useState(false);
+  const [savingOrder, setSavingOrder] = useState(false);
+
+  const openOrderDetailsModal = (ord: any) => {
+    setViewingOrder(ord);
+    setEditForm({
+      customerName: ord.customerName || '',
+      mobile: ord.mobile || '',
+      whatsapp: ord.whatsapp || ord.mobile || '',
+      email: ord.email || '',
+      address: ord.address || '',
+      district: ord.district || '',
+      state: ord.state || 'Tamil Nadu',
+      pinCode: ord.pinCode || '',
+      nearestHub: ord.nearestHub || '',
+      deliveryService: ord.deliveryService || ord.courierName || 'MSS Parcel Service',
+      expectedDeliveryDate: ord.expectedDeliveryDate || '',
+      specialInstructions: ord.specialInstructions || '',
+      quantity: ord.quantity || 1,
+      totalAmount: ord.totalAmount || 0,
+      paidAmount: ord.paidAmount || ord.advancePaid || 0,
+      balanceAmount: ord.balanceAmount ?? 0,
+      bookingStatus: ord.bookingStatus || 'Payment review',
+      paymentStatus: ord.paymentStatus || 'PENDING_VERIFICATION',
+      paymentScreenshotUrl: ord.paymentScreenshotUrl || '',
+      courierName: ord.courierName || '',
+      trackingId: ord.trackingId || '',
+      dispatchDate: ord.dispatchDate || '',
+    });
+  };
+
+  const handleUploadReceiptFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files[0]) return;
+    const file = e.target.files[0];
+    setUploadingReceipt(true);
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      form.append('files', file);
+      form.append('category', 'receipts');
+      form.append('type', 'receipt');
+      if (viewingOrder?.batchCode) {
+        form.append('tag', viewingOrder.batchCode);
+      }
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: form
+      });
+      const data = await res.json();
+      if (res.ok && (data.url || (data.urls && data.urls[0]))) {
+        const cloudUrl = data.url || data.urls[0];
+        setEditForm((prev: any) => ({ ...prev, paymentScreenshotUrl: cloudUrl }));
+        alert('✅ Payment screenshot successfully uploaded to Cloudinary!');
+      } else {
+        alert(data.error || 'Failed to upload screenshot image. Please try again.');
+      }
+    } catch (err) {
+      alert('Upload failed due to network error.');
+    } finally {
+      setUploadingReceipt(false);
+    }
+  };
+
+  const handleSaveOrderDetails = async (confirmNow = false) => {
+    if (!viewingOrder) return;
+    setSavingOrder(true);
+    try {
+      const payload: any = {
+        ...editForm,
+        status: confirmNow ? 'Confirmed' : editForm.bookingStatus,
+        paymentStatus: confirmNow ? 'PAID' : (editForm.bookingStatus === 'Confirmed' ? 'PAID' : editForm.paymentStatus)
+      };
+
+      const res = await fetch(`/api/bookings/${viewingOrder.bookingId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        alert(
+          confirmNow 
+            ? `✅ Order ${viewingOrder.bookingId} confirmed successfully from our end! Status updated to Confirmed & Payment marked as PAID.` 
+            : `✅ Order details for ${viewingOrder.bookingId} updated successfully!`
+        );
+        fetchOrders();
+        setViewingOrder(null);
+      } else {
+        const err = await res.json();
+        alert(err.error || 'Failed to update order details');
+      }
+    } catch (err) {
+      alert('Failed to update order details');
+    } finally {
+      setSavingOrder(false);
+    }
+  };
 
   const fetchOrders = async () => {
     const res = await fetch('/api/bookings');
@@ -41,7 +147,12 @@ export default function AdminOrdersPage() {
 
     // RESTRICTION: Only allow confirming if payment screenshot is available!
     if (status !== 'Payment review' && status !== 'Pre-order' && status !== 'Cancelled' && (!ord?.paymentScreenshotUrl || ord.paymentScreenshotUrl.trim() === '')) {
-      alert('⚠️ CANNOT CONFIRM ORDER WITHOUT SCREENSHOT!\n\nNo payment screenshot has been uploaded/received for this order. You can only confirm orders after a valid payment screenshot is available.');
+      const openModal = window.confirm(
+        '⚠️ No payment screenshot has been uploaded for this order yet.\n\nWould you like to open the order details now to upload the screenshot image and confirm the order?'
+      );
+      if (openModal && ord) {
+        openOrderDetailsModal(ord);
+      }
       fetchOrders(); // reset select element
       return;
     }
@@ -113,6 +224,13 @@ export default function AdminOrdersPage() {
 
     return matchSearch && matchStatus && matchOrderStart && matchOrderEnd && matchDelivStart && matchDelivEnd;
   });
+
+  // Reset to first page whenever search or filter criteria change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, filterStatus, orderStartDate, orderEndDate, deliveryStartDate, deliveryEndDate]);
+
+  const paginatedOrders = filteredOrders.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   const isAnyFilterActive = Boolean(
     search || 
@@ -729,17 +847,25 @@ export default function AdminOrdersPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredOrders.map(ord => (
-                      <tr key={ord.id}>
-                        <td>
-                          <strong className="text-success d-block">{ord.bookingId}</strong>
+                    {paginatedOrders.map(ord => (
+                      <tr key={ord.id} className="hover-lift-subtle">
+                        <td 
+                          className="cursor-pointer"
+                          onClick={() => openOrderDetailsModal(ord)}
+                          title="Click to view full customer & order details"
+                        >
+                          <strong className="text-success d-block text-decoration-underline">{ord.bookingId}</strong>
                           <small className="text-muted d-block extra-small mt-1">
                             <i className="bi bi-calendar-event me-1 text-primary"></i>
                             {ord.createdAt ? ord.createdAt.split('T')[0] : 'N/A'}
                           </small>
                         </td>
-                        <td>
-                          <strong className="d-block">{ord.customerName}</strong>
+                        <td 
+                          className="cursor-pointer"
+                          onClick={() => openOrderDetailsModal(ord)}
+                          title="Click to view entire customer details"
+                        >
+                          <strong className="d-block text-primary">{ord.customerName}</strong>
                           <small className="text-muted d-block"><i className="bi bi-phone me-1"></i>{ord.mobile} | {ord.district}</small>
                           <small className="badge bg-light text-dark border extra-small mt-1">
                             <i className="bi bi-truck me-1 text-success"></i>{ord.deliveryService || 'MSS Parcel Service'} ({ord.nearestHub || 'Main Hub'})
@@ -881,15 +1007,25 @@ export default function AdminOrdersPage() {
                               `Please feel free to reach out for any queries. Thank you!`;
 
                             return (
-                              <a
-                                href={`https://wa.me/91${ord.whatsapp}?text=${encodeURIComponent(chatMsg)}`}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="btn btn-sm btn-success d-inline-flex align-items-center gap-1 shadow-sm"
-                                title="Open WhatsApp with order details, balance, and tracking link"
-                              >
-                                <i className="bi bi-whatsapp"></i> Chat
-                              </a>
+                              <div className="d-flex flex-wrap gap-1 align-items-center">
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-primary d-inline-flex align-items-center gap-1 shadow-sm"
+                                  onClick={() => openOrderDetailsModal(ord)}
+                                  title="View entire customer details, update screenshot image, and edit or confirm order"
+                                >
+                                  <i className="bi bi-person-lines-fill"></i> Details
+                                </button>
+                                <a
+                                  href={`https://wa.me/91${ord.whatsapp}?text=${encodeURIComponent(chatMsg)}`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="btn btn-sm btn-success d-inline-flex align-items-center gap-1 shadow-sm"
+                                  title="Open WhatsApp with order details, balance, and tracking link"
+                                >
+                                  <i className="bi bi-whatsapp"></i> Chat
+                                </a>
+                              </div>
                             );
                           })()}
                         </td>
@@ -897,6 +1033,19 @@ export default function AdminOrdersPage() {
                     ))}
                   </tbody>
                 </table>
+              </div>
+            )}
+
+            {/* Pagination Controls */}
+            {!loading && filteredOrders.length > 0 && (
+              <div className="p-3 border-top bg-light">
+                <AdminPagination
+                  currentPage={currentPage}
+                  totalItems={filteredOrders.length}
+                  pageSize={pageSize}
+                  onPageChange={setCurrentPage}
+                  onPageSizeChange={setPageSize}
+                />
               </div>
             )}
           </div>
@@ -951,6 +1100,436 @@ export default function AdminOrdersPage() {
                   >
                     Save & Dispatch
                   </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Full Customer Details & Order Verification Modal */}
+          {viewingOrder && (
+            <div 
+              className="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-75 d-flex align-items-center justify-content-center p-2 z-3"
+              style={{ overflowY: 'auto' }}
+            >
+              <div 
+                className="card border-0 shadow-lg rounded-4 bg-white my-4" 
+                style={{ maxWidth: '960px', width: '100%', maxHeight: '92vh', display: 'flex', flexDirection: 'column' }}
+              >
+                {/* Modal Header */}
+                <div className="card-header bg-dark text-white p-3 d-flex flex-wrap justify-content-between align-items-center gap-2 border-0 rounded-top-4">
+                  <div>
+                    <span className="badge bg-primary me-2">CUSTOMER ORDER MODULE</span>
+                    <h5 className="fw-bold mb-0 text-light d-inline align-middle">
+                      {viewingOrder.bookingId} — {viewingOrder.customerName}
+                    </h5>
+                    <div className="extra-small text-white-50 mt-1">
+                      <span>Batch: <strong className="text-light">{viewingOrder.batchCode}</strong></span>
+                      <span className="mx-2">&bull;</span>
+                      <span>Placed on: <strong className="text-light">{viewingOrder.createdAt ? new Date(viewingOrder.createdAt).toLocaleString('en-IN') : 'N/A'}</strong></span>
+                      <span className="mx-2">&bull;</span>
+                      <span className="badge bg-success-subtle text-success border border-success extra-small">
+                        {viewingOrder.bookingStatus}
+                      </span>
+                    </div>
+                  </div>
+                  <button 
+                    type="button" 
+                    className="btn-close btn-close-white" 
+                    onClick={() => setViewingOrder(null)}
+                    aria-label="Close"
+                  ></button>
+                </div>
+
+                {/* Modal Body - Scrollable Content */}
+                <div className="card-body p-4" style={{ overflowY: 'auto' }}>
+                  <div className="row g-4">
+                    
+                    {/* Left Column: Customer & Delivery Details */}
+                    <div className="col-lg-6 border-end-lg">
+                      <h6 className="fw-bold text-dark border-bottom pb-2 mb-3 d-flex align-items-center gap-2">
+                        <i className="bi bi-person-circle text-primary"></i>
+                        <span>Customer Profile &amp; Contact Details</span>
+                      </h6>
+
+                      <div className="row g-3">
+                        <div className="col-12">
+                          <label className="form-label small fw-bold text-secondary mb-1">Customer Full Name</label>
+                          <input 
+                            type="text" 
+                            className="form-control"
+                            value={editForm.customerName || ''}
+                            onChange={e => setEditForm({ ...editForm, customerName: e.target.value })}
+                          />
+                        </div>
+
+                        <div className="col-sm-6">
+                          <label className="form-label small fw-bold text-secondary mb-1">
+                            Mobile Number
+                          </label>
+                          <div className="input-group">
+                            <input 
+                              type="tel" 
+                              className="form-control"
+                              value={editForm.mobile || ''}
+                              onChange={e => setEditForm({ ...editForm, mobile: e.target.value })}
+                            />
+                            {editForm.mobile && (
+                              <a href={`tel:${editForm.mobile}`} className="btn btn-outline-secondary" title="Call Customer">
+                                <i className="bi bi-telephone-fill"></i>
+                              </a>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="col-sm-6">
+                          <label className="form-label small fw-bold text-secondary mb-1">
+                            WhatsApp Number
+                          </label>
+                          <div className="input-group">
+                            <input 
+                              type="tel" 
+                              className="form-control"
+                              value={editForm.whatsapp || ''}
+                              onChange={e => setEditForm({ ...editForm, whatsapp: e.target.value })}
+                            />
+                            {editForm.whatsapp && (
+                              <a 
+                                href={`https://wa.me/91${editForm.whatsapp}`} 
+                                target="_blank" 
+                                rel="noreferrer"
+                                className="btn btn-outline-success" 
+                                title="Open WhatsApp Chat"
+                              >
+                                <i className="bi bi-whatsapp"></i>
+                              </a>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="col-12">
+                          <label className="form-label small fw-bold text-secondary mb-1">Email Address</label>
+                          <input 
+                            type="email" 
+                            className="form-control"
+                            placeholder="Optional email address"
+                            value={editForm.email || ''}
+                            onChange={e => setEditForm({ ...editForm, email: e.target.value })}
+                          />
+                        </div>
+
+                        <div className="col-12">
+                          <label className="form-label small fw-bold text-secondary mb-1">Complete Delivery Address</label>
+                          <textarea 
+                            rows={3} 
+                            className="form-control"
+                            value={editForm.address || ''}
+                            onChange={e => setEditForm({ ...editForm, address: e.target.value })}
+                          />
+                        </div>
+
+                        <div className="col-sm-4">
+                          <label className="form-label small fw-bold text-secondary mb-1">District</label>
+                          <input 
+                            type="text" 
+                            className="form-control"
+                            value={editForm.district || ''}
+                            onChange={e => setEditForm({ ...editForm, district: e.target.value })}
+                          />
+                        </div>
+
+                        <div className="col-sm-4">
+                          <label className="form-label small fw-bold text-secondary mb-1">State</label>
+                          <input 
+                            type="text" 
+                            className="form-control"
+                            value={editForm.state || ''}
+                            onChange={e => setEditForm({ ...editForm, state: e.target.value })}
+                          />
+                        </div>
+
+                        <div className="col-sm-4">
+                          <label className="form-label small fw-bold text-secondary mb-1">PIN Code</label>
+                          <input 
+                            type="text" 
+                            className="form-control font-monospace"
+                            value={editForm.pinCode || ''}
+                            onChange={e => setEditForm({ ...editForm, pinCode: e.target.value })}
+                          />
+                        </div>
+
+                        <div className="col-sm-6">
+                          <label className="form-label small fw-bold text-secondary mb-1">Nearest Delivery Hub</label>
+                          <input 
+                            type="text" 
+                            className="form-control"
+                            placeholder="District / Branch hub"
+                            value={editForm.nearestHub || ''}
+                            onChange={e => setEditForm({ ...editForm, nearestHub: e.target.value })}
+                          />
+                        </div>
+
+                        <div className="col-sm-6">
+                          <label className="form-label small fw-bold text-secondary mb-1">Delivery Partner Service</label>
+                          <input 
+                            type="text" 
+                            className="form-control"
+                            value={editForm.deliveryService || ''}
+                            onChange={e => setEditForm({ ...editForm, deliveryService: e.target.value })}
+                          />
+                        </div>
+
+                        <div className="col-sm-6">
+                          <label className="form-label small fw-bold text-secondary mb-1">Expected Delivery Date</label>
+                          <input 
+                            type="date" 
+                            className="form-control"
+                            value={editForm.expectedDeliveryDate || ''}
+                            onChange={e => setEditForm({ ...editForm, expectedDeliveryDate: e.target.value })}
+                          />
+                        </div>
+
+                        <div className="col-sm-6">
+                          <label className="form-label small fw-bold text-secondary mb-1">Courier Tracking ID</label>
+                          <input 
+                            type="text" 
+                            className="form-control font-monospace"
+                            placeholder="e.g. DTDC12345"
+                            value={editForm.trackingId || ''}
+                            onChange={e => setEditForm({ ...editForm, trackingId: e.target.value })}
+                          />
+                        </div>
+
+                        <div className="col-12">
+                          <label className="form-label small fw-bold text-secondary mb-1">Special Customer Instructions</label>
+                          <textarea 
+                            rows={2}
+                            className="form-control"
+                            placeholder="No special instructions"
+                            value={editForm.specialInstructions || ''}
+                            onChange={e => setEditForm({ ...editForm, specialInstructions: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right Column: Order Financials, Fulfillment & Payment Screenshot */}
+                    <div className="col-lg-6">
+                      <h6 className="fw-bold text-dark border-bottom pb-2 mb-3 d-flex align-items-center gap-2">
+                        <i className="bi bi-cash-coin text-success"></i>
+                        <span>Order Quantities, Financials &amp; Verification</span>
+                      </h6>
+
+                      {/* Pricing & Quantities Row */}
+                      <div className="p-3 bg-light rounded-3 border mb-3">
+                        <div className="row g-2 mb-2">
+                          <div className="col-4">
+                            <label className="form-label extra-small fw-bold text-muted text-uppercase mb-1">Quantity</label>
+                            <input 
+                              type="number" 
+                              className="form-control form-control-sm fw-bold"
+                              value={editForm.quantity || 1}
+                              onChange={e => setEditForm({ ...editForm, quantity: Number(e.target.value) })}
+                            />
+                          </div>
+                          <div className="col-4">
+                            <label className="form-label extra-small fw-bold text-muted text-uppercase mb-1">Total Amount (₹)</label>
+                            <input 
+                              type="number" 
+                              className="form-control form-control-sm fw-bold text-dark"
+                              value={editForm.totalAmount || 0}
+                              onChange={e => setEditForm({ ...editForm, totalAmount: Number(e.target.value) })}
+                            />
+                          </div>
+                          <div className="col-4">
+                            <label className="form-label extra-small fw-bold text-muted text-uppercase mb-1">Paid / Adv (₹)</label>
+                            <input 
+                              type="number" 
+                              className="form-control form-control-sm fw-bold text-success"
+                              value={editForm.paidAmount || 0}
+                              onChange={e => setEditForm({ ...editForm, paidAmount: Number(e.target.value) })}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="row g-2">
+                          <div className="col-6">
+                            <label className="form-label extra-small fw-bold text-muted text-uppercase mb-1">Balance Due (₹)</label>
+                            <input 
+                              type="number" 
+                              className="form-control form-control-sm fw-bold text-danger"
+                              value={editForm.balanceAmount ?? 0}
+                              onChange={e => setEditForm({ ...editForm, balanceAmount: Number(e.target.value) })}
+                            />
+                          </div>
+                          <div className="col-6">
+                            <label className="form-label extra-small fw-bold text-muted text-uppercase mb-1">Fulfillment Status</label>
+                            <select 
+                              className="form-select form-select-sm fw-bold"
+                              value={editForm.bookingStatus}
+                              onChange={e => setEditForm({ ...editForm, bookingStatus: e.target.value })}
+                            >
+                              <option value="Pre-order">Pre-order</option>
+                              <option value="Payment review">Payment review</option>
+                              <option value="Confirmed">Confirmed</option>
+                              <option value="Preparing">Preparing</option>
+                              <option value="Packed">Packed</option>
+                              <option value="Dispatched">Dispatched</option>
+                              <option value="Delivered">Delivered</option>
+                              <option value="Cancelled">Cancelled</option>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Payment Screenshot Manager & Update Section */}
+                      <div className="p-3 bg-light rounded-3 border mb-3">
+                        <div className="d-flex justify-content-between align-items-center mb-2">
+                          <label className="fw-bold small text-dark mb-0">
+                            <i className="bi bi-image-fill me-1 text-primary"></i> Payment Screenshot &amp; Proof
+                          </label>
+                          {editForm.paymentScreenshotUrl ? (
+                            <span className="badge bg-success-subtle text-success border border-success extra-small">
+                              <i className="bi bi-check-circle-fill me-1"></i> Screenshot Attached
+                            </span>
+                          ) : (
+                            <span className="badge bg-danger-subtle text-danger border border-danger extra-small">
+                              <i className="bi bi-exclamation-triangle-fill me-1"></i> Missing Screenshot
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Current Screenshot Preview */}
+                        {editForm.paymentScreenshotUrl ? (
+                          <div className="text-center p-2 bg-white rounded border mb-3">
+                            <img 
+                              src={editForm.paymentScreenshotUrl} 
+                              alt="Payment Screenshot" 
+                              className="rounded border shadow-sm cursor-pointer"
+                              style={{ maxHeight: '180px', maxWidth: '100%', objectFit: 'contain' }}
+                              onClick={() => setPreviewScreenshot(editForm.paymentScreenshotUrl)}
+                              title="Click to zoom preview"
+                            />
+                            <div className="d-flex justify-content-center gap-2 mt-2">
+                              <button 
+                                type="button" 
+                                className="btn btn-sm btn-outline-primary extra-small"
+                                onClick={() => setPreviewScreenshot(editForm.paymentScreenshotUrl)}
+                              >
+                                <i className="bi bi-arrows-fullscreen me-1"></i> Full Size View
+                              </button>
+                              <button 
+                                type="button" 
+                                className="btn btn-sm btn-outline-danger extra-small"
+                                onClick={() => setEditForm({ ...editForm, paymentScreenshotUrl: '' })}
+                              >
+                                <i className="bi bi-trash me-1"></i> Remove
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="alert alert-warning small mb-3 py-2">
+                            <i className="bi bi-info-circle me-1"></i> No screenshot uploaded by the customer. Upload or paste one below to confirm the order.
+                          </div>
+                        )}
+
+                        {/* Upload from Device (File Picker) */}
+                        <div className="mb-2">
+                          <label className="form-label extra-small fw-bold text-secondary mb-1">
+                            <i className="bi bi-cloud-arrow-up text-success me-1"></i> Upload Image From Device:
+                          </label>
+                          <input 
+                            type="file" 
+                            accept="image/*" 
+                            className="form-control form-control-sm"
+                            onChange={handleUploadReceiptFile}
+                            disabled={uploadingReceipt}
+                          />
+                          {uploadingReceipt && (
+                            <small className="text-primary fw-bold mt-1 d-block">
+                              <span className="spinner-border spinner-border-sm me-1" role="status"></span> Uploading screenshot to Cloudinary...
+                            </small>
+                          )}
+                        </div>
+
+                        {/* Or Paste Direct Image URL */}
+                        <div>
+                          <label className="form-label extra-small fw-bold text-secondary mb-1">Or Paste Direct Image / Receipt URL:</label>
+                          <input 
+                            type="text" 
+                            className="form-control form-control-sm"
+                            placeholder="https://..."
+                            value={editForm.paymentScreenshotUrl || ''}
+                            onChange={e => setEditForm({ ...editForm, paymentScreenshotUrl: e.target.value })}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Traceability Summary */}
+                      {viewingOrder.allocations && viewingOrder.allocations.length > 0 && (
+                        <div className="p-3 bg-light rounded-3 border extra-small">
+                          <strong className="d-block text-dark mb-1">
+                            <i className="bi bi-diagram-3 text-success me-1"></i> Source Palm Traceability:
+                          </strong>
+                          {viewingOrder.allocations.map((a: any, i: number) => (
+                            <div key={i} className="text-muted">
+                              &bull; Mother Tree: <strong className="text-dark">{a.motherTreeCode}</strong> ({a.quantity} saplings from Farm: <strong className="text-dark">{a.farmCode}</strong>)
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                    </div>
+                  </div>
+                </div>
+
+                {/* Modal Footer with Actions */}
+                <div className="card-footer bg-light p-3 d-flex flex-wrap justify-content-between align-items-center gap-2 border-top rounded-bottom-4">
+                  <div className="d-flex gap-2">
+                    <Link
+                      href={`/admin/traceability?query=${encodeURIComponent(viewingOrder.bookingId)}`}
+                      className="btn btn-outline-secondary btn-sm"
+                      target="_blank"
+                    >
+                      <i className="bi bi-diagram-3 me-1"></i> Open Traceability
+                    </Link>
+                    <a
+                      href={`/tracking?bookingId=${encodeURIComponent(viewingOrder.bookingId)}&mobile=${encodeURIComponent(editForm.whatsapp || editForm.mobile)}`}
+                      className="btn btn-outline-secondary btn-sm"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <i className="bi bi-geo-alt me-1"></i> Public Tracking Link
+                    </a>
+                  </div>
+
+                  <div className="d-flex flex-wrap gap-2">
+                    <button 
+                      type="button" 
+                      className="btn btn-secondary" 
+                      onClick={() => setViewingOrder(null)}
+                      disabled={savingOrder}
+                    >
+                      Close
+                    </button>
+                    <button 
+                      type="button" 
+                      className="btn btn-primary fw-semibold"
+                      onClick={() => handleSaveOrderDetails(false)}
+                      disabled={savingOrder || uploadingReceipt}
+                    >
+                      {savingOrder ? 'Saving...' : 'Save Updated Details'}
+                    </button>
+                    <button 
+                      type="button" 
+                      className="btn btn-success fw-bold shadow-sm d-inline-flex align-items-center gap-1"
+                      onClick={() => handleSaveOrderDetails(true)}
+                      disabled={savingOrder || uploadingReceipt}
+                      title="Set status to Confirmed, mark payment as PAID, and save updated screenshot"
+                    >
+                      <i className="bi bi-check-circle-fill"></i>
+                      <span>{savingOrder ? 'Confirming...' : 'Confirm Order & Mark PAID'}</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

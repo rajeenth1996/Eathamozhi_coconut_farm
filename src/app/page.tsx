@@ -22,6 +22,17 @@ export default async function Home() {
   const batches = visibleBatches;
   const motherPalms = visibleMotherPalms;
 
+  // Determine oldest available batch for the grove planning calculator rate
+  const availableBatches = visibleBatches.filter(b => (b.availableQuantity ?? 0) > 0 && b.status !== 'SOLD_OUT');
+  const sortedBatches = [...(availableBatches.length > 0 ? availableBatches : visibleBatches)].sort((a, b) => {
+    const dateA = new Date(a.seededDate || a.harvestDate || 0).getTime();
+    const dateB = new Date(b.seededDate || b.harvestDate || 0).getTime();
+    return dateA - dateB;
+  });
+  const oldestAvailableBatch = sortedBatches[0];
+  const oldestBatchRate = oldestAvailableBatch?.price ?? 150;
+  const oldestBatchCode = oldestAvailableBatch?.batchCode;
+
   return (
     <>
       {/* 1. LUXURY HERO SECTION WITH SILENT AMBIENT BACKGROUND VIDEO */}
@@ -154,7 +165,7 @@ export default async function Home() {
             </p>
           </div>
 
-          <PlantingCalculator />
+          <PlantingCalculator initialRate={oldestBatchRate} oldestBatchCode={oldestBatchCode} />
         </div>
       </section>
 
@@ -192,7 +203,10 @@ export default async function Home() {
                         carouselId={`home-palm-${palm.code}`} 
                         height="200px" 
                         showThumbnails={false} 
-                        objectFit="cover" 
+                        objectFit="cover"
+                        videoUrl={palm.youtubeVideoUrl}
+                        videoId={palm.youtubeVideoId}
+                        videoPosition={palm.youtubeVideoPosition || 1}
                       />
                       <div className="position-absolute top-0 start-0 m-2" style={{ pointerEvents: 'none', zIndex: 3 }}>
                         <span className="badge bg-dark bg-opacity-75">{palm.code}</span>

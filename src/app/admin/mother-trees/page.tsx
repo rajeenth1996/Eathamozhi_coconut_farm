@@ -5,7 +5,8 @@ import Link from 'next/link';
 import AdminNav from '@/components/AdminNav';
 import AdminLogoutButton from '@/components/AdminLogoutButton';
 import ImageCarousel from '@/components/ImageCarousel';
-import { formatApproximateAge } from '@/lib/types';
+import { formatApproximateAge, extractYouTubeVideoId } from '@/lib/types';
+import AdminPagination from '@/components/AdminPagination';
 
 export default function AdminMotherTreesPage() {
   const [palms, setPalms] = useState<any[]>([]);
@@ -44,6 +45,8 @@ export default function AdminMotherTreesPage() {
     selectionStatus: 'Selected' as 'Selected' | 'Registered',
     verificationStatus: 'Verified' as 'Verified' | 'Pending',
     productionStatus: 'Active for Production' as 'Active for Production' | 'Inactive' | 'Retired',
+    youtubeVideoUrl: '',
+    youtubeVideoPosition: 1,
     notes: '',
     images: [] as string[],
     isVisible: true
@@ -185,6 +188,8 @@ export default function AdminMotherTreesPage() {
           selectionStatus: 'Selected',
           verificationStatus: 'Verified',
           productionStatus: 'Active for Production',
+          youtubeVideoUrl: '',
+          youtubeVideoPosition: 1,
           notes: '',
           images: [],
           isVisible: true
@@ -225,6 +230,9 @@ export default function AdminMotherTreesPage() {
         selectionStatus: editingTree.selectionStatus,
         verificationStatus: editingTree.verificationStatus,
         productionStatus: editingTree.productionStatus,
+        youtubeVideoUrl: editingTree.youtubeVideoUrl || '',
+        youtubeVideoId: extractYouTubeVideoId(editingTree.youtubeVideoUrl) || '',
+        youtubeVideoPosition: Number(editingTree.youtubeVideoPosition) || 1,
         notes: editingTree.notes,
         images: editTreeImages,
         isVisible: editingTree.isVisible
@@ -331,6 +339,19 @@ export default function AdminMotherTreesPage() {
 
     return matchSearch && matchFarm && matchSelection && matchVerification && matchVis;
   });
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, farmFilter, selectionFilter, verificationFilter, visibilityFilter]);
+
+  const paginatedPalms = filteredPalms.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
 
   return (
     <>
@@ -511,7 +532,7 @@ export default function AdminMotherTreesPage() {
                       </td>
                     </tr>
                   ) : (
-                    filteredPalms.map((palm) => {
+                    paginatedPalms.map((palm) => {
                       const tCode = palm.motherTreeCode || palm.code;
                       const isSelected = selectedTreeCodes.includes(tCode);
                       return (
@@ -600,6 +621,19 @@ export default function AdminMotherTreesPage() {
                 </tbody>
               </table>
             </div>
+
+            {/* Pagination Controls */}
+            {!loading && filteredPalms.length > 0 && (
+              <div className="p-3 border-top bg-light">
+                <AdminPagination
+                  currentPage={currentPage}
+                  totalItems={filteredPalms.length}
+                  pageSize={pageSize}
+                  onPageChange={setCurrentPage}
+                  onPageSizeChange={setPageSize}
+                />
+              </div>
+            )}
           </div>
 
           {/* Form: Register New Mother Tree Under Farm */}
@@ -702,6 +736,39 @@ export default function AdminMotherTreesPage() {
                     value={newTree.yieldHistory}
                     onChange={(e) => setNewTree({ ...newTree, yieldHistory: e.target.value })}
                   />
+                </div>
+
+                <div className="col-md-6">
+                  <label className="form-label fw-bold small text-secondary">
+                    <i className="bi bi-youtube text-danger me-1"></i> YouTube Video Link (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..."
+                    value={newTree.youtubeVideoUrl || ''}
+                    onChange={(e) => setNewTree({ ...newTree, youtubeVideoUrl: e.target.value })}
+                  />
+                  <small className="text-muted extra-small">Add a video link to showcase this mother palm in the photos carousel.</small>
+                </div>
+
+                <div className="col-md-6">
+                  <label className="form-label fw-bold small text-secondary">
+                    <i className="bi bi-sort-numeric-down text-primary me-1"></i> Video Position in Photos Carousel
+                  </label>
+                  <select
+                    className="form-select"
+                    value={newTree.youtubeVideoPosition || 1}
+                    onChange={(e) => setNewTree({ ...newTree, youtubeVideoPosition: Number(e.target.value) })}
+                  >
+                    <option value={1}>Position 1 (1st Slide - Featured First)</option>
+                    <option value={2}>Position 2 (2nd Slide)</option>
+                    <option value={3}>Position 3 (3rd Slide)</option>
+                    <option value={4}>Position 4 (4th Slide)</option>
+                    <option value={5}>Position 5 (5th Slide)</option>
+                    <option value={99}>At the End (After all photos)</option>
+                  </select>
+                  <small className="text-muted extra-small">Choose where the video slide appears among mother tree photos.</small>
                 </div>
 
                 <div className="col-md-6">
@@ -912,6 +979,59 @@ export default function AdminMotherTreesPage() {
                   </div>
                 </div>
 
+                {/* YouTube Video Embed Configuration */}
+                <div className="p-3 bg-light rounded-3 mb-3 border">
+                  <label className="form-label fw-bold small text-dark mb-1">
+                    <i className="bi bi-youtube text-danger me-1"></i> Mother Tree YouTube Video Link
+                  </label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..."
+                    value={editingTree.youtubeVideoUrl || ''}
+                    onChange={(e) => setEditingTree({ ...editingTree, youtubeVideoUrl: e.target.value })}
+                  />
+                  <small className="text-muted extra-small d-block mt-1">
+                    Add a YouTube video link. Customers can watch the full video tour directly on the Mother Tree profile page.
+                  </small>
+                  {extractYouTubeVideoId(editingTree.youtubeVideoUrl) && (
+                    <div className="mt-2 p-2 bg-white rounded border">
+                      <div className="d-flex align-items-center justify-content-between mb-1">
+                        <small className="fw-bold text-success"><i className="bi bi-play-circle-fill me-1"></i> Video Preview</small>
+                        <span className="badge bg-danger">YouTube Ready</span>
+                      </div>
+                      <div className="ratio ratio-16x9 rounded overflow-hidden shadow-sm" style={{ maxHeight: '180px' }}>
+                        <iframe
+                          src={`https://www.youtube-nocookie.com/embed/${extractYouTubeVideoId(editingTree.youtubeVideoUrl)}`}
+                          title="Mother tree preview"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        ></iframe>
+                      </div>
+                    </div>
+                  )}
+                  <div className="mt-3 pt-2 border-top">
+                    <label className="form-label fw-bold small text-dark mb-1">
+                      <i className="bi bi-sort-numeric-down text-primary me-1"></i> Choose Video Position in Photos Carousel
+                    </label>
+                    <select
+                      className="form-select form-select-sm fw-semibold"
+                      value={editingTree.youtubeVideoPosition || 1}
+                      onChange={(e) => setEditingTree({ ...editingTree, youtubeVideoPosition: Number(e.target.value) })}
+                    >
+                      <option value={1}>Position 1 (1st Slide - Featured First)</option>
+                      <option value={2}>Position 2 (2nd Slide)</option>
+                      <option value={3}>Position 3 (3rd Slide)</option>
+                      <option value={4}>Position 4 (4th Slide)</option>
+                      <option value={5}>Position 5 (5th Slide)</option>
+                      <option value={99}>At the End (After all photos)</option>
+                    </select>
+                    <small className="text-muted extra-small d-block mt-1">
+                      Choose which slide position the video occupies in the photos carousel on the public mother tree page.
+                    </small>
+                  </div>
+                </div>
+
                 {/* Customer Visibility Toggle */}
                 <div className="form-check form-switch p-2 bg-light rounded">
                   <input
@@ -944,6 +1064,9 @@ export default function AdminMotherTreesPage() {
         <ImageCarousel
           images={previewTree.images || ['/images/placeholder.png']}
           title={`${previewTree.name} (${previewTree.motherTreeCode || previewTree.code})`}
+          videoUrl={previewTree.youtubeVideoUrl}
+          videoId={previewTree.youtubeVideoId}
+          videoPosition={previewTree.youtubeVideoPosition || 1}
           onClose={() => setPreviewTree(null)}
         />
       )}

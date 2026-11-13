@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import AdminNav from '@/components/AdminNav';
+import AdminPagination from '@/components/AdminPagination';
 import * as XLSX from 'xlsx';
 
 export default function AdminSeedlingInventoryPage() {
@@ -98,6 +99,19 @@ export default function AdminSeedlingInventoryPage() {
 
     return matchesSearch && matchesFarm && matchesBatch;
   });
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, selectedFarm, selectedBatch]);
+
+  const paginatedInventory = filteredInventory.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
 
   // Calculate totals
   const totals = filteredInventory.reduce(
@@ -320,7 +334,7 @@ export default function AdminSeedlingInventoryPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredInventory.map((item) => (
+                    {paginatedInventory.map((item) => (
                       <tr key={item.id || `${item.batchCode}-${item.motherTreeCode}`}>
                         <td>
                           <span className="badge bg-secondary font-monospace">{item.batchCode}</span>
@@ -372,6 +386,19 @@ export default function AdminSeedlingInventoryPage() {
                     ))}
                   </tbody>
                 </table>
+              </div>
+            )}
+
+            {/* Pagination Controls */}
+            {!loading && filteredInventory.length > 0 && (
+              <div className="pt-3 border-top mt-3">
+                <AdminPagination
+                  currentPage={currentPage}
+                  totalItems={filteredInventory.length}
+                  pageSize={pageSize}
+                  onPageChange={setCurrentPage}
+                  onPageSizeChange={setPageSize}
+                />
               </div>
             )}
           </div>
