@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import AdminNav from '@/components/AdminNav';
 import AdminPagination from '@/components/AdminPagination';
+import WhatsAppBroadcastModal, { BroadcastRecipient } from '@/components/WhatsAppBroadcastModal';
 import * as XLSX from 'xlsx';
 
 export default function AdminOrdersPage() {
@@ -231,6 +232,67 @@ export default function AdminOrdersPage() {
   }, [search, filterStatus, orderStartDate, orderEndDate, deliveryStartDate, deliveryEndDate]);
 
   const paginatedOrders = filteredOrders.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+  // Multi-select & WhatsApp Broadcast State
+  const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([]);
+  const [showBroadcastModal, setShowBroadcastModal] = useState(false);
+
+  const toggleSelectOrder = (id: string) => {
+    setSelectedOrderIds(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
+
+  const selectAllOnPage = () => {
+    const pageIds = paginatedOrders.map(o => o.bookingId || o.id);
+    const allSelected = pageIds.length > 0 && pageIds.every(id => selectedOrderIds.includes(id));
+    if (allSelected) {
+      setSelectedOrderIds(prev => prev.filter(id => !pageIds.includes(id)));
+    } else {
+      setSelectedOrderIds(prev => Array.from(new Set([...prev, ...pageIds])));
+    }
+  };
+
+  const selectAllFiltered = () => {
+    const filteredIds = filteredOrders.map(o => o.bookingId || o.id);
+    const allSelected = filteredIds.length > 0 && filteredIds.every(id => selectedOrderIds.includes(id));
+    if (allSelected) {
+      setSelectedOrderIds([]);
+    } else {
+      setSelectedOrderIds(filteredIds);
+    }
+  };
+
+  const clearSelection = () => {
+    setSelectedOrderIds([]);
+  };
+
+  const broadcastRecipients: BroadcastRecipient[] = orders
+    .filter(o => selectedOrderIds.includes(o.bookingId || o.id))
+    .map(o => {
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://eathamozhi-coconut-farm.vercel.app';
+      const trackingLink = `${siteUrl}/tracking?bookingId=${encodeURIComponent(o.bookingId)}&mobile=${encodeURIComponent(o.whatsapp || o.mobile || '')}`;
+      const isPreOrderOrder = o.isPreOrder || o.orderType === 'PRE_ORDER' || o.bookingStatus === 'Pre-order';
+      const advanceVal = o.paidAmount || o.advancePaid || (isPreOrderOrder ? Math.round(o.totalAmount / 2) : o.totalAmount);
+      const balanceVal = o.balanceAmount ?? (isPreOrderOrder ? Math.max(0, o.totalAmount - advanceVal) : 0);
+
+      return {
+        id: o.bookingId || o.id,
+        name: o.customerName || 'Valued Farmer',
+        phone: o.whatsapp || o.mobile || '',
+        bookingId: o.bookingId,
+        batchCode: o.batchCode,
+        quantity: o.quantity || 1,
+        totalAmount: o.totalAmount || 0,
+        paidAmount: advanceVal,
+        balanceAmount: balanceVal,
+        expectedDelivery: o.expectedDeliveryDate || 'N/A',
+        courierName: o.courierName || o.deliveryService || 'MSS Parcel Service',
+        location: o.district || o.nearestHub || 'N/A',
+        status: o.bookingStatus || 'Active',
+        trackingLink
+      };
+    });
 
   const isAnyFilterActive = Boolean(
     search || 
@@ -827,6 +889,60 @@ export default function AdminOrdersPage() {
               </button>
             </div>
 
+            {/* WhatsApp Broadcast & Multi-Select Toolbar */}
+            <div className={`p-3 rounded-4 mb-3 border transition-all ${selectedOrderIds.length > 0 ? 'bg-success-subtle border-success shadow-sm' : 'bg-light'}`}>
+              <div className="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <div className="d-flex align-items-center gap-2 flex-wrap">
+                  <div className="form-check mb-0">
+                    <input
+                      type="checkbox"
+                      id="selectAllFilteredCheckbox"
+                      className="form-check-input cursor-pointer"
+                      checked={filteredOrders.length > 0 && selectedOrderIds.length === filteredOrders.length}
+                      onChange={selectAllFiltered}
+                    />
+                    <label htmlFor="selectAllFilteredCheckbox" className="form-check-label fw-bold small text-dark cursor-pointer">
+                      Select All Filtered ({filteredOrders.length})
+                    </label>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={selectAllOnPage}
+                    className="btn btn-outline-secondary btn-sm py-0 px-2 extra-small rounded-pill bg-white"
+                  >
+                    Select Current Page ({paginatedOrders.length})
+                  </button>
+                  {selectedOrderIds.length > 0 && (
+                    <>
+                      <span className="badge bg-success fs-6 px-3 py-1">
+                        <i className="bi bi-check-circle-fill me-1"></i> {selectedOrderIds.length} customer{selectedOrderIds.length !== 1 ? 's' : ''} selected
+                      </span>
+                      <button
+                        type="button"
+                        onClick={clearSelection}
+                        className="btn btn-link text-danger btn-sm p-0 extra-small text-decoration-none fw-semibold"
+                      >
+                        Clear Selection
+                      </button>
+                    </>
+                  )}
+                </div>
+
+                <div className="d-flex gap-2 align-items-center">
+                  <button
+                    type="button"
+                    disabled={selectedOrderIds.length === 0}
+                    onClick={() => setShowBroadcastModal(true)}
+                    className="btn btn-success fw-bold px-3 py-2 shadow-sm d-inline-flex align-items-center gap-2"
+                    title={selectedOrderIds.length === 0 ? 'Select customers with checkboxes to broadcast' : 'Open WhatsApp broadcast queue dispatcher'}
+                  >
+                    <i className="bi bi-whatsapp fs-5"></i>
+                    <span>Broadcast WhatsApp Message {selectedOrderIds.length > 0 ? `(${selectedOrderIds.length})` : ''}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
             {loading ? (
               <div className="text-center py-4">Loading orders...</div>
             ) : (
@@ -834,6 +950,15 @@ export default function AdminOrdersPage() {
                 <table className="table table-hover align-middle">
                   <thead className="table-dark">
                     <tr>
+                      <th style={{ width: '40px' }} className="text-center">
+                        <input
+                          type="checkbox"
+                          className="form-check-input cursor-pointer"
+                          checked={paginatedOrders.length > 0 && paginatedOrders.every(o => selectedOrderIds.includes(o.bookingId || o.id))}
+                          onChange={selectAllOnPage}
+                          title="Select / Deselect all orders on this page"
+                        />
+                      </th>
                       <th>Booking ID &amp; Order Date</th>
                       <th>Customer Details</th>
                       <th>Expected Delivery</th>
@@ -847,30 +972,43 @@ export default function AdminOrdersPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {paginatedOrders.map(ord => (
-                      <tr key={ord.id} className="hover-lift-subtle">
-                        <td 
-                          className="cursor-pointer"
-                          onClick={() => openOrderDetailsModal(ord)}
-                          title="Click to view full customer & order details"
-                        >
-                          <strong className="text-success d-block text-decoration-underline">{ord.bookingId}</strong>
-                          <small className="text-muted d-block extra-small mt-1">
-                            <i className="bi bi-calendar-event me-1 text-primary"></i>
-                            {ord.createdAt ? ord.createdAt.split('T')[0] : 'N/A'}
-                          </small>
-                        </td>
-                        <td 
-                          className="cursor-pointer"
-                          onClick={() => openOrderDetailsModal(ord)}
-                          title="Click to view entire customer details"
-                        >
-                          <strong className="d-block text-primary">{ord.customerName}</strong>
-                          <small className="text-muted d-block"><i className="bi bi-phone me-1"></i>{ord.mobile} | {ord.district}</small>
-                          <small className="badge bg-light text-dark border extra-small mt-1">
-                            <i className="bi bi-truck me-1 text-success"></i>{ord.deliveryService || 'MSS Parcel Service'} ({ord.nearestHub || 'Main Hub'})
-                          </small>
-                        </td>
+                    {paginatedOrders.map(ord => {
+                      const ordId = ord.bookingId || ord.id;
+                      const isSelected = selectedOrderIds.includes(ordId);
+
+                      return (
+                        <tr key={ord.id} className={`hover-lift-subtle ${isSelected ? 'table-success bg-opacity-25' : ''}`}>
+                          <td className="text-center" onClick={(e) => e.stopPropagation()}>
+                            <input
+                              type="checkbox"
+                              className="form-check-input cursor-pointer"
+                              checked={isSelected}
+                              onChange={() => toggleSelectOrder(ordId)}
+                              title={isSelected ? 'Deselect order' : 'Select order for WhatsApp broadcast'}
+                            />
+                          </td>
+                          <td 
+                            className="cursor-pointer"
+                            onClick={() => openOrderDetailsModal(ord)}
+                            title="Click to view full customer & order details"
+                          >
+                            <strong className="text-success d-block text-decoration-underline">{ord.bookingId}</strong>
+                            <small className="text-muted d-block extra-small mt-1">
+                              <i className="bi bi-calendar-event me-1 text-primary"></i>
+                              {ord.createdAt ? ord.createdAt.split('T')[0] : 'N/A'}
+                            </small>
+                          </td>
+                          <td 
+                            className="cursor-pointer"
+                            onClick={() => openOrderDetailsModal(ord)}
+                            title="Click to view entire customer details"
+                          >
+                            <strong className="d-block text-primary">{ord.customerName}</strong>
+                            <small className="text-muted d-block"><i className="bi bi-phone me-1"></i>{ord.mobile} | {ord.district}</small>
+                            <small className="badge bg-light text-dark border extra-small mt-1">
+                              <i className="bi bi-truck me-1 text-success"></i>{ord.deliveryService || 'MSS Parcel Service'} ({ord.nearestHub || 'Main Hub'})
+                            </small>
+                          </td>
                         <td>
                           <span className="badge bg-success-subtle text-success border me-1 d-block fw-bold py-1">
                             <i className="bi bi-calendar-check me-1"></i>{ord.expectedDeliveryDate || 'N/A'}
@@ -1025,12 +1163,24 @@ export default function AdminOrdersPage() {
                                 >
                                   <i className="bi bi-whatsapp"></i> Chat
                                 </a>
+                                <button
+                                  type="button"
+                                  className={`btn btn-sm ${isSelected ? 'btn-success text-white' : 'btn-outline-success'} d-inline-flex align-items-center gap-1 shadow-sm`}
+                                  onClick={() => {
+                                    setSelectedOrderIds([ordId]);
+                                    setShowBroadcastModal(true);
+                                  }}
+                                  title="Send custom template or broadcast message to this customer"
+                                >
+                                  <i className="bi bi-megaphone-fill"></i> Msg
+                                </button>
                               </div>
                             );
                           })()}
                         </td>
                       </tr>
-                    ))}
+                    );
+                  })}
                   </tbody>
                 </table>
               </div>
@@ -1533,6 +1683,14 @@ export default function AdminOrdersPage() {
                 </div>
               </div>
             </div>
+          )}
+
+          {/* WhatsApp Broadcast Dispatcher Modal */}
+          {showBroadcastModal && broadcastRecipients.length > 0 && (
+            <WhatsAppBroadcastModal
+              recipients={broadcastRecipients}
+              onClose={() => setShowBroadcastModal(false)}
+            />
           )}
 
         </div>
