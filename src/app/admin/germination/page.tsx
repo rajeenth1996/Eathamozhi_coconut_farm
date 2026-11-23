@@ -100,6 +100,31 @@ export default function AdminGerminationPage() {
     }
   };
 
+  const handleDeleteGermination = async (rec: any) => {
+    if ((rec.bookedQuantity ?? 0) > 0 || (rec.dispatchedQuantity ?? 0) > 0) {
+      alert(`⚠️ Cannot delete Germination record for ${rec.motherTreeCode} in Batch ${rec.batchCode}: It has ${rec.bookedQuantity || 0} booked and ${rec.dispatchedQuantity || 0} dispatched seedling(s). Records tied to customer orders cannot be deleted.`);
+      return;
+    }
+
+    const confirmed = window.confirm(`Are you sure you want to permanently delete the Germination record for ${rec.motherTreeCode} (Batch: ${rec.batchCode})? This action cannot be undone.`);
+    if (!confirmed) return;
+
+    try {
+      const res = await fetch(`/api/germination?sourceId=${encodeURIComponent(rec.id)}`, {
+        method: 'DELETE'
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(`⚠️ Cannot delete Germination record: ${data.error || 'Server rejected deletion'}`);
+        return;
+      }
+      alert(`✅ Germination record for ${rec.motherTreeCode} in Batch ${rec.batchCode} has been deleted. Available seedlings and batch metrics recalculated.`);
+      fetchGerminationData();
+    } catch (err: any) {
+      alert(`⚠️ Error deleting germination record: ${err.message}`);
+    }
+  };
+
   const filteredRecords = records.filter(r => {
     const matchSearch = !search ||
       r.batchCode?.toLowerCase().includes(search.toLowerCase()) ||
@@ -307,13 +332,22 @@ export default function AdminGerminationPage() {
                             <span className="badge bg-success-subtle text-success">{r.collectionStatus || 'Verified'}</span>
                           </td>
                           <td className="text-end">
-                            <button
-                              onClick={() => openEditModal(r)}
-                              className="btn btn-sm btn-outline-primary"
-                              title="Update Germination Count"
-                            >
-                              <i className="bi bi-pencil-square me-1"></i> Update
-                            </button>
+                            <div className="d-flex justify-content-end gap-1">
+                              <button
+                                onClick={() => openEditModal(r)}
+                                className="btn btn-sm btn-outline-primary"
+                                title="Update Germination Count"
+                              >
+                                <i className="bi bi-pencil-square me-1"></i> Update
+                              </button>
+                              <button
+                                onClick={() => handleDeleteGermination(r)}
+                                className="btn btn-sm btn-outline-danger"
+                                title="Delete Germination Record"
+                              >
+                                <i className="bi bi-trash"></i>
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       );

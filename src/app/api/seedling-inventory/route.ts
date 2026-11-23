@@ -53,3 +53,24 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: err.message || 'Failed to update seedling inventory' }, { status: 400 });
   }
 }
+
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    let id = searchParams.get('id') || searchParams.get('sourceId');
+    if (!id) {
+      const body = await request.json().catch(() => ({}));
+      id = body.id || body.sourceId;
+    }
+    if (!id) {
+      return NextResponse.json({ error: 'id or sourceId parameter required' }, { status: 400 });
+    }
+    const result = await DataStore.deleteSeedlingInventoryAsync(id);
+    if (!result.success) {
+      return NextResponse.json({ error: result.reason || 'Failed to delete seedling inventory record' }, { status: 400 });
+    }
+    return NextResponse.json({ success: true, message: `Seedling inventory record deleted.` });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || 'Failed to delete seedling inventory record' }, { status: 500 });
+  }
+}

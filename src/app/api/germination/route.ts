@@ -56,3 +56,24 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: err.message || 'Failed to update germination record' }, { status: 400 });
   }
 }
+
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    let sourceId = searchParams.get('sourceId') || searchParams.get('id');
+    if (!sourceId) {
+      const body = await request.json().catch(() => ({}));
+      sourceId = body.sourceId || body.id;
+    }
+    if (!sourceId) {
+      return NextResponse.json({ error: 'sourceId or id parameter required' }, { status: 400 });
+    }
+    const result = await DataStore.deleteGerminationAsync(sourceId);
+    if (!result.success) {
+      return NextResponse.json({ error: result.reason || 'Failed to delete germination record' }, { status: 400 });
+    }
+    return NextResponse.json({ success: true, message: `Germination record deleted.` });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || 'Failed to delete germination record' }, { status: 500 });
+  }
+}

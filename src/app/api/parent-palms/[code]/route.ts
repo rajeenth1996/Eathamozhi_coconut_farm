@@ -41,7 +41,10 @@ export async function DELETE(
 ) {
   try {
     const { code } = await params;
-    await DataStore.deleteParentPalmAsync(code);
+    const result = await DataStore.deleteParentPalmAsync(code);
+    if (!result.success) {
+      return NextResponse.json({ error: result.reason || 'Failed to delete mother tree' }, { status: 400 });
+    }
     return NextResponse.json({ success: true, message: `Mother tree ${code} deleted.` });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Failed to delete mother tree' }, { status: 500 });

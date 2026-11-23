@@ -54,7 +54,10 @@ export async function DELETE(request: Request) {
     if (!code) {
       return NextResponse.json({ error: 'Batch code parameter required' }, { status: 400 });
     }
-    await DataStore.deleteBatchAsync(code);
+    const result = await DataStore.deleteBatchAsync(code);
+    if (!result.success) {
+      return NextResponse.json({ error: result.reason || 'Failed to delete batch' }, { status: 400 });
+    }
     return NextResponse.json({ success: true, message: `Batch ${code} deleted.` });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Failed to delete batch' }, { status: 500 });

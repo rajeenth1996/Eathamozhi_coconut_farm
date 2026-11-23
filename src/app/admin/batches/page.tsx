@@ -366,6 +366,31 @@ export default function AdminBatchesPage() {
     }
   };
 
+  const handleDeleteBatch = async (batch: any) => {
+    if ((batch.bookedQuantity ?? 0) > 0) {
+      alert(`⚠️ Cannot delete Batch "${batch.name}" (${batch.batchCode}): It has ${batch.bookedQuantity} booked seedling(s). Batches with active customer orders cannot be deleted to preserve order history.`);
+      return;
+    }
+
+    const confirmed = window.confirm(`Are you sure you want to permanently delete Batch "${batch.name}" (${batch.batchCode})? This cannot be undone.`);
+    if (!confirmed) return;
+
+    try {
+      const res = await fetch(`/api/batches/${encodeURIComponent(batch.batchCode)}`, {
+        method: 'DELETE'
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(`⚠️ Cannot delete Batch: ${data.error || 'Server rejected deletion'}`);
+        return;
+      }
+      alert(`✅ Batch "${batch.name}" (${batch.batchCode}) has been successfully deleted.`);
+      fetchInitialData();
+    } catch (err: any) {
+      alert(`⚠️ Error deleting batch: ${err.message}`);
+    }
+  };
+
   // Trees available for source farm
   const sourceTrees = parentPalms.filter(p => (p.farmCode || 'ETH-RA-F001') === sourceFarmCode);
 
@@ -970,6 +995,13 @@ export default function AdminBatchesPage() {
                               >
                                 <i className="bi bi-diagram-3"></i>
                               </Link>
+                              <button
+                                onClick={() => handleDeleteBatch(batch)}
+                                className="btn btn-outline-danger"
+                                title="Delete Batch"
+                              >
+                                <i className="bi bi-trash"></i>
+                              </button>
                             </div>
                           </td>
                         </tr>

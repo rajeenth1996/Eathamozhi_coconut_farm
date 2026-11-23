@@ -84,6 +84,31 @@ export default function AdminSeedlingInventoryPage() {
     }
   };
 
+  const handleDeleteInventory = async (item: any) => {
+    if ((item.bookedQuantity ?? 0) > 0 || (item.dispatchedQuantity ?? 0) > 0) {
+      alert(`⚠️ Cannot delete Seedling Inventory for ${item.motherTreeCode} in Batch ${item.batchCode}: It has ${item.bookedQuantity || 0} booked and ${item.dispatchedQuantity || 0} dispatched seedling(s). Records tied to customer orders cannot be deleted.`);
+      return;
+    }
+
+    const confirmed = window.confirm(`Are you sure you want to permanently delete the Seedling Inventory record for ${item.motherTreeCode} (Batch: ${item.batchCode})? This action cannot be undone.`);
+    if (!confirmed) return;
+
+    try {
+      const res = await fetch(`/api/seedling-inventory?id=${encodeURIComponent(item.id || item.batchSourceId)}`, {
+        method: 'DELETE'
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(`⚠️ Cannot delete Seedling Inventory record: ${data.error || 'Server rejected deletion'}`);
+        return;
+      }
+      alert(`✅ Seedling Inventory record for ${item.motherTreeCode} in Batch ${item.batchCode} has been deleted. Available seedlings and batch metrics recalculated.`);
+      fetchData();
+    } catch (err: any) {
+      alert(`⚠️ Error deleting seedling inventory record: ${err.message}`);
+    }
+  };
+
   // Filter inventory
   const filteredInventory = inventory.filter((item) => {
     const matchesSearch =
@@ -374,13 +399,22 @@ export default function AdminSeedlingInventoryPage() {
                           </span>
                         </td>
                         <td className="text-center">
-                          <button
-                            onClick={() => openAdjustModal(item)}
-                            className="btn btn-outline-primary btn-sm rounded-pill px-3 fw-semibold d-inline-flex align-items-center gap-1"
-                          >
-                            <i className="bi bi-pencil-square"></i>
-                            <span>Adjust</span>
-                          </button>
+                          <div className="d-flex justify-content-center gap-1">
+                            <button
+                              onClick={() => openAdjustModal(item)}
+                              className="btn btn-outline-primary btn-sm rounded-pill px-3 fw-semibold d-inline-flex align-items-center gap-1"
+                            >
+                              <i className="bi bi-pencil-square"></i>
+                              <span>Adjust</span>
+                            </button>
+                            <button
+                              onClick={() => handleDeleteInventory(item)}
+                              className="btn btn-outline-danger btn-sm rounded-pill px-2 fw-semibold d-inline-flex align-items-center"
+                              title="Delete Seedling Inventory Record"
+                            >
+                              <i className="bi bi-trash"></i>
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}

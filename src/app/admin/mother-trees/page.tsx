@@ -306,6 +306,34 @@ export default function AdminMotherTreesPage() {
     }
   };
 
+  const handleDeleteMotherTree = async (palm: any) => {
+    const tCode = palm.motherTreeCode || palm.code;
+    const name = palm.name || tCode;
+
+    if ((palm.batchesUsedCount ?? 0) > 0 || (palm.totalCoconutsCollected ?? 0) > 0) {
+      alert(`⚠️ Cannot delete Mother Tree "${name}" (${tCode}): It has been used in ${palm.batchesUsedCount || 0} batch(es) and produced ${palm.totalCoconutsCollected || 0} collected coconuts. Deletion is blocked to preserve traceability.`);
+      return;
+    }
+
+    const confirmed = window.confirm(`Are you sure you want to permanently delete Mother Tree "${name}" (${tCode})? This cannot be undone.`);
+    if (!confirmed) return;
+
+    try {
+      const res = await fetch(`/api/parent-palms/${encodeURIComponent(tCode)}`, {
+        method: 'DELETE'
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(`⚠️ Cannot delete Mother Tree: ${data.error || 'Server rejected deletion'}`);
+        return;
+      }
+      alert(`✅ Mother Tree "${name}" (${tCode}) has been successfully deleted.`);
+      fetchInitialData();
+    } catch (err: any) {
+      alert(`⚠️ Error deleting mother tree: ${err.message}`);
+    }
+  };
+
   const toggleSelectTree = (code: string) => {
     setSelectedTreeCodes(prev =>
       prev.includes(code) ? prev.filter(c => c !== code) : [...prev, code]
@@ -616,13 +644,22 @@ export default function AdminMotherTreesPage() {
                             </div>
                           </td>
                           <td className="text-end">
-                            <button
-                              onClick={() => openEditModal(palm)}
-                              className="btn btn-sm btn-outline-primary"
-                              title="Edit Tree Details & Photos"
-                            >
-                              <i className="bi bi-pencil me-1"></i> Edit
-                            </button>
+                            <div className="d-flex justify-content-end gap-1">
+                              <button
+                                onClick={() => openEditModal(palm)}
+                                className="btn btn-sm btn-outline-primary"
+                                title="Edit Tree Details & Photos"
+                              >
+                                <i className="bi bi-pencil me-1"></i> Edit
+                              </button>
+                              <button
+                                onClick={() => handleDeleteMotherTree(palm)}
+                                className="btn btn-sm btn-outline-danger"
+                                title="Delete Mother Tree"
+                              >
+                                <i className="bi bi-trash"></i>
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       );

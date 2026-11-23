@@ -49,3 +49,19 @@ export async function POST(
     return NextResponse.json({ error: err.message || 'Failed to record view' }, { status: 500 });
   }
 }
+
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ code: string }> }
+) {
+  try {
+    const { code } = await params;
+    const result = await DataStore.deleteBatchAsync(code);
+    if (!result.success) {
+      return NextResponse.json({ error: result.reason || 'Failed to delete batch' }, { status: 400 });
+    }
+    return NextResponse.json({ success: true, message: `Batch ${code} deleted.` });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || 'Failed to delete batch' }, { status: 500 });
+  }
+}

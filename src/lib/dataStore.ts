@@ -1067,33 +1067,104 @@ export const DataStore = {
     return updated;
   },
 
-  deleteBatch: (code: string): boolean => {
+  canDeleteBatch: (code: string): { canDelete: boolean; reason?: string } => {
     loadFromDb();
-    const idx = batches.findIndex(b => b.batchCode.toLowerCase() === code.toLowerCase());
-    if (idx === -1) return false;
-    batches.splice(idx, 1);
-    batchSources = batchSources.filter(s => s.batchCode.toLowerCase() !== code.toLowerCase());
-    batchInventory = batchInventory.filter(i => i.batchCode.toLowerCase() !== code.toLowerCase());
-    saveToDb();
-    return true;
+    const batch = batches.find(b => b.batchCode.toLowerCase() === code.toLowerCase() || b.id === code);
+    if (!batch) return { canDelete: false, reason: 'Batch not found' };
+
+    // Check if referenced in customer bookings / orders
+    const associatedBookings = bookings.filter(
+      bk => bk.batchCode.toLowerCase() === batch.batchCode.toLowerCase()
+    );
+    if (associatedBookings.length > 0) {
+      const activeCount = associatedBookings.filter(bk => bk.bookingStatus !== 'Cancelled').length;
+      return {
+        canDelete: false,
+        reason: `Cannot delete Batch "${batch.batchCode}": It has ${associatedBookings.length} customer order(s) in order history (${activeCount} active). Batches with customer orders cannot be deleted to preserve order history and accounting.`
+      };
+    }
+
+    // Check if any booked or dispatched quantities exist
+    if ((batch.bookedQuantity || 0) > 0) {
+      return {
+        canDelete: false,
+        reason: `Cannot delete Batch "${batch.batchCode}": It has ${batch.bookedQuantity} booked seedlings.`
+      };
+    }
+
+    const bInventory = batchInventory.filter(
+      i => i.batchCode.toLowerCase() === batch.batchCode.toLowerCase() || i.batchId === batch.id
+    );
+    const totalBookedInInv = bInventory.reduce((sum, i) => sum + (Number(i.bookedQuantity) || 0), 0);
+    const totalDispatchedInInv = bInventory.reduce((sum, i) => sum + (Number(i.dispatchedQuantity) || 0), 0);
+    if (totalBookedInInv > 0 || totalDispatchedInInv > 0) {
+      return {
+        canDelete: false,
+        reason: `Cannot delete Batch "${batch.batchCode}": Associated inventory has ${totalBookedInInv} booked and ${totalDispatchedInInv} dispatched seedling(s).`
+      };
+    }
+
+    // Check if customer reviews exist
+    const associatedReviews = reviews.filter(
+      r => r.batchCode.toLowerCase() === batch.batchCode.toLowerCase()
+    );
+    if (associatedReviews.length > 0) {
+      return {
+        canDelete: false,
+        reason: `Cannot delete Batch "${batch.batchCode}": It has ${associatedReviews.length} customer review(s). Deletion is blocked to preserve customer review history.`
+      };
+    }
+
+    // Check if inventory adjustments exist
+    const associatedAdjustments = adjustments.filter(
+      a => a.batchCode.toLowerCase() === batch.batchCode.toLowerCase()
+    );
+    if (associatedAdjustments.length > 0) {
+      return {
+        canDelete: false,
+        reason: `Cannot delete Batch "${batch.batchCode}": It has ${associatedAdjustments.length} audit adjustment log(s).`
+      };
+    }
+
+    return { canDelete: true };
   },
 
-  deleteBatchAsync: async (code: string): Promise<boolean> => {
-    const success = DataStore.deleteBatch(code);
-    try {
-      const conn = await connectToDatabase();
-      if (conn) {
-        await Promise.all([
-          BatchModel.findOneAndDelete({ batchCode: new RegExp('^' + code + '$', 'i') }),
-          BatchSourceModel.deleteMany({ batchCode: new RegExp('^' + code + '$', 'i') }),
-          BatchInventoryModel.deleteMany({ batchCode: new RegExp('^' + code + '$', 'i') })
-        ]);
-        lastMongoSyncTime = 0;
-      }
-    } catch (err) {
-      console.error('Failed to delete Batch from MongoDB:', err);
+  deleteBatch: (code: string): { success: boolean; reason?: string } => {
+    loadFromDb();
+    const check = DataStore.canDeleteBatch(code);
+    if (!check.canDelete) {
+      return { success: false, reason: check.reason };
     }
-    return success;
+    const idx = batches.findIndex(b => b.batchCode.toLowerCase() === code.toLowerCase() || b.id === code);
+    if (idx === -1) return { success: false, reason: 'Batch not found' };
+    const batchCode = batches[idx].batchCode;
+    batches.splice(idx, 1);
+    batchSources = batchSources.filter(s => s.batchCode.toLowerCase() !== batchCode.toLowerCase());
+    batchInventory = batchInventory.filter(i => i.batchCode.toLowerCase() !== batchCode.toLowerCase());
+    saveToDb();
+    return { success: true };
+  },
+
+  deleteBatchAsync: async (code: string): Promise<{ success: boolean; reason?: string }> => {
+    loadFromDb();
+    await syncFromMongo();
+    const res = DataStore.deleteBatch(code);
+    if (res.success) {
+      try {
+        const conn = await connectToDatabase();
+        if (conn) {
+          await Promise.all([
+            BatchModel.findOneAndDelete({ batchCode: new RegExp('^' + code + '$', 'i') }),
+            BatchSourceModel.deleteMany({ batchCode: new RegExp('^' + code + '$', 'i') }),
+            BatchInventoryModel.deleteMany({ batchCode: new RegExp('^' + code + '$', 'i') })
+          ]);
+          lastMongoSyncTime = 0;
+        }
+      } catch (err) {
+        console.error('Failed to delete Batch from MongoDB:', err);
+      }
+    }
+    return res;
   },
 
   // ─── Mother Tree / Parent Palm Registry ─────────────────────────────────────
@@ -1326,29 +1397,105 @@ export const DataStore = {
     return updated;
   },
 
-  deleteParentPalm: (code: string): boolean => {
+  canDeleteParentPalm: (code: string): { canDelete: boolean; reason?: string } => {
     loadFromDb();
-    const idx = parentPalms.findIndex(p => (p.code && p.code.toLowerCase() === code.toLowerCase()) || (p.motherTreeCode && p.motherTreeCode.toLowerCase() === code.toLowerCase()) || p.id === code);
-    if (idx === -1) return false;
-    parentPalms.splice(idx, 1);
-    saveToDb();
-    return true;
+    const palm = parentPalms.find(
+      p => (p.code && p.code.toLowerCase() === code.toLowerCase()) ||
+           (p.motherTreeCode && p.motherTreeCode.toLowerCase() === code.toLowerCase()) ||
+           p.id === code
+    );
+    if (!palm) return { canDelete: false, reason: 'Mother Tree not found' };
+
+    const palmCode = palm.motherTreeCode || palm.code;
+
+    // Check if referenced in any batches
+    const associatedBatches = batches.filter(
+      b => (b.parentPalmCode && b.parentPalmCode.toLowerCase() === palmCode.toLowerCase()) ||
+           (b.parentPalmCodes && b.parentPalmCodes.some(c => c.toLowerCase() === palmCode.toLowerCase())) ||
+           b.parentPalmId === palm.id ||
+           b.sources?.some(s => (s.motherTreeCode && s.motherTreeCode.toLowerCase() === palmCode.toLowerCase()) || s.motherTreeId === palm.id)
+    );
+    if (associatedBatches.length > 0) {
+      const bCodes = associatedBatches.map(b => b.batchCode).slice(0, 3).join(', ');
+      return {
+        canDelete: false,
+        reason: `Cannot delete Mother Tree "${palm.name}" (${palmCode}): Associated with ${associatedBatches.length} batch(es) [${bCodes}${associatedBatches.length > 3 ? '...' : ''}]. Deletion is blocked to preserve batch integrity.`
+      };
+    }
+
+    // Check if referenced in any collection/germination records
+    const associatedSources = batchSources.filter(
+      s => (s.motherTreeCode && s.motherTreeCode.toLowerCase() === palmCode.toLowerCase()) || s.motherTreeId === palm.id
+    );
+    if (associatedSources.length > 0) {
+      const srcBatches = Array.from(new Set(associatedSources.map(s => s.batchCode))).slice(0, 3).join(', ');
+      return {
+        canDelete: false,
+        reason: `Cannot delete Mother Tree "${palm.name}" (${palmCode}): Associated with ${associatedSources.length} collection/germination record(s) [Batches: ${srcBatches}]. Deletion is blocked to preserve traceability.`
+      };
+    }
+
+    // Check if referenced in any seedling inventory
+    const associatedInventory = batchInventory.filter(
+      i => (i.motherTreeCode && i.motherTreeCode.toLowerCase() === palmCode.toLowerCase()) || i.motherTreeId === palm.id
+    );
+    if (associatedInventory.length > 0) {
+      return {
+        canDelete: false,
+        reason: `Cannot delete Mother Tree "${palm.name}" (${palmCode}): Has ${associatedInventory.length} associated seedling inventory record(s).`
+      };
+    }
+
+    // Check if referenced in customer bookings / order allocations
+    const associatedBookings = bookings.filter(
+      bk => (bk.sourceMotherTreeCode && bk.sourceMotherTreeCode.toLowerCase() === palmCode.toLowerCase()) ||
+            bk.allocations?.some(a => (a.motherTreeCode && a.motherTreeCode.toLowerCase() === palmCode.toLowerCase()) || a.motherTreeId === palm.id)
+    );
+    if (associatedBookings.length > 0) {
+      return {
+        canDelete: false,
+        reason: `Cannot delete Mother Tree "${palm.name}" (${palmCode}): Referenced in ${associatedBookings.length} customer order(s). Deletion is blocked to preserve customer order history.`
+      };
+    }
+
+    return { canDelete: true };
   },
 
-  deleteParentPalmAsync: async (code: string): Promise<boolean> => {
-    const success = DataStore.deleteParentPalm(code);
-    try {
-      const conn = await connectToDatabase();
-      if (conn) {
-        await MotherTreeModel.findOneAndDelete({
-          $or: [{ code: new RegExp('^' + code + '$', 'i') }, { id: code }, { motherTreeCode: code }]
-        });
-        lastMongoSyncTime = 0;
-      }
-    } catch (err) {
-      console.error('Failed to delete MotherTree from MongoDB:', err);
+  deleteParentPalm: (code: string): { success: boolean; reason?: string } => {
+    loadFromDb();
+    const check = DataStore.canDeleteParentPalm(code);
+    if (!check.canDelete) {
+      return { success: false, reason: check.reason };
     }
-    return success;
+    const idx = parentPalms.findIndex(
+      p => (p.code && p.code.toLowerCase() === code.toLowerCase()) ||
+           (p.motherTreeCode && p.motherTreeCode.toLowerCase() === code.toLowerCase()) ||
+           p.id === code
+    );
+    if (idx === -1) return { success: false, reason: 'Mother Tree not found' };
+    parentPalms.splice(idx, 1);
+    saveToDb();
+    return { success: true };
+  },
+
+  deleteParentPalmAsync: async (code: string): Promise<{ success: boolean; reason?: string }> => {
+    loadFromDb();
+    await syncFromMongo();
+    const res = DataStore.deleteParentPalm(code);
+    if (res.success) {
+      try {
+        const conn = await connectToDatabase();
+        if (conn) {
+          await MotherTreeModel.findOneAndDelete({
+            $or: [{ code: new RegExp('^' + code + '$', 'i') }, { id: code }, { motherTreeCode: code }]
+          });
+          lastMongoSyncTime = 0;
+        }
+      } catch (err) {
+        console.error('Failed to delete MotherTree from MongoDB:', err);
+      }
+    }
+    return res;
   },
 
   // ─── Germination & Seedling Inventory Tracking ──────────────────────────────
@@ -1471,6 +1618,224 @@ export const DataStore = {
       }
     }
     return updated;
+  },
+
+  canDeleteGermination: (sourceId: string): { canDelete: boolean; reason?: string } => {
+    loadFromDb();
+    const source = batchSources.find(s => s.id === sourceId);
+    if (!source) return { canDelete: false, reason: 'Germination record not found' };
+
+    // Check order history allocations
+    const allocatedBookings = bookings.filter(
+      bk => bk.allocations?.some(a => a.batchSourceId === source.id)
+    );
+    if (allocatedBookings.length > 0) {
+      return {
+        canDelete: false,
+        reason: `Cannot delete Germination record (${source.motherTreeCode} in ${source.batchCode}): Allocated to ${allocatedBookings.length} customer order(s) [e.g. ${allocatedBookings[0].bookingId}]. Deletion is blocked to preserve customer order history.`
+      };
+    }
+
+    // Check corresponding inventory booked / dispatched quantities
+    const inv = batchInventory.find(i => i.batchSourceId === source.id);
+    if (inv) {
+      if ((inv.bookedQuantity || 0) > 0 || (inv.dispatchedQuantity || 0) > 0) {
+        return {
+          canDelete: false,
+          reason: `Cannot delete Germination record (${source.motherTreeCode} in ${source.batchCode}): Associated inventory has ${inv.bookedQuantity} booked and ${inv.dispatchedQuantity} dispatched seedling(s). Deletion is blocked to preserve order fulfillment.`
+        };
+      }
+    }
+
+    // Check calculation error in parent batch
+    const batch = batches.find(b => b.batchCode.toLowerCase() === source.batchCode.toLowerCase());
+    if (batch) {
+      const activeBooked = batch.bookedQuantity || 0;
+      const remainingProduced = batchInventory
+        .filter(i => i.batchCode.toLowerCase() === source.batchCode.toLowerCase() && i.batchSourceId !== source.id)
+        .reduce((sum, i) => sum + (Number(i.seedlingsProduced) || 0), 0);
+      
+      if (remainingProduced < activeBooked) {
+        return {
+          canDelete: false,
+          reason: `Cannot delete Germination record (${source.motherTreeCode} in ${source.batchCode}): Deletion would reduce batch seedling stock to ${remainingProduced}, which is less than the already booked quantity (${activeBooked}). This would cause an inventory calculation error.`
+        };
+      }
+    }
+
+    return { canDelete: true };
+  },
+
+  deleteGermination: (sourceId: string): { success: boolean; reason?: string } => {
+    loadFromDb();
+    const check = DataStore.canDeleteGermination(sourceId);
+    if (!check.canDelete) {
+      return { success: false, reason: check.reason };
+    }
+    const srcIdx = batchSources.findIndex(s => s.id === sourceId);
+    if (srcIdx === -1) return { success: false, reason: 'Germination record not found' };
+    const source = batchSources[srcIdx];
+
+    batchSources.splice(srcIdx, 1);
+    batchInventory = batchInventory.filter(i => i.batchSourceId !== sourceId && i.id !== sourceId);
+
+    const batch = batches.find(b => b.batchCode.toLowerCase() === source.batchCode.toLowerCase());
+    if (batch) {
+      const bInvs = batchInventory.filter(i => i.batchCode.toLowerCase() === batch.batchCode.toLowerCase());
+      batch.totalQuantity = bInvs.reduce((sum, i) => sum + (Number(i.seedlingsProduced) || 0), 0);
+      const bSources = batchSources.filter(s => s.batchCode.toLowerCase() === batch.batchCode.toLowerCase());
+      batch.totalCoconuts = bSources.reduce((sum, s) => sum + (Number(s.coconutQuantity) || 0), 0);
+      batch.totalSeedlings = batch.totalQuantity;
+      batch.updatedAt = new Date().toISOString();
+    }
+
+    saveToDb();
+    return { success: true };
+  },
+
+  deleteGerminationAsync: async (sourceId: string): Promise<{ success: boolean; reason?: string }> => {
+    loadFromDb();
+    await syncFromMongo();
+    const source = batchSources.find(s => s.id === sourceId);
+    const batchCode = source?.batchCode;
+    const res = DataStore.deleteGermination(sourceId);
+    if (res.success) {
+      try {
+        const conn = await connectToDatabase();
+        if (conn) {
+          await Promise.all([
+            BatchSourceModel.findOneAndDelete({ id: sourceId }),
+            BatchInventoryModel.findOneAndDelete({ batchSourceId: sourceId })
+          ]);
+          if (batchCode) {
+            const batch = batches.find(b => b.batchCode.toLowerCase() === batchCode.toLowerCase());
+            if (batch) {
+              await BatchModel.findOneAndUpdate(
+                { batchCode: new RegExp('^' + batchCode + '$', 'i') },
+                { $set: { totalQuantity: batch.totalQuantity, totalCoconuts: batch.totalCoconuts, totalSeedlings: batch.totalSeedlings, updatedAt: batch.updatedAt } }
+              );
+            }
+          }
+          lastMongoSyncTime = 0;
+        }
+      } catch (err) {
+        console.error('Failed to delete Germination record from MongoDB:', err);
+      }
+    }
+    return res;
+  },
+
+  canDeleteSeedlingInventory: (idOrSourceId: string): { canDelete: boolean; reason?: string } => {
+    loadFromDb();
+    const inv = batchInventory.find(i => i.id === idOrSourceId || i.batchSourceId === idOrSourceId);
+    if (!inv) return { canDelete: false, reason: 'Seedling inventory record not found' };
+
+    // Check customer order allocations
+    const allocatedBookings = bookings.filter(
+      bk => bk.allocations?.some(a => a.batchSourceId === inv.batchSourceId)
+    );
+    if (allocatedBookings.length > 0) {
+      return {
+        canDelete: false,
+        reason: `Cannot delete Seedling Inventory (${inv.motherTreeCode} in ${inv.batchCode}): Allocated to ${allocatedBookings.length} customer order(s) [e.g. ${allocatedBookings[0].bookingId}]. Deletion is blocked to preserve customer order history.`
+      };
+    }
+
+    // Check booked / dispatched quantities
+    if ((inv.bookedQuantity || 0) > 0 || (inv.dispatchedQuantity || 0) > 0) {
+      return {
+        canDelete: false,
+        reason: `Cannot delete Seedling Inventory (${inv.motherTreeCode} in ${inv.batchCode}): Record has ${inv.bookedQuantity} booked and ${inv.dispatchedQuantity} dispatched seedling(s). Deletion is blocked to preserve active order fulfillment.`
+      };
+    }
+
+    // Check calculation error in parent batch
+    const batch = batches.find(b => b.batchCode.toLowerCase() === inv.batchCode.toLowerCase());
+    if (batch) {
+      const activeBooked = batch.bookedQuantity || 0;
+      const remainingProduced = batchInventory
+        .filter(i => i.batchCode.toLowerCase() === inv.batchCode.toLowerCase() && i.id !== inv.id)
+        .reduce((sum, i) => sum + (Number(i.seedlingsProduced) || 0), 0);
+      
+      if (remainingProduced < activeBooked) {
+        return {
+          canDelete: false,
+          reason: `Cannot delete Seedling Inventory (${inv.motherTreeCode} in ${inv.batchCode}): Removing it would reduce batch seedling stock to ${remainingProduced}, below the booked quantity (${activeBooked}), causing an inventory calculation error.`
+        };
+      }
+    }
+
+    return { canDelete: true };
+  },
+
+  deleteSeedlingInventory: (idOrSourceId: string): { success: boolean; reason?: string } => {
+    loadFromDb();
+    const check = DataStore.canDeleteSeedlingInventory(idOrSourceId);
+    if (!check.canDelete) {
+      return { success: false, reason: check.reason };
+    }
+
+    const invIdx = batchInventory.findIndex(i => i.id === idOrSourceId || i.batchSourceId === idOrSourceId);
+    if (invIdx === -1) return { success: false, reason: 'Seedling inventory record not found' };
+    const inv = batchInventory[invIdx];
+    const sourceId = inv.batchSourceId;
+    const batchCode = inv.batchCode;
+
+    // Remove inventory record
+    batchInventory.splice(invIdx, 1);
+
+    // Also remove paired batchSources record if it exists
+    const srcIdx = batchSources.findIndex(s => s.id === sourceId);
+    if (srcIdx !== -1) {
+      batchSources.splice(srcIdx, 1);
+    }
+
+    // Recalculate parent batch totals to prevent calculation error
+    const batch = batches.find(b => b.batchCode.toLowerCase() === batchCode.toLowerCase());
+    if (batch) {
+      const bInvs = batchInventory.filter(i => i.batchCode.toLowerCase() === batch.batchCode.toLowerCase());
+      batch.totalQuantity = bInvs.reduce((sum, i) => sum + (Number(i.seedlingsProduced) || 0), 0);
+      const bSources = batchSources.filter(s => s.batchCode.toLowerCase() === batch.batchCode.toLowerCase());
+      batch.totalCoconuts = bSources.reduce((sum, s) => sum + (Number(s.coconutQuantity) || 0), 0);
+      batch.totalSeedlings = batch.totalQuantity;
+      batch.updatedAt = new Date().toISOString();
+    }
+
+    saveToDb();
+    return { success: true };
+  },
+
+  deleteSeedlingInventoryAsync: async (idOrSourceId: string): Promise<{ success: boolean; reason?: string }> => {
+    loadFromDb();
+    await syncFromMongo();
+    const inv = batchInventory.find(i => i.id === idOrSourceId || i.batchSourceId === idOrSourceId);
+    const sourceId = inv?.batchSourceId;
+    const batchCode = inv?.batchCode;
+    const res = DataStore.deleteSeedlingInventory(idOrSourceId);
+    if (res.success) {
+      try {
+        const conn = await connectToDatabase();
+        if (conn) {
+          await BatchInventoryModel.findOneAndDelete({ $or: [{ id: idOrSourceId }, { batchSourceId: idOrSourceId }] });
+          if (sourceId) {
+            await BatchSourceModel.findOneAndDelete({ id: sourceId });
+          }
+          if (batchCode) {
+            const batch = batches.find(b => b.batchCode.toLowerCase() === batchCode.toLowerCase());
+            if (batch) {
+              await BatchModel.findOneAndUpdate(
+                { batchCode: new RegExp('^' + batchCode + '$', 'i') },
+                { $set: { totalQuantity: batch.totalQuantity, totalCoconuts: batch.totalCoconuts, totalSeedlings: batch.totalSeedlings, updatedAt: batch.updatedAt } }
+              );
+            }
+          }
+          lastMongoSyncTime = 0;
+        }
+      } catch (err) {
+        console.error('Failed to delete Seedling Inventory from MongoDB:', err);
+      }
+    }
+    return res;
   },
 
   // ─── Customer Orders & Traceability ─────────────────────────────────────────
