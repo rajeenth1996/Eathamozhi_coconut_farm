@@ -12,8 +12,8 @@
     "bcryptjs": "^3.0.3",
     "cloudinary": "^2.11.0",
     "jose": "^6.2.13",
-    "mongoose": "^9.10.4",
-    "next": "^16.4.3",
+    "mongoose": "^9.12.3",
+    "next": "^16.4.6",
     "nodemailer": "^10.2.1",
     "otplib": "^13.5.0",
     "qrcode": "^1.5.4",
@@ -31,7 +31,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "^16.4.3",
+    "eslint-config-next": "^16.4.6",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

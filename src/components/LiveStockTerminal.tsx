@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import ImageCarousel from '@/components/ImageCarousel';
 import { getSaplingMetrics } from '@/lib/metrics';
@@ -17,6 +17,9 @@ export default function LiveStockTerminal({ initialBatch, initialBatches = [] }:
   const [selectedBatchCode, setSelectedBatchCode] = useState<string>(initialBatch?.batchCode || '');
   const [loading, setLoading] = useState<boolean>(false);
   const [lastSynced, setLastSynced] = useState<Date>(new Date());
+  const lastRecordedRef = useRef<{ [code: string]: number }>({});
+  const wasHiddenRef = useRef<boolean>(false);
+  const prevBatchCodeRef = useRef<string | null>(null);
 
   // Real-time synchronization with /api/batches (same source of truth as /batches page)
   const syncBatches = async () => {
@@ -57,6 +60,68 @@ export default function LiveStockTerminal({ initialBatch, initialBatches = [] }:
     batches.find(b => b.availableQuantity > 0 && b.status !== 'COMING_SOON') || 
     initialBatch || 
     batches[0];
+
+  // Record batch view whenever a farmer opens or switches to a batch
+  const recordBatchView = useCallback(async (batchCode: string) => {
+    if (!batchCode) return;
+    const now = Date.now();
+    const lastTime = lastRecordedRef.current[batchCode] || 0;
+    // Debounce duplicate immediate calls within 3 seconds for the exact same batch
+    if (now - lastTime < 3000) return;
+    lastRecordedRef.current[batchCode] = now;
+
+    try {
+      let vid = '';
+      if (typeof window !== 'undefined') {
+        vid = sessionStorage.getItem('coconut_farmer_sess_vid') || '';
+        if (!vid) {
+          vid = 'v_' + Math.random().toString(36).substring(2, 10) + '_' + Date.now();
+          sessionStorage.setItem('coconut_farmer_sess_vid', vid);
+        }
+      }
+
+      const res = await fetch(`/api/batches/${encodeURIComponent(batchCode)}/view`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ visitorId: vid || 'terminal-viewer' })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && typeof data.viewsCount === 'number') {
+          setBatches(prev => prev.map(b => b.batchCode === batchCode ? { ...b, viewsCount: data.viewsCount } : b));
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, []);
+
+  // Trigger view recording ONLY when the active batch genuinely changes or is selected
+  useEffect(() => {
+    if (currentBatch?.batchCode && prevBatchCodeRef.current !== currentBatch.batchCode) {
+      prevBatchCodeRef.current = currentBatch.batchCode;
+      recordBatchView(currentBatch.batchCode);
+    }
+  }, [currentBatch?.batchCode, recordBatchView]);
+
+  // Re-record view only when farmer moved out (tab was hidden) and comes back in (tab becomes visible)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        wasHiddenRef.current = true;
+      } else if (document.visibilityState === 'visible' && wasHiddenRef.current) {
+        wasHiddenRef.current = false;
+        if (currentBatch?.batchCode) {
+          // Reset cooldown for this batch since farmer genuinely returned
+          delete lastRecordedRef.current[currentBatch.batchCode];
+          recordBatchView(currentBatch.batchCode);
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [currentBatch?.batchCode, recordBatchView]);
 
   // Available batches that can be toggled in terminal
   const availableBatches = batches.filter(b => b.availableQuantity > 0);

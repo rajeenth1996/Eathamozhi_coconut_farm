@@ -69,18 +69,26 @@ export default async function ParentPalmDetailPage({
                 <p className="text-secondary">{palm.description}</p>
 
                 <div className="row g-3 mb-4">
-                  <div className="col-6">
-                    <div className="p-3 bg-light rounded-3 border">
-                      <small className="text-muted d-block text-uppercase">Tree ID</small>
-                      <strong className="text-dark fs-5">{palm.code}</strong>
+                  <div className={palm.treeCount && palm.treeCount > 1 ? "col-4" : "col-6"}>
+                    <div className="p-3 bg-light rounded-3 border h-100">
+                      <small className="text-muted d-block text-uppercase">Tree / Group ID</small>
+                      <strong className="text-dark fs-6">{palm.code}</strong>
                     </div>
                   </div>
-                  <div className="col-6">
-                    <div className="p-3 bg-light rounded-3 border">
+                  <div className={palm.treeCount && palm.treeCount > 1 ? "col-4" : "col-6"}>
+                    <div className="p-3 bg-light rounded-3 border h-100">
                       <small className="text-muted d-block text-uppercase">Approximate Age</small>
                       <strong className="text-dark fs-6">{formatApproximateAge(palm.age)}</strong>
                     </div>
                   </div>
+                  {palm.treeCount && palm.treeCount > 1 && (
+                    <div className="col-4">
+                      <div className="p-3 bg-light rounded-3 border h-100">
+                        <small className="text-muted d-block text-uppercase">Grove Size</small>
+                        <strong className="text-success fs-6"><i className="bi bi-tree-fill me-1"></i>{palm.treeCount} Trees</strong>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="mb-4">

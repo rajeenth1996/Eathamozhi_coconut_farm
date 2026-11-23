@@ -275,6 +275,7 @@ async function syncFromMongo(force = false): Promise<void> {
           name: p.name,
           variety: p.variety || 'West Coast Tall (Eathamozhi Tall)',
           age: p.age !== undefined && p.age !== null ? p.age : '40+ years',
+          treeCount: Math.max(1, parseInt(p.treeCount, 10) || 1),
           location: p.location || 'Heritage Grove',
           healthStatus: p.healthStatus || 'Excellent',
           yieldHistory: p.yieldHistory || '',
@@ -406,8 +407,8 @@ export const DataStore = {
     loadFromDb();
     return farms.map(f => {
       const farmTrees = parentPalms.filter(p => p.farmId === f.id || p.farmCode === f.farmCode);
-      const totalMotherTrees = farmTrees.length;
-      const selectedMotherTrees = farmTrees.filter(p => p.selectionStatus === 'Selected').length;
+      const totalMotherTrees = farmTrees.reduce((sum, p) => sum + (Math.max(1, Number(p.treeCount) || 1)), 0);
+      const selectedMotherTrees = farmTrees.filter(p => p.selectionStatus === 'Selected').reduce((sum, p) => sum + (Math.max(1, Number(p.treeCount) || 1)), 0);
 
       const fSources = batchSources.filter(s => s.farmId === f.id || s.farmCode === f.farmCode);
       const usedTreeIds = new Set(fSources.map(s => s.motherTreeCode || s.motherTreeId));
@@ -694,8 +695,8 @@ export const DataStore = {
     loadFromDb();
 
     const totalFarms = allFarms.length;
-    const totalMotherTrees = parentPalms.length;
-    const totalSelectedMotherTrees = parentPalms.filter(p => p.selectionStatus === 'Selected').length;
+    const totalMotherTrees = parentPalms.reduce((sum, p) => sum + (Math.max(1, Number(p.treeCount) || 1)), 0);
+    const totalSelectedMotherTrees = parentPalms.filter(p => p.selectionStatus === 'Selected').reduce((sum, p) => sum + (Math.max(1, Number(p.treeCount) || 1)), 0);
 
     const usedTreeCodes = new Set(batchSources.map(s => s.motherTreeCode || s.motherTreeId));
     const totalMotherTreesUsedInBatches = usedTreeCodes.size;
@@ -758,19 +759,14 @@ export const DataStore = {
       if (!height.toLowerCase().startsWith('approx')) {
         height = `Approx. ${height}`;
       }
-      const distinctViews = new Set(
-        batchViews.filter(v => v.batchCode && v.batchCode.toLowerCase() === b.batchCode.toLowerCase()).map(v => v.visitorId)
-      ).size;
-      const uniqueViewsCount = Math.max(Number(b.viewsCount) || 0, distinctViews);
-      if (b.viewsCount !== uniqueViewsCount) {
-        b.viewsCount = uniqueViewsCount;
-      }
+      const totalViewsCount = Number(b.viewsCount) || 0;
+      b.viewsCount = totalViewsCount;
 
       return {
         ...b,
         age,
         height,
-        viewsCount: uniqueViewsCount,
+        viewsCount: totalViewsCount,
         bookedQuantity: computedBookedQuantity,
         availableQuantity,
         bookedPercentage,
@@ -1120,6 +1116,7 @@ export const DataStore = {
 
       return {
         ...p,
+        treeCount: Math.max(1, Number(p.treeCount) || 1),
         code: pCode,
         motherTreeCode: mCode,
         batchesUsedCount,
@@ -1187,6 +1184,7 @@ export const DataStore = {
       name: data.name || `Mother Palm ${motherTreeCode}`,
       variety: data.variety || 'West Coast Tall (Eathamozhi Tall)',
       age: data.age !== undefined && data.age !== null && data.age !== '' ? data.age : '40+ years',
+      treeCount: Math.max(1, parseInt(data.treeCount, 10) || 1),
       location: data.location || farm?.location || 'Heritage Grove',
       healthStatus: data.healthStatus || 'Excellent',
       yieldHistory: data.yieldHistory || 'High-yielding verified genetic stock.',
@@ -1269,6 +1267,9 @@ export const DataStore = {
 
     if (updatedFields.name) palm.name = updatedFields.name;
     if (updatedFields.age !== undefined) palm.age = updatedFields.age;
+    if (updatedFields.treeCount !== undefined) {
+      palm.treeCount = Math.max(1, parseInt(updatedFields.treeCount, 10) || 1);
+    }
     if (updatedFields.variety) palm.variety = updatedFields.variety;
     if (updatedFields.location) palm.location = updatedFields.location;
     if (updatedFields.healthStatus) palm.healthStatus = updatedFields.healthStatus;
@@ -2312,67 +2313,56 @@ export const DataStore = {
   // ─── Batch Unique Visitor Views Tracking ─────────────────────────────────
   recordBatchView: (batchCode: string, visitorId: string): { batchCode: string; viewsCount: number; isNewUniqueView: boolean } => {
     loadFromDb();
-    if (!batchCode || !visitorId) return { batchCode, viewsCount: 0, isNewUniqueView: false };
+    if (!batchCode) return { batchCode: batchCode || '', viewsCount: 0, isNewUniqueView: false };
 
     const batch = batches.find(b => b.batchCode.toLowerCase() === batchCode.toLowerCase());
     if (!batch) return { batchCode, viewsCount: 0, isNewUniqueView: false };
 
-    const existing = batchViews.find(
-      v => v.batchCode.toLowerCase() === batchCode.toLowerCase() && v.visitorId === visitorId
-    );
+    const now = new Date().toISOString();
+    const effectiveVisitorId = visitorId || `v_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
 
-    let isNewUniqueView = false;
-    if (!existing) {
-      isNewUniqueView = true;
-      batchViews.push({
-        id: `bv-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-        batchCode: batch.batchCode,
-        visitorId,
-        firstViewedAt: new Date().toISOString(),
-        lastViewedAt: new Date().toISOString()
-      });
-      batch.viewsCount = (Number(batch.viewsCount) || 0) + 1;
-      batch.updatedAt = new Date().toISOString();
-    } else {
-      existing.lastViewedAt = new Date().toISOString();
+    // Prevent duplicate rapid calls (e.g. React Strict Mode or double-render on page refresh within 3s)
+    const recentDuplicate = batchViews.find(
+      v => v.batchCode.toLowerCase() === batch.batchCode.toLowerCase() &&
+           v.visitorId === effectiveVisitorId &&
+           (Date.now() - new Date(v.lastViewedAt).getTime() < 3000)
+    );
+    if (recentDuplicate) {
+      return { batchCode: batch.batchCode, viewsCount: Number(batch.viewsCount) || 0, isNewUniqueView: false };
     }
 
-    const distinctCount = new Set(
-      batchViews.filter(v => v.batchCode.toLowerCase() === batch.batchCode.toLowerCase()).map(v => v.visitorId)
-    ).size;
-    batch.viewsCount = Math.max(Number(batch.viewsCount) || 0, distinctCount);
+    batchViews.push({
+      id: `bv-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      batchCode: batch.batchCode,
+      visitorId: effectiveVisitorId,
+      firstViewedAt: now,
+      lastViewedAt: now
+    });
+
+    batch.viewsCount = (Number(batch.viewsCount) || 0) + 1;
+    batch.updatedAt = now;
 
     saveToDb();
-    return { batchCode: batch.batchCode, viewsCount: batch.viewsCount, isNewUniqueView };
+    return { batchCode: batch.batchCode, viewsCount: batch.viewsCount, isNewUniqueView: true };
   },
 
   recordBatchViewAsync: async (batchCode: string, visitorId: string): Promise<{ batchCode: string; viewsCount: number; isNewUniqueView: boolean }> => {
     loadFromDb();
     await syncFromMongo();
     const result = DataStore.recordBatchView(batchCode, visitorId);
+    if (!result.isNewUniqueView) {
+      return result;
+    }
     try {
       const conn = await connectToDatabase();
       if (conn) {
-        if (result.isNewUniqueView) {
-          await BatchViewModel.findOneAndUpdate(
-            { batchCode: result.batchCode, visitorId },
-            {
-              $setOnInsert: {
-                id: `bv-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-                batchCode: result.batchCode,
-                visitorId,
-                firstViewedAt: new Date().toISOString()
-              },
-              $set: { lastViewedAt: new Date().toISOString() }
-            },
-            { upsert: true, new: true }
-          );
-        } else {
-          await BatchViewModel.updateOne(
-            { batchCode: result.batchCode, visitorId },
-            { $set: { lastViewedAt: new Date().toISOString() } }
-          );
-        }
+        await BatchViewModel.create({
+          id: `bv-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+          batchCode: result.batchCode,
+          visitorId: `${visitorId || 'v'}-${Date.now()}`,
+          firstViewedAt: new Date().toISOString(),
+          lastViewedAt: new Date().toISOString()
+        }).catch(() => {});
 
         await BatchModel.findOneAndUpdate(
           { batchCode: new RegExp('^' + result.batchCode + '$', 'i') },
@@ -2388,10 +2378,7 @@ export const DataStore = {
   getBatchViewsCount: (batchCode: string): number => {
     loadFromDb();
     const batch = batches.find(b => b.batchCode.toLowerCase() === batchCode.toLowerCase());
-    const distinct = new Set(
-      batchViews.filter(v => v.batchCode.toLowerCase() === batchCode.toLowerCase()).map(v => v.visitorId)
-    ).size;
-    return Math.max(Number(batch?.viewsCount) || 0, distinct);
+    return Number(batch?.viewsCount) || 0;
   },
 
   // ─── YouTube Video Module ──────────────────────────────────────────────────

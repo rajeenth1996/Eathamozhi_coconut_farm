@@ -26,6 +26,7 @@ const MotherTreeSchema = new Schema({
   name:               { type: String, required: true },
   variety:            { type: String, default: 'West Coast Tall (Eathamozhi Tall)' },
   age:                { type: Schema.Types.Mixed, required: true },
+  treeCount:          { type: Number, default: 1 },
   location:           { type: String, default: 'Heritage Grove' },
   healthStatus:       { type: String, default: 'Excellent' },
   yieldHistory:       { type: String, default: '' },

@@ -21,6 +21,7 @@ export default async function Home() {
   // Only populated with batches and mother trees that have their customer visibility toggle turned ON
   const batches = visibleBatches;
   const motherPalms = visibleMotherPalms;
+  const totalMotherTreesCount = visibleMotherPalms.reduce((sum, p) => sum + (Math.max(1, Number(p.treeCount) || 1)), 0);
 
   // Determine oldest available batch for the grove planning calculator rate
   const availableBatches = visibleBatches.filter(b => (b.availableQuantity ?? 0) > 0 && b.status !== 'SOLD_OUT');
@@ -125,7 +126,7 @@ export default async function Home() {
                 </div>
                 <div className="col-6 col-md-3">
                   <div className="glass-card-dark p-3 text-center hover-lift-subtle">
-                    <span className="display-6 fw-bold text-light d-block">{motherPalms.length}+</span>
+                    <span className="display-6 fw-bold text-light d-block">{totalMotherTreesCount}+</span>
                     <small className="text-light opacity-80 extra-small text-uppercase fw-semibold">
                       <Trans en="Verified Mother Trees" ta="சான்றளிக்கப்பட்ட தாய் மரங்கள்" />
                     </small>
@@ -211,7 +212,10 @@ export default async function Home() {
                       <div className="position-absolute top-0 start-0 m-2" style={{ pointerEvents: 'none', zIndex: 3 }}>
                         <span className="badge bg-dark bg-opacity-75">{palm.code}</span>
                       </div>
-                      <div className="position-absolute top-0 end-0 m-2" style={{ pointerEvents: 'none', zIndex: 3 }}>
+                      <div className="position-absolute top-0 end-0 m-2 d-flex gap-1" style={{ pointerEvents: 'none', zIndex: 3 }}>
+                        {palm.treeCount && palm.treeCount > 1 && (
+                          <span className="badge bg-success fw-bold">{palm.treeCount} Trees</span>
+                        )}
                         <span className="badge bg-warning text-dark fw-bold">{formatApproximateAge(palm.age)}</span>
                       </div>
                     </div>
@@ -246,7 +250,7 @@ export default async function Home() {
             {motherPalms.length > 0 && (
               <div className="text-center mt-4">
                 <Link href="/farm" className="btn btn-outline-dark px-4 py-2 rounded-3 fw-semibold">
-                  <Trans en={`Explore All ${motherPalms.length} Verified Mother Trees`} ta={`அனைத்து ${motherPalms.length} தாய் மரங்களையும் காண்க`} /> <i className="bi bi-arrow-right ms-1"></i>
+                  <Trans en={`Explore All ${totalMotherTreesCount} Verified Mother Trees`} ta={`அனைத்து ${totalMotherTreesCount} தாய் மரங்களையும் காண்க`} /> <i className="bi bi-arrow-right ms-1"></i>
                 </Link>
               </div>
             )}

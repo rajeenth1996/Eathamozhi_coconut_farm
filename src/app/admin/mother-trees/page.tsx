@@ -36,6 +36,7 @@ export default function AdminMotherTreesPage() {
     name: '',
     variety: 'West Coast Tall (Eathamozhi Tall)',
     age: '40+ years' as any,
+    treeCount: 1,
     location: 'Heritage Grove',
     healthStatus: 'Excellent (100% Disease Resistant)',
     yieldHistory: 'Consistently 160–180 high-weight seed nuts per year over 25 monitored years.',
@@ -160,6 +161,7 @@ export default function AdminMotherTreesPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...newTree,
+          treeCount: Math.max(1, parseInt(newTree.treeCount as any, 10) || 1),
           farmId: activeFarm?.id,
           farmCode: activeFarm?.farmCode || selectedFarmCode,
           farmName: activeFarm?.farmName,
@@ -179,6 +181,7 @@ export default function AdminMotherTreesPage() {
           name: '',
           variety: 'West Coast Tall (Eathamozhi Tall)',
           age: '40+ years',
+          treeCount: 1,
           location: activeFarm?.location || 'Heritage Grove',
           healthStatus: 'Excellent (100% Disease Resistant)',
           yieldHistory: 'Consistently 160–180 high-weight seed nuts per year over 25 monitored years.',
@@ -204,7 +207,7 @@ export default function AdminMotherTreesPage() {
   };
 
   const openEditModal = (tree: any) => {
-    setEditingTree({ ...tree });
+    setEditingTree({ ...tree, treeCount: tree.treeCount ?? 1 });
     setEditTreeImages(tree.images && Array.isArray(tree.images) ? [...tree.images] : []);
     setNewTreeImageUrl('');
   };
@@ -221,6 +224,7 @@ export default function AdminMotherTreesPage() {
         name: editingTree.name,
         variety: editingTree.variety,
         age: formatApproximateAge(editingTree.age),
+        treeCount: Math.max(1, parseInt(editingTree.treeCount, 10) || 1),
         location: editingTree.location,
         healthStatus: editingTree.healthStatus,
         yieldHistory: editingTree.yieldHistory,
@@ -469,7 +473,7 @@ export default function AdminMotherTreesPage() {
             {/* Selection action bar */}
             <div className="d-flex justify-content-between align-items-center pt-2 mt-2 border-top flex-wrap gap-2">
               <div className="small text-muted">
-                Showing <strong>{filteredPalms.length}</strong> mother tree{filteredPalms.length !== 1 ? 's' : ''}
+                Showing <strong>{filteredPalms.length}</strong> registry record{filteredPalms.length !== 1 ? 's' : ''} representing <strong className="text-success">{filteredPalms.reduce((sum, p) => sum + (Math.max(1, Number(p.treeCount) || 1)), 0)} Mother Trees</strong> (Total Stock Across All Farms: <strong className="text-dark">{palms.reduce((sum, p) => sum + (Math.max(1, Number(p.treeCount) || 1)), 0)} Trees</strong>)
                 {selectedTreeCodes.length > 0 && (
                   <span className="ms-2 badge bg-primary">
                     {selectedTreeCodes.length} selected for batch
@@ -506,9 +510,10 @@ export default function AdminMotherTreesPage() {
                     <th>Photo</th>
                     <th>Mother Tree ID</th>
                     <th>Farm ID</th>
-                    <th>Tree Name</th>
+                    <th>Tree / Grove Name</th>
                     <th>Variety</th>
-                    <th className="text-center">Age</th>
+                    <th className="text-center">Age Group</th>
+                    <th className="text-center">Tree Count</th>
                     <th className="text-center">Selection Status</th>
                     <th className="text-center">Batches Used</th>
                     <th className="text-center">Coconuts Collected</th>
@@ -520,14 +525,14 @@ export default function AdminMotherTreesPage() {
                 <tbody>
                   {loading ? (
                     <tr>
-                      <td colSpan={13} className="text-center py-5">
+                      <td colSpan={14} className="text-center py-5">
                         <div className="spinner-border text-success" role="status"></div>
                         <p className="text-muted small mt-2 mb-0">Loading mother trees...</p>
                       </td>
                     </tr>
                   ) : filteredPalms.length === 0 ? (
                     <tr>
-                      <td colSpan={13} className="text-center py-5 text-muted">
+                      <td colSpan={14} className="text-center py-5 text-muted">
                         No mother trees found matching filters.
                       </td>
                     </tr>
@@ -578,6 +583,11 @@ export default function AdminMotherTreesPage() {
                             <small className="text-dark fw-semibold">{palm.variety || 'West Coast Tall'}</small>
                           </td>
                           <td className="text-center fw-semibold">{formatApproximateAge(palm.age)}</td>
+                          <td className="text-center">
+                            <span className="badge bg-success-subtle text-success border border-success fw-bold px-2 py-1">
+                              <i className="bi bi-tree-fill me-1"></i>{palm.treeCount || 1} {Number(palm.treeCount) > 1 ? 'Trees' : 'Tree'}
+                            </span>
+                          </td>
                           <td className="text-center">
                             <span className={`badge ${palm.selectionStatus === 'Selected' ? 'bg-success' : 'bg-secondary'}`}>
                               {palm.selectionStatus || 'Selected'}
@@ -638,13 +648,20 @@ export default function AdminMotherTreesPage() {
 
           {/* Form: Register New Mother Tree Under Farm */}
           <div className="card border-0 shadow-sm rounded-4 p-4 bg-white mb-5">
-            <h5 className="fw-bold text-dark mb-3">
-              <i className="bi bi-plus-circle-fill text-success me-2"></i>
-              Register New Mother Tree Under Farm
-            </h5>
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <div>
+                <h5 className="fw-bold text-dark mb-1">
+                  <i className="bi bi-plus-circle-fill text-success me-2"></i>
+                  Register Mother Trees (Single Palm or Age Group in Farm)
+                </h5>
+                <p className="text-muted small mb-0">
+                  Register multiple trees of the same age together (e.g. 10 trees of 80+ years in Farm 1). You can upload multiple photographs representing the trees in this grove.
+                </p>
+              </div>
+            </div>
             <form onSubmit={handleCreateTree}>
               <div className="row g-3">
-                <div className="col-md-4">
+                <div className="col-md-3">
                   <label className="form-label fw-bold small text-secondary">Assign To Farm *</label>
                   <select
                     className="form-select"
@@ -659,28 +676,38 @@ export default function AdminMotherTreesPage() {
                     ))}
                   </select>
                   <small className="text-muted extra-small">
-                    Mother Tree ID (e.g. <code>{selectedFarmCode}-MT001</code>) will be generated automatically.
+                    Mother Tree ID (e.g. <code>{selectedFarmCode}-MT...</code>) auto-generated.
                   </small>
                 </div>
 
-                <div className="col-md-5">
-                  <label className="form-label fw-bold small text-secondary">Mother Tree Name / Label *</label>
+                <div className="col-md-4">
+                  <label className="form-label fw-bold small text-secondary">Tree / Grove Name or Label *</label>
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="e.g. High Yield Heritage Palm #21"
+                    placeholder="e.g. 10 Trees of 80+ Years (Heritage Grove)"
                     value={newTree.name}
                     onChange={(e) => setNewTree({ ...newTree, name: e.target.value })}
                     required
                   />
+                  <small className="text-muted extra-small">
+                    Descriptive label for this tree group
+                  </small>
                 </div>
 
-                <div className="col-md-3">
+                <div className="col-md-2">
                   <label className="form-label fw-bold small text-secondary">Approximate Age *</label>
                   <select
                     className="form-select"
                     value={typeof newTree.age === 'string' ? newTree.age : formatApproximateAge(newTree.age)}
-                    onChange={(e) => setNewTree({ ...newTree, age: e.target.value })}
+                    onChange={(e) => {
+                      const newAge = e.target.value;
+                      setNewTree(prev => ({
+                        ...prev,
+                        age: newAge,
+                        name: prev.name.trim() === '' ? `${prev.treeCount > 1 ? `${prev.treeCount} Trees • ` : ''}${newAge} Heritage Palms` : prev.name
+                      }));
+                    }}
                     required
                   >
                     <option value="30+ years">30+ years</option>
@@ -691,6 +718,26 @@ export default function AdminMotherTreesPage() {
                     <option value="80+ years">80+ years</option>
                     <option value="100+ years">100+ years</option>
                   </select>
+                </div>
+
+                <div className="col-md-3">
+                  <label className="form-label fw-bold small text-secondary">
+                    <i className="bi bi-tree-fill text-success me-1"></i> Number of Trees (Count) *
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    className="form-control"
+                    value={newTree.treeCount}
+                    onChange={(e) => {
+                      const count = Math.max(1, parseInt(e.target.value, 10) || 1);
+                      setNewTree(prev => ({ ...prev, treeCount: count }));
+                    }}
+                    required
+                  />
+                  <small className="text-muted extra-small">
+                    Total trees in this age category
+                  </small>
                 </div>
 
                 <div className="col-md-4">
@@ -832,7 +879,7 @@ export default function AdminMotherTreesPage() {
                       onChange={(e) => setEditingTree({ ...editingTree, name: e.target.value })}
                     />
                   </div>
-                  <div className="col-md-6">
+                  <div className="col-md-4">
                     <label className="form-label fw-bold small text-secondary">Approximate Age *</label>
                     <select
                       className="form-select"
@@ -848,7 +895,20 @@ export default function AdminMotherTreesPage() {
                       <option value="100+ years">100+ years</option>
                     </select>
                   </div>
-                  <div className="col-md-6">
+                  <div className="col-md-4">
+                    <label className="form-label fw-bold small text-secondary">
+                      <i className="bi bi-tree-fill text-success me-1"></i> Number of Trees (Count) *
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      className="form-control"
+                      value={editingTree.treeCount ?? 1}
+                      onChange={(e) => setEditingTree({ ...editingTree, treeCount: Math.max(1, parseInt(e.target.value, 10) || 1) })}
+                    />
+                    <small className="text-muted extra-small">Trees in this age category</small>
+                  </div>
+                  <div className="col-md-4">
                     <label className="form-label fw-bold small text-secondary">Variety</label>
                     <input
                       type="text"

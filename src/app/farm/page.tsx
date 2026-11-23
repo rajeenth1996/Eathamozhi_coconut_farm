@@ -8,6 +8,7 @@ export const dynamic = 'force-dynamic';
 export default async function MotherTreesPage() {
   const allPalms = await DataStore.getParentPalmsAsync();
   const palms = allPalms.filter(p => p.isVisible !== false);
+  const totalMotherTreesCount = palms.reduce((sum, p) => sum + (Math.max(1, Number(p.treeCount) || 1)), 0);
   const allBatches = await DataStore.getBatchesAsync();
   const batches = allBatches.filter(b => b.isVisible !== false);
 
@@ -40,15 +41,15 @@ export default async function MotherTreesPage() {
             </h1>
             <p className="lead text-light opacity-90 mx-auto mb-4" style={{ maxWidth: '700px' }}>
               Every sapling we sell is directly traceable to one of our{' '}
-              <strong className="text-white">{palms.length > 0 ? palms.length : '30+'} verified ancestral mother trees</strong>.{' '}
-              Inspect each tree&apos;s pedigree, yield history, nut characteristics, and available sapling batches.
+              <strong className="text-white">{totalMotherTreesCount > 0 ? totalMotherTreesCount : '30+'} verified ancestral mother trees</strong>{' '}
+              across all heritage groves. Inspect each tree group&apos;s pedigree, yield history, nut characteristics, and available sapling batches.
             </p>
             <div className="d-flex flex-wrap justify-content-center gap-3">
               <div className="glass-card-dark px-4 py-2 d-inline-flex align-items-center gap-2">
                 <i className="bi bi-tree-fill text-success fs-4"></i>
                 <div>
-                  <span className="fw-bold text-white d-block">{palms.length} Registered Trees</span>
-                  <small className="text-light opacity-75">In Our Heritage Grove</small>
+                  <span className="fw-bold text-white d-block">{totalMotherTreesCount} Registered Trees</span>
+                  <small className="text-light opacity-75">Across All Groves</small>
                 </div>
               </div>
               <div className="glass-card-dark px-4 py-2 d-inline-flex align-items-center gap-2">
@@ -142,6 +143,9 @@ export default async function MotherTreesPage() {
                         {/* Overlays */}
                         <div className="position-absolute top-0 start-0 m-2 d-flex gap-1 flex-wrap" style={{ pointerEvents: 'none', zIndex: 3 }}>
                           <span className="badge bg-dark bg-opacity-80 fw-bold">{palm.code}</span>
+                          {palm.treeCount && palm.treeCount > 1 && (
+                            <span className="badge bg-success fw-bold">{palm.treeCount} Trees</span>
+                          )}
                           <span className="badge bg-warning text-dark fw-bold">{formatApproximateAge(palm.age)}</span>
                         </div>
                         <div className="position-absolute top-0 end-0 m-2" style={{ pointerEvents: 'none', zIndex: 3 }}>

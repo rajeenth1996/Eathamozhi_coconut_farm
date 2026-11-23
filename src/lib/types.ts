@@ -34,6 +34,7 @@ export interface MotherTree {
   name: string;
   variety: string;
   age: number | string;
+  treeCount?: number; // Number of trees in this age group / registry record (e.g. 10 trees of 80+ years)
   location: string;
   healthStatus: string;
   yieldHistory: string;
