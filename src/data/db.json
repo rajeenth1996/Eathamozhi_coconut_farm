@@ -766,8 +766,8 @@
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792893909/eathamozhy-farm/batches/74cbbdcb-f064-459c-9267-d045737e799c-1792893907395.jpg"
       ],
       "isVisible": false,
-      "createdAt": "2026-11-23T04:57:35.788Z",
-      "updatedAt": "2026-11-23T04:57:35.788Z"
+      "createdAt": "2026-11-23T05:05:06.551Z",
+      "updatedAt": "2026-11-23T05:05:06.551Z"
     },
     {
       "id": "b-1",
@@ -802,8 +802,8 @@
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792893909/eathamozhy-farm/batches/74cbbdcb-f064-459c-9267-d045737e799c-1792893907395.jpg"
       ],
       "isVisible": false,
-      "createdAt": "2026-11-23T04:57:35.788Z",
-      "updatedAt": "2026-11-23T04:57:35.788Z"
+      "createdAt": "2026-11-23T05:05:06.551Z",
+      "updatedAt": "2026-11-23T05:05:06.551Z"
     },
     {
       "id": "b-2",
@@ -837,8 +837,8 @@
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792888376/eathamozhy-farm/batches/b76f3226-817a-4ae2-8511-d66aeb861dca-1792888375115.jpg"
       ],
       "isVisible": false,
-      "createdAt": "2026-11-23T04:57:35.788Z",
-      "updatedAt": "2026-11-23T04:57:35.788Z"
+      "createdAt": "2026-11-23T05:05:06.551Z",
+      "updatedAt": "2026-11-23T05:05:06.551Z"
     },
     {
       "id": "b-3",
@@ -871,8 +871,8 @@
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792893909/eathamozhy-farm/batches/74cbbdcb-f064-459c-9267-d045737e799c-1792893907395.jpg"
       ],
       "isVisible": false,
-      "createdAt": "2026-11-23T04:57:35.788Z",
-      "updatedAt": "2026-11-23T04:57:35.788Z"
+      "createdAt": "2026-11-23T05:05:06.551Z",
+      "updatedAt": "2026-11-23T05:05:06.551Z"
     },
     {
       "id": "b-4",
@@ -968,7 +968,7 @@
       "price": 155,
       "status": "AVAILABLE",
       "description": "handpicked Coconuts seedlings for best growth yield and max tolerant to weather condiditoins.",
-      "viewsCount": 44,
+      "viewsCount": 47,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1795239211/eathamozhi-farm/batches/060444db-723a-4cc6-8d3a-b7b28f23d3a3-1795239211348.jpg",
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1795239212/eathamozhi-farm/batches/236c9a4c-95f8-4538-b07d-69d361383e93-1795239212256.jpg",
@@ -978,7 +978,7 @@
       ],
       "isVisible": true,
       "createdAt": "2026-11-06T18:57:17.318Z",
-      "updatedAt": "2026-11-22T18:30:15.259Z"
+      "updatedAt": "2026-11-23T05:05:06.557Z"
     },
     {
       "id": "b-7",
@@ -3099,6 +3099,46 @@
   ],
   "pageViews": [
     {
+      "id": "pv-1795410306204-imxr0",
+      "sessionId": "sess_1795375799212_eaxxpn3",
+      "path": "/",
+      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
+      "referrer": "http://localhost:3000/batches/EM-0626-F",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-11-23T05:05:06.204Z"
+    },
+    {
+      "id": "pv-1795410284135-1mbcl",
+      "sessionId": "sess_1795375799212_eaxxpn3",
+      "path": "/batches/EM-0626-F",
+      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
+      "referrer": "http://localhost:3000/batches/EM-0626-F",
+      "referrerSource": "localhost",
+      "device": "desktop",
+      "screenSize": "1528x732",
+      "timestamp": "2026-11-23T05:04:44.135Z"
+    },
+    {
+      "id": "pv-1795410283841-0glue",
+      "sessionId": "sess_1795375799212_eaxxpn3",
+      "path": "/batches/EM-0626-F",
+      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
+      "referrerSource": "Direct / Bookmark",
+      "device": "desktop",
+      "timestamp": "2026-11-23T05:04:43.841Z"
+    },
+    {
+      "id": "pv-1795410283282-44psi",
+      "sessionId": "sess_1795375799212_eaxxpn3",
+      "path": "/batches/EM-0626-F",
+      "title": "Eathamozhi Coconut Farm | Buy Coconut Seedlings & Saplings Online",
+      "referrerSource": "Direct / Bookmark",
+      "device": "desktop",
+      "timestamp": "2026-11-23T05:04:43.282Z"
+    },
+    {
       "id": "pv-1795409853078-yeiso",
       "sessionId": "sess_1795375799212_eaxxpn3",
       "path": "/batches/EM-0626-F",
@@ -4204,6 +4244,34 @@
       "visitorId": "v_qomrjptl_1795407890704-1795409854239",
       "firstViewedAt": "2026-11-23T04:57:34.239Z",
       "lastViewedAt": "2026-11-23T04:57:34.239Z"
+    },
+    {
+      "id": "bv-1795410283643-706",
+      "batchCode": "EM-0626-F",
+      "visitorId": "sess_1795375799212_eaxxpn3-1795410283643",
+      "firstViewedAt": "2026-11-23T05:04:43.643Z",
+      "lastViewedAt": "2026-11-23T05:04:43.643Z"
+    },
+    {
+      "id": "bv-1795410283852-510",
+      "batchCode": "EM-0626-F",
+      "visitorId": "sess_1795375799212_eaxxpn3-1795410283852",
+      "firstViewedAt": "2026-11-23T05:04:43.852Z",
+      "lastViewedAt": "2026-11-23T05:04:43.852Z"
+    },
+    {
+      "id": "bv-1795410284096-950",
+      "batchCode": "EM-0626-F",
+      "visitorId": "v_qomrjptl_1795407890704-1795410284096",
+      "firstViewedAt": "2026-11-23T05:04:44.096Z",
+      "lastViewedAt": "2026-11-23T05:04:44.096Z"
+    },
+    {
+      "id": "bv-1795410306557-806",
+      "batchCode": "EM-0626-F",
+      "visitorId": "v_qomrjptl_1795407890704",
+      "firstViewedAt": "2026-11-23T05:05:06.557Z",
+      "lastViewedAt": "2026-11-23T05:05:06.557Z"
     }
   ],
   "youtubeVideos": [
