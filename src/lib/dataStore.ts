@@ -128,8 +128,14 @@ function reconcileInventoryLedger() {
   if (!Array.isArray(batches) || !Array.isArray(batchInventory)) return;
 
   for (const b of batches) {
-    const bSources = batchSources.filter(s => s.batchCode.toLowerCase() === b.batchCode.toLowerCase() || s.batchId === b.id);
-    const bInventory = batchInventory.filter(i => i.batchCode.toLowerCase() === b.batchCode.toLowerCase() || i.batchId === b.id);
+    const bSources = batchSources.filter(s => s.batchCode.toLowerCase() === b.batchCode.toLowerCase());
+    const bInventory = batchInventory.filter(i => i.batchCode.toLowerCase() === b.batchCode.toLowerCase());
+    for (const s of bSources) {
+      if (s.batchId !== b.id) s.batchId = b.id;
+    }
+    for (const i of bInventory) {
+      if (i.batchId !== b.id) i.batchId = b.id;
+    }
     if (bInventory.length === 0) continue;
 
     const bBookings = bookings.filter(
@@ -232,6 +238,8 @@ function reconcileInventoryLedger() {
     const totalAvail = bInventory.reduce((sum, i) => sum + (Number(i.availableQuantity) || 0), 0);
 
     b.totalQuantity = totalProduced;
+    b.totalSeedlings = totalProduced;
+    b.bookedQuantity = totalOrdersPlaced;
     b.availableQuantity = totalAvail;
     b.bookedQuantity = totalOrdersPlaced;
     if (b.status !== 'COMING_SOON') {
@@ -851,8 +859,8 @@ export const DataStore = {
   getBatches: (): Batch[] => {
     loadFromDb();
     return batches.map(b => {
-      const bSources = batchSources.filter(s => s.batchCode.toLowerCase() === b.batchCode.toLowerCase() || s.batchId === b.id);
-      const bInventory = batchInventory.filter(i => i.batchCode.toLowerCase() === b.batchCode.toLowerCase() || i.batchId === b.id);
+      const bSources = batchSources.filter(s => s.batchCode.toLowerCase() === b.batchCode.toLowerCase());
+      const bInventory = batchInventory.filter(i => i.batchCode.toLowerCase() === b.batchCode.toLowerCase());
 
       const activeBookings = bookings.filter(
         bk => bk.batchCode.toLowerCase() === b.batchCode.toLowerCase() && bk.bookingStatus !== 'Cancelled'
@@ -1145,7 +1153,7 @@ export const DataStore = {
     if (updatedFields.totalQuantity !== undefined) {
       const newTotal = Math.max(0, Math.round(Number(updatedFields.totalQuantity)));
       const bInventory = batchInventory.filter(
-        i => i.batchCode.toLowerCase() === target.batchCode.toLowerCase() || i.batchId === target.id
+        i => i.batchCode.toLowerCase() === target.batchCode.toLowerCase()
       );
 
       if (bInventory.length > 0) {
@@ -1225,7 +1233,7 @@ export const DataStore = {
         );
         if (updatedFields.totalQuantity !== undefined) {
           const bInvs = batchInventory.filter(
-            i => i.batchCode.toLowerCase() === updated.batchCode.toLowerCase() || i.batchId === updated.id
+            i => i.batchCode.toLowerCase() === updated.batchCode.toLowerCase()
           );
           for (const inv of bInvs) {
             await BatchInventoryModel.findOneAndUpdate({ id: inv.id }, { $set: inv }, { new: true });
@@ -1265,7 +1273,7 @@ export const DataStore = {
     }
 
     const bInventory = batchInventory.filter(
-      i => i.batchCode.toLowerCase() === batch.batchCode.toLowerCase() || i.batchId === batch.id
+      i => i.batchCode.toLowerCase() === batch.batchCode.toLowerCase()
     );
     const totalBookedInInv = bInventory.reduce((sum, i) => sum + (Number(i.bookedQuantity) || 0), 0);
     const totalDispatchedInInv = bInventory.reduce((sum, i) => sum + (Number(i.dispatchedQuantity) || 0), 0);
@@ -2313,8 +2321,8 @@ export const DataStore = {
     const batch = DataStore.getBatchByCode(batchCode);
     if (!batch) return null;
 
-    const sources = batchSources.filter(s => s.batchCode.toLowerCase() === batchCode.toLowerCase() || s.batchId === batch.id);
-    const inventory = batchInventory.filter(i => i.batchCode.toLowerCase() === batchCode.toLowerCase() || i.batchId === batch.id);
+    const sources = batchSources.filter(s => s.batchCode.toLowerCase() === batchCode.toLowerCase());
+    const inventory = batchInventory.filter(i => i.batchCode.toLowerCase() === batchCode.toLowerCase());
 
     const contributingFarms = Array.from(new Set(sources.map(s => s.farmCode))).map(fCode => {
       return farms.find(f => f.farmCode === fCode) || { farmCode: fCode, farmName: fCode };
