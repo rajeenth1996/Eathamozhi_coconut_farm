@@ -84,12 +84,7 @@ export async function PUT(request: Request) {
     if (!bookingId || !status) {
       return NextResponse.json({ error: 'bookingId and status are required' }, { status: 400 });
     }
-    const changes: any = { bookingStatus: status };
-    if (courierName) changes.courierName = courierName;
-    if (trackingId) changes.trackingId = trackingId;
-    if (status === 'Dispatched') changes.dispatchDate = new Date().toISOString().split('T')[0];
-
-    const updated = await DataStore.updateOrderAsync(bookingId, changes);
+    const updated = await DataStore.updateBookingStatusAsync(bookingId, status, courierName, trackingId);
     if (!updated) {
       return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
     }

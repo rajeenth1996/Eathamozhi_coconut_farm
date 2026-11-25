@@ -124,6 +124,122 @@ const TMP_DB_FILE = pathModule && typeof process !== 'undefined'
   ? pathModule.join('/tmp', 'coconut_db.json')
   : null;
 
+function reconcileInventoryLedger() {
+  if (!Array.isArray(batches) || !Array.isArray(batchInventory)) return;
+
+  for (const b of batches) {
+    const bSources = batchSources.filter(s => s.batchCode.toLowerCase() === b.batchCode.toLowerCase() || s.batchId === b.id);
+    const bInventory = batchInventory.filter(i => i.batchCode.toLowerCase() === b.batchCode.toLowerCase() || i.batchId === b.id);
+    if (bInventory.length === 0) continue;
+
+    const bBookings = bookings.filter(
+      bk => bk.batchCode.toLowerCase() === b.batchCode.toLowerCase() && bk.bookingStatus !== 'Cancelled'
+    );
+
+    const deliveredOrDispatched = bBookings.filter(bk => bk.bookingStatus === 'Dispatched' || bk.bookingStatus === 'Delivered');
+    const pendingBookings = bBookings.filter(bk => bk.bookingStatus !== 'Dispatched' && bk.bookingStatus !== 'Delivered');
+
+    const totalOrdersPlaced = bBookings.reduce((sum, bk) => sum + (Number(bk.quantity) || 0), 0);
+
+    const invDispMap = new Map<string, number>();
+    const invBookedMap = new Map<string, number>();
+    for (const inv of bInventory) {
+      invDispMap.set(inv.id, 0);
+      invBookedMap.set(inv.id, 0);
+    }
+
+    let unallocDisp = 0;
+    for (const bk of deliveredOrDispatched) {
+      if (Array.isArray(bk.allocations) && bk.allocations.length > 0) {
+        for (const a of bk.allocations) {
+          const inv = bInventory.find(i => i.batchSourceId === a.batchSourceId);
+          if (inv) {
+            invDispMap.set(inv.id, (invDispMap.get(inv.id) || 0) + (Number(a.quantity) || 0));
+          } else {
+            unallocDisp += Number(a.quantity) || 0;
+          }
+        }
+      } else {
+        unallocDisp += Number(bk.quantity) || 0;
+      }
+    }
+
+    let unallocBooked = 0;
+    for (const bk of pendingBookings) {
+      if (Array.isArray(bk.allocations) && bk.allocations.length > 0) {
+        for (const a of bk.allocations) {
+          const inv = bInventory.find(i => i.batchSourceId === a.batchSourceId);
+          if (inv) {
+            invBookedMap.set(inv.id, (invBookedMap.get(inv.id) || 0) + (Number(a.quantity) || 0));
+          } else {
+            unallocBooked += Number(a.quantity) || 0;
+          }
+        }
+      } else {
+        unallocBooked += Number(bk.quantity) || 0;
+      }
+    }
+
+    if (unallocDisp > 0) {
+      const share = Math.floor(unallocDisp / bInventory.length);
+      let rem = unallocDisp % bInventory.length;
+      for (const inv of bInventory) {
+        const add = share + (rem > 0 ? 1 : 0);
+        invDispMap.set(inv.id, (invDispMap.get(inv.id) || 0) + add);
+        if (rem > 0) rem--;
+      }
+    }
+
+    if (unallocBooked > 0) {
+      const share = Math.floor(unallocBooked / bInventory.length);
+      let rem = unallocBooked % bInventory.length;
+      for (const inv of bInventory) {
+        const add = share + (rem > 0 ? 1 : 0);
+        invBookedMap.set(inv.id, (invBookedMap.get(inv.id) || 0) + add);
+        if (rem > 0) rem--;
+      }
+    }
+
+    for (const inv of bInventory) {
+      inv.dispatchedQuantity = invDispMap.get(inv.id) || 0;
+      inv.bookedQuantity = invBookedMap.get(inv.id) || 0;
+      const consumed = inv.dispatchedQuantity + inv.bookedQuantity + (inv.damagedQuantity || 0) + (inv.rejectedQuantity || 0);
+      if (inv.seedlingsProduced < consumed) {
+        inv.seedlingsProduced = consumed;
+      }
+      inv.availableQuantity = Math.max(0, inv.seedlingsProduced - consumed);
+    }
+
+    for (const src of bSources) {
+      const inv = bInventory.find(i => i.batchSourceId === src.id);
+      if (inv) {
+        if ((src.germinatedQuantity || 0) < inv.seedlingsProduced) {
+          src.germinatedQuantity = inv.seedlingsProduced;
+        }
+        if ((src.coconutsSown || 0) < src.germinatedQuantity) {
+          src.coconutsSown = src.germinatedQuantity;
+        }
+        if ((src.coconutQuantity || 0) < src.coconutsSown) {
+          src.coconutQuantity = src.coconutsSown;
+        }
+        if (src.coconutsSown > 0) {
+          src.germinationRate = `${Math.round((src.germinatedQuantity / src.coconutsSown) * 100)}%`;
+        }
+      }
+    }
+
+    const totalProduced = bInventory.reduce((sum, i) => sum + (Number(i.seedlingsProduced) || 0), 0);
+    const totalAvail = bInventory.reduce((sum, i) => sum + (Number(i.availableQuantity) || 0), 0);
+
+    b.totalQuantity = totalProduced;
+    b.availableQuantity = totalAvail;
+    b.bookedQuantity = totalOrdersPlaced;
+    if (b.status !== 'COMING_SOON') {
+      b.status = totalAvail <= 0 ? 'SOLD_OUT' : (totalAvail < 50 ? 'LIMITED' : 'AVAILABLE');
+    }
+  }
+}
+
 function loadFromDb() {
   if (!fsModule) return;
 
@@ -153,6 +269,7 @@ function loadFromDb() {
       if (Array.isArray(data.youtubeVideos)) youtubeVideos = data.youtubeVideos;
       if (Array.isArray(data.instagramPosts)) instagramPosts = data.instagramPosts;
       if (data.siteSettings) siteSettings = data.siteSettings;
+      reconcileInventoryLedger();
     }
   } catch (err) {
     console.error('Failed to load local DB:', err);
@@ -390,6 +507,7 @@ async function syncFromMongo(force = false): Promise<void> {
       }
 
       lastMongoSyncTime = Date.now();
+      reconcileInventoryLedger();
       saveToDb();
     } catch (err) {
       console.warn('MongoDB syncFromMongo warning:', err);
@@ -742,16 +860,15 @@ export const DataStore = {
       const computedBookedQuantity = activeBookings.reduce((sum, bk) => sum + bk.quantity, 0);
 
       let availableQuantity = 0;
-      const netStock = Math.max(0, b.totalQuantity + (b.inventoryAdjustments || 0));
-      const remainingNetStock = Math.max(0, netStock - computedBookedQuantity);
       if (bInventory.length > 0) {
-        const invAvailable = bInventory.reduce((sum, i) => sum + (Number(i.availableQuantity) || 0), 0);
-        availableQuantity = Math.max(0, Math.min(remainingNetStock, invAvailable));
+        availableQuantity = bInventory.reduce((sum, i) => sum + (Number(i.availableQuantity) || 0), 0);
       } else {
-        availableQuantity = remainingNetStock;
+        const netStock = Math.max(0, b.totalQuantity + (b.inventoryAdjustments || 0));
+        availableQuantity = Math.max(0, netStock - computedBookedQuantity);
       }
 
-      const bookedPercentage = netStock > 0 ? Math.min(100, Math.round((computedBookedQuantity / netStock) * 100)) : 100;
+      const totalCap = b.totalQuantity > 0 ? b.totalQuantity : Math.max(0, b.totalQuantity + (b.inventoryAdjustments || 0));
+      const bookedPercentage = totalCap > 0 ? Math.min(100, Math.round((computedBookedQuantity / totalCap) * 100)) : 100;
       const dynamicStatus = getDynamicBatchStatus(availableQuantity, b.seededDate);
       const metrics = getSaplingMetrics(b.seededDate);
       const age = b.age || metrics.age;
@@ -1969,6 +2086,10 @@ export const DataStore = {
     const targetBatch = batches.find(b => b.batchCode.toLowerCase() === data.batchCode.toLowerCase());
     if (targetBatch) {
       targetBatch.bookedQuantity = (Number(targetBatch.bookedQuantity) || 0) + data.quantity;
+      targetBatch.availableQuantity = Math.max(0, (Number(targetBatch.availableQuantity) || 0) - data.quantity);
+      if (targetBatch.availableQuantity <= 0 && targetBatch.status !== 'COMING_SOON') {
+        targetBatch.status = 'SOLD_OUT';
+      }
       targetBatch.updatedAt = new Date().toISOString();
     }
 
@@ -2018,36 +2139,57 @@ export const DataStore = {
     if (status === 'Dispatched') bk.dispatchDate = new Date().toISOString().split('T')[0];
 
     // Source level inventory transitions (avoid double subtraction!)
-    if (status === 'Dispatched' && prevStatus !== 'Dispatched' && prevStatus !== 'Delivered') {
-      if (Array.isArray(bk.allocations) && bk.allocations.length > 0) {
-        for (const alloc of bk.allocations) {
-          const inv = batchInventory.find(i => i.batchSourceId === alloc.batchSourceId);
-          if (inv) {
-            inv.bookedQuantity = Math.max(0, inv.bookedQuantity - alloc.quantity);
-            inv.dispatchedQuantity += alloc.quantity;
-            inv.updatedAt = new Date().toISOString();
-          }
-        }
-      } else {
-        const bInvs = batchInventory.filter(i => i.batchCode.toLowerCase() === bk.batchCode.toLowerCase());
-        if (bInvs.length > 0) {
-          const share = Math.round(bk.quantity / bInvs.length);
-          for (const inv of bInvs) {
-            inv.bookedQuantity = Math.max(0, inv.bookedQuantity - share);
-            inv.dispatchedQuantity += share;
-            inv.updatedAt = new Date().toISOString();
-          }
+    const isPending = (s?: string) => !['Dispatched', 'Delivered', 'Cancelled'].includes(s || '');
+    const isFulfilled = (s?: string) => ['Dispatched', 'Delivered'].includes(s || '');
+    const isCancelled = (s?: string) => s === 'Cancelled';
+
+    const wasPending = isPending(prevStatus);
+    const wasFulfilled = isFulfilled(prevStatus);
+    const wasCancelled = isCancelled(prevStatus);
+
+    const nowPending = isPending(status);
+    const nowFulfilled = isFulfilled(status);
+    const nowCancelled = isCancelled(status);
+
+    const applyInventoryDelta = (inv: BatchInventory, qty: number) => {
+      if (wasPending && nowFulfilled) {
+        inv.bookedQuantity = Math.max(0, inv.bookedQuantity - qty);
+        inv.dispatchedQuantity += qty;
+      } else if (wasFulfilled && nowPending) {
+        inv.dispatchedQuantity = Math.max(0, inv.dispatchedQuantity - qty);
+        inv.bookedQuantity += qty;
+      } else if (wasPending && nowCancelled) {
+        inv.bookedQuantity = Math.max(0, inv.bookedQuantity - qty);
+      } else if (wasFulfilled && nowCancelled) {
+        inv.dispatchedQuantity = Math.max(0, inv.dispatchedQuantity - qty);
+      } else if (wasCancelled && nowPending) {
+        inv.bookedQuantity += qty;
+      } else if (wasCancelled && nowFulfilled) {
+        inv.dispatchedQuantity += qty;
+      }
+      inv.availableQuantity = Math.max(
+        0,
+        inv.seedlingsProduced - inv.bookedQuantity - inv.dispatchedQuantity - (inv.damagedQuantity || 0) - (inv.rejectedQuantity || 0)
+      );
+      inv.updatedAt = new Date().toISOString();
+    };
+
+    if (Array.isArray(bk.allocations) && bk.allocations.length > 0) {
+      for (const alloc of bk.allocations) {
+        const inv = batchInventory.find(i => i.batchSourceId === alloc.batchSourceId);
+        if (inv) {
+          applyInventoryDelta(inv, alloc.quantity);
         }
       }
-    } else if (status === 'Cancelled' && prevStatus !== 'Cancelled') {
-      if (Array.isArray(bk.allocations) && bk.allocations.length > 0) {
-        for (const alloc of bk.allocations) {
-          const inv = batchInventory.find(i => i.batchSourceId === alloc.batchSourceId);
-          if (inv) {
-            inv.bookedQuantity = Math.max(0, inv.bookedQuantity - alloc.quantity);
-            inv.availableQuantity += alloc.quantity;
-            inv.updatedAt = new Date().toISOString();
-          }
+    } else {
+      const bInvs = batchInventory.filter(i => i.batchCode.toLowerCase() === bk.batchCode.toLowerCase());
+      if (bInvs.length > 0) {
+        const share = Math.floor(bk.quantity / bInvs.length);
+        let rem = bk.quantity % bInvs.length;
+        for (const inv of bInvs) {
+          const allocQty = share + (rem > 0 ? 1 : 0);
+          if (rem > 0) rem--;
+          applyInventoryDelta(inv, allocQty);
         }
       }
     }
@@ -2084,6 +2226,9 @@ export const DataStore = {
     loadFromDb();
     const bk = bookings.find(b => b.id === orderId || b.bookingId === orderId);
     if (!bk) throw new Error('Order not found');
+    if (changes.bookingStatus && changes.bookingStatus !== bk.bookingStatus) {
+      DataStore.updateBookingStatus(bk.bookingId || bk.id, changes.bookingStatus, changes.courierName, changes.trackingId);
+    }
     Object.assign(bk, changes);
     saveToDb();
     return bk;
@@ -3099,5 +3244,18 @@ export const DataStore = {
       return palm;
     }
     return null;
+  },
+
+  reconcileInventoryLedger: () => {
+    loadFromDb();
+    reconcileInventoryLedger();
+    saveToDb();
+  },
+
+  reconcileInventoryLedgerAsync: async () => {
+    loadFromDb();
+    await syncFromMongo();
+    reconcileInventoryLedger();
+    saveToDb();
   }
 };
