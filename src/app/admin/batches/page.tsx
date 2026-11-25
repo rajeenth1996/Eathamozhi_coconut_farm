@@ -58,10 +58,10 @@ export default function AdminBatchesPage() {
   // Edit Modal State
   const [editingBatch, setEditingBatch] = useState<any | null>(null);
   const [editName, setEditName] = useState<string>('');
-  const [editPrice, setEditPrice] = useState<number>(150);
+  const [editPrice, setEditPrice] = useState<string>('150');
   const [editAge, setEditAge] = useState<string>('8–10 months');
   const [editHeight, setEditHeight] = useState<string>('Approx. 2–3 ft');
-  const [editTotalQuantity, setEditTotalQuantity] = useState<number>(500);
+  const [editTotalQuantity, setEditTotalQuantity] = useState<string>('500');
   const [editDescription, setEditDescription] = useState<string>('');
   const [editImages, setEditImages] = useState<string[]>([]);
   const [editIsVisible, setEditIsVisible] = useState<boolean>(true);
@@ -277,10 +277,10 @@ export default function AdminBatchesPage() {
   const openEditModal = (batch: any) => {
     setEditingBatch({ ...batch });
     setEditName(batch.name || '');
-    setEditPrice(batch.price);
+    setEditPrice(String(batch.price ?? 150));
     setEditAge(batch.age || '8–10 months');
     setEditHeight(batch.height || 'Approx. 2–3 ft');
-    setEditTotalQuantity(batch.totalQuantity);
+    setEditTotalQuantity(String(batch.totalQuantity ?? 500));
     setEditDescription(batch.description || '');
     setEditIsVisible(batch.isVisible !== false);
     setEditImages(batch.images && Array.isArray(batch.images) ? [...batch.images] : []);
@@ -289,6 +289,17 @@ export default function AdminBatchesPage() {
 
   const handleSaveEdit = async () => {
     if (!editingBatch) return;
+    const parsedPrice = parseInt(editPrice, 10);
+    const parsedTotalQuantity = parseInt(editTotalQuantity, 10);
+    if (isNaN(parsedPrice) || parsedPrice < 0) {
+      alert('Please enter a valid price per sapling.');
+      return;
+    }
+    if (isNaN(parsedTotalQuantity) || parsedTotalQuantity < 0) {
+      alert('Please enter a valid total quantity.');
+      return;
+    }
+
     setSavingEdit(true);
 
     try {
@@ -298,10 +309,10 @@ export default function AdminBatchesPage() {
         body: JSON.stringify({
           batchCode: editingBatch.batchCode,
           name: editName.trim() || editingBatch.name,
-          price: editPrice,
+          price: parsedPrice,
           age: editAge.trim() || '8–10 months',
           height: editHeight.startsWith('Approx.') ? editHeight : `Approx. ${editHeight}`,
-          totalQuantity: editTotalQuantity,
+          totalQuantity: parsedTotalQuantity,
           description: editDescription,
           isVisible: editIsVisible,
           images: editImages
@@ -313,7 +324,8 @@ export default function AdminBatchesPage() {
         setEditingBatch(null);
         fetchInitialData();
       } else {
-        throw new Error('Failed to update');
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to update');
       }
     } catch (e: any) {
       alert('Error saving batch: ' + e.message);
@@ -1065,18 +1077,20 @@ export default function AdminBatchesPage() {
                     <label className="form-label fw-bold small text-secondary">Price per Sapling (₹)</label>
                     <input
                       type="number"
+                      min={0}
                       className="form-control"
                       value={editPrice}
-                      onChange={(e) => setEditPrice(parseInt(e.target.value, 10) || 150)}
+                      onChange={(e) => setEditPrice(e.target.value)}
                     />
                   </div>
                   <div className="col-md-6">
                     <label className="form-label fw-bold small text-secondary">Total Quantity</label>
                     <input
                       type="number"
+                      min={0}
                       className="form-control"
                       value={editTotalQuantity}
-                      onChange={(e) => setEditTotalQuantity(parseInt(e.target.value, 10) || 500)}
+                      onChange={(e) => setEditTotalQuantity(e.target.value)}
                     />
                   </div>
                   <div className="col-md-6">

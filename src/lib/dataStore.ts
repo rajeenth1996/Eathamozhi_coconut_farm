@@ -1142,7 +1142,54 @@ export const DataStore = {
 
     if (updatedFields.isVisible !== undefined) target.isVisible = Boolean(updatedFields.isVisible);
     if (updatedFields.price !== undefined) target.price = Number(updatedFields.price);
-    if (updatedFields.totalQuantity !== undefined) target.totalQuantity = Number(updatedFields.totalQuantity);
+    if (updatedFields.totalQuantity !== undefined) {
+      const newTotal = Math.max(0, Math.round(Number(updatedFields.totalQuantity)));
+      const bInventory = batchInventory.filter(
+        i => i.batchCode.toLowerCase() === target.batchCode.toLowerCase() || i.batchId === target.id
+      );
+
+      if (bInventory.length > 0) {
+        const consumedPerInv = bInventory.map(inv =>
+          (Number(inv.dispatchedQuantity) || 0) +
+          (Number(inv.bookedQuantity) || 0) +
+          (Number(inv.damagedQuantity) || 0) +
+          (Number(inv.rejectedQuantity) || 0)
+        );
+        const minRequired = consumedPerInv.reduce((sum, c) => sum + c, 0);
+        if (newTotal < minRequired) {
+          throw new Error(
+            `Cannot set total quantity (${newTotal}) below already allocated/consumed seedlings (${minRequired}).`
+          );
+        }
+
+        const surplus = newTotal - minRequired;
+        const currentSurplusTotal = bInventory.reduce(
+          (sum, inv, idx) => sum + Math.max(0, (Number(inv.seedlingsProduced) || 0) - consumedPerInv[idx]),
+          0
+        );
+
+        let allocatedSurplus = 0;
+        bInventory.forEach((inv, idx) => {
+          const consumed = consumedPerInv[idx];
+          let itemSurplus = 0;
+          if (idx === bInventory.length - 1) {
+            itemSurplus = surplus - allocatedSurplus;
+          } else if (currentSurplusTotal > 0) {
+            const currentItemSurplus = Math.max(0, (Number(inv.seedlingsProduced) || 0) - consumed);
+            itemSurplus = Math.floor((surplus * currentItemSurplus) / currentSurplusTotal);
+          } else {
+            itemSurplus = Math.floor(surplus / bInventory.length);
+          }
+          allocatedSurplus += itemSurplus;
+          inv.seedlingsProduced = consumed + itemSurplus;
+          inv.availableQuantity = itemSurplus;
+          inv.updatedAt = new Date().toISOString();
+        });
+      }
+
+      target.totalQuantity = newTotal;
+      target.totalSeedlings = newTotal;
+    }
     if (updatedFields.harvestDate) target.harvestDate = updatedFields.harvestDate;
     if (updatedFields.seededDate) target.seededDate = updatedFields.seededDate;
     if (updatedFields.age !== undefined) target.age = updatedFields.age;
@@ -1176,6 +1223,14 @@ export const DataStore = {
           { $set: updated },
           { new: true }
         );
+        if (updatedFields.totalQuantity !== undefined) {
+          const bInvs = batchInventory.filter(
+            i => i.batchCode.toLowerCase() === updated.batchCode.toLowerCase() || i.batchId === updated.id
+          );
+          for (const inv of bInvs) {
+            await BatchInventoryModel.findOneAndUpdate({ id: inv.id }, { $set: inv }, { new: true });
+          }
+        }
         lastMongoSyncTime = 0;
       }
     } catch (err) {
