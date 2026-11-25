@@ -102,19 +102,22 @@ export default async function BatchDetailPage({
                   <div className="d-flex flex-column gap-3 mb-2">
                     {motherPalms.map(palm => (
                       <div key={palm.code} className="p-3 bg-light rounded-3 border">
-                        <div className="d-flex justify-content-between align-items-center mb-1">
+                        <div className="d-flex justify-content-between align-items-center mb-1 flex-wrap gap-1">
                           <strong className="text-dark">
                             <i className="bi bi-tree-fill text-success me-1"></i>
-                            {palm.code} &mdash; {palm.name}
+                            {palm.motherTreeCode || palm.code} &mdash; {palm.name}
                           </strong>
-                          <span className="badge bg-warning text-dark">{formatApproximateAge(palm.age)}</span>
+                          <div className="d-flex gap-1 align-items-center">
+                            <span className="badge bg-dark text-white font-monospace">Farm ID: {palm.farmCode}</span>
+                            <span className="badge bg-warning text-dark">{formatApproximateAge(palm.age)}</span>
+                          </div>
                         </div>
                         <small className="text-muted d-block mb-1">
                           <span className="text-success fw-semibold">{palm.healthStatus}</span>
                         </small>
                         <p className="text-secondary extra-small mb-2">{palm.yieldHistory}</p>
                         <Link href={`/parent-palm/${palm.code}`} className="btn btn-outline-success btn-sm fw-bold extra-small">
-                          View {palm.code} Full Profile <i className="bi bi-arrow-right ms-1"></i>
+                          View {palm.motherTreeCode || palm.code} Full Profile <i className="bi bi-arrow-right ms-1"></i>
                         </Link>
                       </div>
                     ))}
@@ -139,6 +142,14 @@ export default async function BatchDetailPage({
                       <td className="fw-bold text-end py-2">
                         <span className="badge bg-dark text-white font-monospace px-2 py-1 fw-bold border border-secondary">
                           {batch.batchCode}
+                        </span>
+                      </td>
+                    </tr>
+                    <tr className="border-bottom">
+                      <td className="text-muted py-2">Farm ID</td>
+                      <td className="fw-bold text-end py-2">
+                        <span className="badge bg-success-subtle text-success border border-success font-monospace px-2 py-1">
+                          {Array.from(new Set((batch.sources && batch.sources.length > 0) ? batch.sources.map((s: any) => s.farmCode) : [batch.primaryFarmCode || 'ETH-RA-F001'])).join(', ')}
                         </span>
                       </td>
                     </tr>

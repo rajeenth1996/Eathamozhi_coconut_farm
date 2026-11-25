@@ -69,20 +69,26 @@ export default async function ParentPalmDetailPage({
                 <p className="text-secondary">{palm.description}</p>
 
                 <div className="row g-3 mb-4">
-                  <div className={palm.treeCount && palm.treeCount > 1 ? "col-4" : "col-6"}>
+                  <div className={palm.treeCount && palm.treeCount > 1 ? "col-6 col-md-3" : "col-4"}>
                     <div className="p-3 bg-light rounded-3 border h-100">
                       <small className="text-muted d-block text-uppercase">Tree / Group ID</small>
-                      <strong className="text-dark fs-6">{palm.code}</strong>
+                      <strong className="text-dark fs-6 font-monospace">{palm.motherTreeCode || palm.code}</strong>
                     </div>
                   </div>
-                  <div className={palm.treeCount && palm.treeCount > 1 ? "col-4" : "col-6"}>
+                  <div className={palm.treeCount && palm.treeCount > 1 ? "col-6 col-md-3" : "col-4"}>
+                    <div className="p-3 bg-light rounded-3 border h-100">
+                      <small className="text-muted d-block text-uppercase">Farm ID</small>
+                      <strong className="text-success fs-6 font-monospace">{palm.farmCode}</strong>
+                    </div>
+                  </div>
+                  <div className={palm.treeCount && palm.treeCount > 1 ? "col-6 col-md-3" : "col-4"}>
                     <div className="p-3 bg-light rounded-3 border h-100">
                       <small className="text-muted d-block text-uppercase">Approximate Age</small>
                       <strong className="text-dark fs-6">{formatApproximateAge(palm.age)}</strong>
                     </div>
                   </div>
                   {palm.treeCount && palm.treeCount > 1 && (
-                    <div className="col-4">
+                    <div className="col-6 col-md-3">
                       <div className="p-3 bg-light rounded-3 border h-100">
                         <small className="text-muted d-block text-uppercase">Grove Size</small>
                         <strong className="text-success fs-6"><i className="bi bi-tree-fill me-1"></i>{palm.treeCount} Trees</strong>
@@ -124,7 +130,7 @@ export default async function ParentPalmDetailPage({
                       <i className="bi bi-youtube me-1"></i> MOTHER TREE VIDEO TOUR
                     </span>
                     <h4 className="fw-bold text-dark mb-0">Watch Mother Tree Video Showcase</h4>
-                    <small className="text-secondary">Watch complete video footage of Mother Palm {palm.code} growing at {palm.farmName || 'our grove'}.</small>
+                    <small className="text-secondary">Watch complete video footage of Mother Palm {palm.motherTreeCode || palm.code} (Farm ID: {palm.farmCode}).</small>
                   </div>
                   <a 
                     href={`https://www.youtube.com/watch?v=${videoId}`} 

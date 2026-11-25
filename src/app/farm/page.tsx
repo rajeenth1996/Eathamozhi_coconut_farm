@@ -142,7 +142,10 @@ export default async function MotherTreesPage() {
 
                         {/* Overlays */}
                         <div className="position-absolute top-0 start-0 m-2 d-flex gap-1 flex-wrap" style={{ pointerEvents: 'none', zIndex: 3 }}>
-                          <span className="badge bg-dark bg-opacity-80 fw-bold">{palm.code}</span>
+                          <span className="badge bg-dark bg-opacity-80 fw-bold font-monospace">{palm.motherTreeCode || palm.code}</span>
+                          {palm.farmCode && (
+                            <span className="badge bg-secondary fw-bold font-monospace">Farm: {palm.farmCode}</span>
+                          )}
                           {palm.treeCount && palm.treeCount > 1 && (
                             <span className="badge bg-success fw-bold">{palm.treeCount} Trees</span>
                           )}

@@ -99,10 +99,17 @@ export default function BatchesClientList({ initialBatches }: BatchesClientListP
 
                 <div className="card-body p-4 d-flex flex-column justify-content-between">
                   <div>
-                    <div className="d-flex justify-content-between align-items-center mb-2">
-                      <span className="badge bg-dark text-white font-monospace fw-bold px-2 py-1 shadow-sm border border-secondary">
-                        Batch ID: {b.batchCode}
-                      </span>
+                    <div className="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-1">
+                      <div className="d-flex align-items-center gap-1 flex-wrap">
+                        <span className="badge bg-dark text-white font-monospace fw-bold px-2 py-1 shadow-sm border border-secondary">
+                          Batch ID: {b.batchCode}
+                        </span>
+                        {b.primaryFarmCode && (
+                          <span className="badge bg-success-subtle text-success border border-success font-monospace px-2 py-1">
+                            Farm ID: {b.primaryFarmCode}
+                          </span>
+                        )}
+                      </div>
                       <span className="text-muted extra-small">
                         {(() => {
                           const treeCodes = (b.parentPalmCodes && b.parentPalmCodes.length > 0) ? b.parentPalmCodes : [b.parentPalmCode];
