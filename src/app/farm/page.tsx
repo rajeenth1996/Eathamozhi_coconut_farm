@@ -140,25 +140,39 @@ export default async function MotherTreesPage() {
                           videoPosition={palm.youtubeVideoPosition || 1}
                         />
 
-                        {/* Overlays */}
-                        <div className="position-absolute top-0 start-0 m-2 d-flex gap-1 flex-wrap" style={{ pointerEvents: 'none', zIndex: 3 }}>
-                          <span className="badge bg-dark bg-opacity-80 fw-bold font-monospace">{palm.motherTreeCode || palm.code}</span>
-                          {palm.farmCode && (
-                            <span className="badge bg-secondary fw-bold font-monospace">Farm: {palm.farmCode}</span>
-                          )}
-                          {palm.treeCount && palm.treeCount > 1 && (
-                            <span className="badge bg-success fw-bold">{palm.treeCount} Trees</span>
-                          )}
-                          <span className="badge bg-warning text-dark fw-bold">{formatApproximateAge(palm.age)}</span>
+                        {/* Coordinated Top Header Badges */}
+                        <div 
+                          className="position-absolute top-0 start-0 end-0 m-2 d-flex justify-content-between align-items-start gap-1" 
+                          style={{ pointerEvents: 'none', zIndex: 4 }}
+                        >
+                          <div className="d-flex gap-1 flex-wrap align-items-center" style={{ maxWidth: 'calc(100% - 100px)' }}>
+                            <span className="badge bg-dark bg-opacity-85 fw-bold font-monospace shadow-sm">
+                              {palm.motherTreeCode || palm.code}
+                            </span>
+                            {palm.farmCode && (
+                              <span className="badge bg-secondary bg-opacity-90 fw-bold font-monospace shadow-sm">
+                                Farm: {palm.farmCode}
+                              </span>
+                            )}
+                            {palm.treeCount && palm.treeCount > 1 && (
+                              <span className="badge bg-success fw-bold shadow-sm">
+                                {palm.treeCount} Trees
+                              </span>
+                            )}
+                            <span className="badge bg-warning text-dark fw-bold shadow-sm">
+                              {formatApproximateAge(palm.age)}
+                            </span>
+                          </div>
+                          <div className="flex-shrink-0">
+                            <span className={`badge bg-${healthColor} shadow-sm px-2 py-1`}>
+                              <i className="bi bi-heart-pulse-fill me-1"></i>{palm.healthStatus.split(' ')[0]}
+                            </span>
+                          </div>
                         </div>
-                        <div className="position-absolute top-0 end-0 m-2" style={{ pointerEvents: 'none', zIndex: 3 }}>
-                          <span className={`badge bg-${healthColor}`}>
-                            <i className="bi bi-heart-pulse-fill me-1"></i>{palm.healthStatus.split(' ')[0]}
-                          </span>
-                        </div>
+
                         {totalAvailable > 0 && (
-                          <div className="position-absolute bottom-0 start-0 m-2" style={{ pointerEvents: 'none', zIndex: 3 }}>
-                            <span className="badge bg-success bg-opacity-90 fw-bold">
+                          <div className="position-absolute bottom-0 start-0 m-2" style={{ pointerEvents: 'none', zIndex: 4 }}>
+                            <span className="badge bg-success bg-opacity-95 fw-bold shadow-sm">
                               <i className="bi bi-check-circle-fill me-1"></i>{totalAvailable} Saplings Available
                             </span>
                           </div>

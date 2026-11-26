@@ -48,9 +48,7 @@ export default function AdminYouTubePage() {
       const data = await res.json();
       if (Array.isArray(data)) {
         setVideos(data);
-        if (data.length > 0) {
-          setNewOrder(data.length + 1);
-        }
+        setNewOrder(data.length + 1);
       }
     } catch (err) {
       console.error('Failed to fetch YouTube videos:', err);
@@ -62,6 +60,36 @@ export default function AdminYouTubePage() {
   useEffect(() => {
     fetchVideos();
   }, []);
+
+  const handleMoveOrder = async (video: YouTubeVideoItem, direction: 'up' | 'down') => {
+    const currentIndex = videos.findIndex(v => v.id === video.id);
+    if (currentIndex === -1) return;
+    const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+    if (targetIndex < 0 || targetIndex >= videos.length) return;
+
+    const reordered = [...videos];
+    const [moved] = reordered.splice(currentIndex, 1);
+    reordered.splice(targetIndex, 0, moved);
+
+    const updatedWithOrder = reordered.map((v, idx) => ({ ...v, order: idx + 1 }));
+    setVideos(updatedWithOrder);
+
+    try {
+      const res = await fetch('/api/youtube', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderedIds: updatedWithOrder.map(v => v.id) })
+      });
+      if (!res.ok) throw new Error('Failed to save order');
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setVideos(data);
+      }
+    } catch (err: any) {
+      alert(`⚠️ Failed to save reordered videos: ${err.message}`);
+      fetchVideos();
+    }
+  };
 
   const handleCreateVideo = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,7 +106,7 @@ export default function AdminYouTubePage() {
         body: JSON.stringify({
           title: newTitle.trim(),
           url: newUrl.trim(),
-          order: Number(newOrder) || 1,
+          order: Number(newOrder) || (videos.length + 1),
           isVisible: newIsVisible
         })
       });
@@ -91,7 +119,6 @@ export default function AdminYouTubePage() {
       alert('✅ YouTube video added successfully!');
       setNewTitle('');
       setNewUrl('');
-      setNewOrder(videos.length + 2);
       fetchVideos();
     } catch (err: any) {
       alert(`⚠️ ${err.message}`);
@@ -377,9 +404,35 @@ export default function AdminYouTubePage() {
                             >
                               {video.url} <i className="bi bi-box-arrow-up-right extra-small"></i>
                             </a>
-                          </td>
-                          <td className="text-center font-monospace fw-bold">{video.order}</td>
                           <td className="text-center">
+                            <div className="d-inline-flex align-items-center gap-1 bg-light px-2 py-1 rounded-pill border shadow-sm">
+                              <span className="badge bg-danger text-white font-monospace fw-bold px-2 py-1">
+                                #{video.order}
+                              </span>
+                              <div className="btn-group-vertical" style={{ height: '24px' }}>
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-outline-secondary p-0 d-flex align-items-center justify-content-center"
+                                  style={{ width: '18px', height: '11px', fontSize: '9px', lineHeight: '1' }}
+                                  disabled={videos.findIndex(v => v.id === video.id) === 0}
+                                  onClick={() => handleMoveOrder(video, 'up')}
+                                  title="Move Up (Higher Rank)"
+                                >
+                                  <i className="bi bi-chevron-up"></i>
+                                </button>
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-outline-secondary p-0 d-flex align-items-center justify-content-center"
+                                  style={{ width: '18px', height: '11px', fontSize: '9px', lineHeight: '1' }}
+                                  disabled={videos.findIndex(v => v.id === video.id) === videos.length - 1}
+                                  onClick={() => handleMoveOrder(video, 'down')}
+                                  title="Move Down (Lower Rank)"
+                                >
+                                  <i className="bi bi-chevron-down"></i>
+                                </button>
+                              </div>
+                            </div>
+                          </td>
                             <div className="form-check form-switch d-inline-block">
                               <input
                                 className="form-check-input cursor-pointer"

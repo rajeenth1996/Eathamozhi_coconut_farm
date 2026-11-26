@@ -29,3 +29,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: err.message || 'Failed to add YouTube video' }, { status: 500 });
   }
 }
+
+export async function PUT(request: Request) {
+  try {
+    const body = await request.json();
+    if (Array.isArray(body.orderedIds)) {
+      const reordered = await DataStore.reorderYouTubeVideosAsync(body.orderedIds);
+      return NextResponse.json(reordered);
+    }
+    return NextResponse.json({ error: 'orderedIds array is required' }, { status: 400 });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || 'Failed to reorder YouTube videos' }, { status: 500 });
+  }
+}

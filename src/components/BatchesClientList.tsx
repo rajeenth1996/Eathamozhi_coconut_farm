@@ -78,7 +78,7 @@ export default function BatchesClientList({ initialBatches }: BatchesClientListP
               <div className="card h-100 border-0 shadow-sm rounded-4 overflow-hidden position-relative hover-lift bg-white">
                 
                 {/* Status Badge Ribbon */}
-                <div className="position-absolute top-0 end-0 m-3 z-1" style={{ pointerEvents: 'none' }}>
+                <div className="position-absolute top-0 end-0 m-3 z-2" style={{ pointerEvents: 'none' }}>
                   {b.status === 'AVAILABLE' && <span className="badge bg-success shadow-sm px-3 py-2"><i className="bi bi-check-circle-fill me-1"></i> {isTamil ? 'கிடைக்கிறது' : 'AVAILABLE'}</span>}
                   {b.status === 'LIMITED' && <span className="badge bg-warning text-dark shadow-sm px-3 py-2"><i className="bi bi-exclamation-triangle-fill me-1"></i> {isTamil ? 'குறைந்த இருப்பு' : 'LIMITED'}</span>}
                   {b.status === 'COMING_SOON' && <span className="badge bg-info text-dark shadow-sm px-3 py-2"><i className="bi bi-clock-history me-1"></i> {isTamil ? 'வரவிருக்கிறது' : 'UPCOMING'}</span>}

@@ -289,7 +289,7 @@ export default function AdminSeedlingInventoryPage() {
                 >
                   <option value="ALL">All Registered Farms</option>
                   {farms.map((f) => (
-                    <option key={f.farmCode} value={f.farmCode}>
+                    <option key={f.farmCode || f.id} value={f.farmCode}>
                       {f.farmCode} ({f.farmName})
                     </option>
                   ))}
@@ -302,11 +302,14 @@ export default function AdminSeedlingInventoryPage() {
                   onChange={(e) => setSelectedBatch(e.target.value)}
                 >
                   <option value="ALL">All Batches</option>
-                  {batches.map((b) => (
-                    <option key={b.code || b.batchId} value={b.code || b.batchId}>
-                      {b.code || b.batchId}
-                    </option>
-                  ))}
+                  {batches.map((b) => {
+                    const batchCode = b.batchCode || b.code || b.batchId || b.id;
+                    return (
+                      <option key={b.id || batchCode} value={batchCode}>
+                        {batchCode}{b.name ? ` - ${b.name}` : ''}
+                      </option>
+                    );
+                  })}
                 </select>
               </div>
               <div className="col-md-1 d-flex align-items-center">

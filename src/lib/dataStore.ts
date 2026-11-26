@@ -2957,7 +2957,25 @@ export const DataStore = {
   // ─── YouTube Video Module ──────────────────────────────────────────────────
   getYouTubeVideos: (): YouTubeVideo[] => {
     loadFromDb();
-    return youtubeVideos.slice().sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0));
+    const sorted = youtubeVideos.slice().sort((a, b) => {
+      const orderDiff = (Number(a.order) || 0) - (Number(b.order) || 0);
+      if (orderDiff !== 0) return orderDiff;
+      return new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
+    });
+    let needsNormalization = false;
+    for (let i = 0; i < sorted.length; i++) {
+      if (sorted[i].order !== i + 1) {
+        needsNormalization = true;
+        break;
+      }
+    }
+    if (needsNormalization && sorted.length > 0) {
+      sorted.forEach((v, idx) => {
+        v.order = idx + 1;
+      });
+      saveToDb();
+    }
+    return sorted;
   },
 
   getYouTubeVideosAsync: async (): Promise<YouTubeVideo[]> => {
@@ -2966,21 +2984,73 @@ export const DataStore = {
     return DataStore.getYouTubeVideos();
   },
 
+  reorderYouTubeVideos: (orderedIds: string[]): YouTubeVideo[] => {
+    loadFromDb();
+    orderedIds.forEach((id, index) => {
+      const v = youtubeVideos.find(x => x.id === id);
+      if (v) {
+        v.order = index + 1;
+        v.updatedAt = new Date().toISOString();
+      }
+    });
+    let nextRank = orderedIds.length + 1;
+    youtubeVideos.forEach(v => {
+      if (!orderedIds.includes(v.id)) {
+        v.order = nextRank++;
+        v.updatedAt = new Date().toISOString();
+      }
+    });
+    youtubeVideos.sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0));
+    saveToDb();
+    return youtubeVideos.slice();
+  },
+
+  reorderYouTubeVideosAsync: async (orderedIds: string[]): Promise<YouTubeVideo[]> => {
+    loadFromDb();
+    await syncFromMongo();
+    const updated = DataStore.reorderYouTubeVideos(orderedIds);
+    try {
+      const conn = await connectToDatabase();
+      if (conn) {
+        for (const v of updated) {
+          await YouTubeVideoModel.findOneAndUpdate(
+            { id: v.id },
+            { $set: { order: v.order, updatedAt: v.updatedAt } },
+            { returnDocument: 'after' }
+          );
+        }
+        lastMongoSyncTime = 0;
+      }
+    } catch (err) {
+      console.error('Failed to update reordered YouTube videos in Mongo:', err);
+    }
+    return updated;
+  },
+
   addYouTubeVideo: (data: Partial<YouTubeVideo>): YouTubeVideo => {
     loadFromDb();
     const cleanUrl = data.url?.trim() || '';
     const vId = extractYouTubeVideoId(cleanUrl) || undefined;
+    const requestedOrder = Math.max(1, Number(data.order) || (youtubeVideos.length + 1));
     const created: YouTubeVideo = {
       id: `yt-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
       title: data.title?.trim() || 'Eathamozhi Coconut Farm Video',
       url: cleanUrl,
       videoId: vId,
-      order: Number(data.order) || (youtubeVideos.length + 1),
+      order: requestedOrder,
       isVisible: data.isVisible !== false,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
     youtubeVideos.push(created);
+    youtubeVideos.sort((a, b) => {
+      const diff = (Number(a.order) || 0) - (Number(b.order) || 0);
+      if (diff !== 0) return diff;
+      return new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
+    });
+    youtubeVideos.forEach((v, idx) => {
+      v.order = idx + 1;
+    });
     saveToDb();
     return created;
   },
@@ -3010,7 +3080,22 @@ export const DataStore = {
       item.url = data.url.trim();
       item.videoId = extractYouTubeVideoId(item.url) || undefined;
     }
-    if (data.order !== undefined) item.order = Number(data.order);
+    if (data.order !== undefined) {
+      const targetOrder = Math.max(1, Number(data.order) || 1);
+      item.order = targetOrder;
+      youtubeVideos.sort((a, b) => {
+        if (a.id === id && b.id !== id) {
+          return a.order <= b.order ? -1 : 1;
+        }
+        if (b.id === id && a.id !== id) {
+          return b.order <= a.order ? 1 : -1;
+        }
+        return (Number(a.order) || 0) - (Number(b.order) || 0);
+      });
+      youtubeVideos.forEach((v, idx) => {
+        v.order = idx + 1;
+      });
+    }
     if (data.isVisible !== undefined) item.isVisible = Boolean(data.isVisible);
     item.updatedAt = new Date().toISOString();
     saveToDb();
@@ -3022,7 +3107,7 @@ export const DataStore = {
     try {
       const conn = await connectToDatabase();
       if (conn && updated) {
-        await YouTubeVideoModel.findOneAndUpdate({ id }, { $set: updated }, { new: true });
+        await YouTubeVideoModel.findOneAndUpdate({ id }, { $set: updated }, { returnDocument: 'after' });
         lastMongoSyncTime = 0;
       }
     } catch (err) {

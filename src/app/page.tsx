@@ -209,14 +209,17 @@ export default async function Home() {
                         videoId={palm.youtubeVideoId}
                         videoPosition={palm.youtubeVideoPosition || 1}
                       />
-                      <div className="position-absolute top-0 start-0 m-2" style={{ pointerEvents: 'none', zIndex: 3 }}>
-                        <span className="badge bg-dark bg-opacity-75">{palm.code}</span>
-                      </div>
-                      <div className="position-absolute top-0 end-0 m-2 d-flex gap-1" style={{ pointerEvents: 'none', zIndex: 3 }}>
-                        {palm.treeCount && palm.treeCount > 1 && (
-                          <span className="badge bg-success fw-bold">{palm.treeCount} Trees</span>
-                        )}
-                        <span className="badge bg-warning text-dark fw-bold">{formatApproximateAge(palm.age)}</span>
+                      <div 
+                        className="position-absolute top-0 start-0 end-0 m-2 d-flex justify-content-between align-items-start gap-1" 
+                        style={{ pointerEvents: 'none', zIndex: 4 }}
+                      >
+                        <span className="badge bg-dark bg-opacity-85 font-monospace shadow-sm">{palm.code}</span>
+                        <div className="d-flex gap-1 flex-wrap justify-content-end">
+                          {palm.treeCount && palm.treeCount > 1 && (
+                            <span className="badge bg-success fw-bold shadow-sm">{palm.treeCount} Trees</span>
+                          )}
+                          <span className="badge bg-warning text-dark fw-bold shadow-sm">{formatApproximateAge(palm.age)}</span>
+                        </div>
                       </div>
                     </div>
 

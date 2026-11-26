@@ -18,6 +18,8 @@ export interface ImageCarouselProps {
   videoId?: string;
   videoPosition?: number; // 1-based position in carousel
   initialModalOpen?: boolean;
+  fullSizePosition?: 'top-right' | 'bottom-right';
+  showSlideBadge?: boolean;
 }
 
 interface CarouselSlide {
@@ -40,7 +42,9 @@ export default function ImageCarousel({
   videoUrl,
   videoId,
   videoPosition = 1,
-  initialModalOpen
+  initialModalOpen,
+  fullSizePosition = 'bottom-right',
+  showSlideBadge
 }: ImageCarouselProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   // If onClose is provided (e.g. from admin table preview), automatically open the full size viewer
@@ -221,24 +225,27 @@ export default function ImageCarousel({
               )}
 
               {/* Slide Type & Counter Badge */}
-              <div className="position-absolute top-0 start-0 m-2 z-2" style={{ pointerEvents: 'none' }}>
-                {currentSlide.type === 'video' ? (
-                  <span className="badge bg-danger text-white px-2 py-1 rounded-pill extra-small border border-danger shadow-sm">
-                    <i className="bi bi-youtube me-1"></i> Video {activeIndex + 1}/{slides.length}
-                  </span>
-                ) : (
-                  <span className="badge bg-dark bg-opacity-80 text-white px-2 py-1 rounded-pill extra-small border border-secondary border-opacity-50">
-                    <i className="bi bi-camera-fill me-1 text-warning"></i> {activeIndex + 1}/{slides.length}
-                  </span>
-                )}
-              </div>
+              {(showSlideBadge !== undefined ? showSlideBadge : (showThumbnails && (slides.length > 1 || currentSlide.type === 'video'))) && (
+                <div className="position-absolute top-0 start-0 m-2 z-2" style={{ pointerEvents: 'none' }}>
+                  {currentSlide.type === 'video' ? (
+                    <span className="badge bg-danger text-white px-2 py-1 rounded-pill extra-small border border-danger shadow-sm">
+                      <i className="bi bi-youtube me-1"></i> Video {activeIndex + 1}/{slides.length}
+                    </span>
+                  ) : (
+                    <span className="badge bg-dark bg-opacity-80 text-white px-2 py-1 rounded-pill extra-small border border-secondary border-opacity-50">
+                      <i className="bi bi-camera-fill me-1 text-warning"></i> {activeIndex + 1}/{slides.length}
+                    </span>
+                  )}
+                </div>
+              )}
 
               {/* Full Size Pop-up Trigger Button */}
               <div 
-                className="position-absolute top-0 end-0 m-2 z-2 hover-btn-fade"
+                className={`position-absolute ${
+                  fullSizePosition === 'top-right' ? 'top-0 end-0' : 'bottom-0 end-0'
+                } m-2 z-3 hover-btn-fade`}
                 style={{ 
-                  opacity: 0.85, 
-                  transform: 'translateY(-2px)', 
+                  opacity: 0.9, 
                   transition: 'all 0.2s ease', 
                   pointerEvents: 'auto' 
                 }}
