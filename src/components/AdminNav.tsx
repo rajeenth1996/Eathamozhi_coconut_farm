@@ -14,6 +14,8 @@ export default function AdminNav() {
     { href: '/admin/germination', label: 'Germination Tracking', icon: 'bi-flower1' },
     { href: '/admin/seedling-inventory', label: 'Seedling Inventory', icon: 'bi-box-seam-fill' },
     { href: '/admin/orders', label: 'Customer Orders', icon: 'bi-bag-check-fill' },
+    { href: '/admin/reviews', label: 'Reviews', icon: 'bi-star-fill' },
+    { href: '/admin/enquiries', label: 'Enquiries', icon: 'bi-chat-dots-fill' },
     { href: '/admin/youtube', label: 'YouTube Videos', icon: 'bi-youtube' },
     { href: '/admin/analytics', label: 'Website Analytics', icon: 'bi-graph-up-arrow' },
     { href: '/admin/traceability', label: 'Traceability & Reports', icon: 'bi-diagram-3-fill' },

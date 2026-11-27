@@ -14,7 +14,9 @@ import {
   SiteSettingsModel,
   BatchViewModel,
   YouTubeVideoModel,
-  InstagramPostModel
+  InstagramPostModel,
+  PageViewModel,
+  VisitorJourneyModel
 } from '@/lib/models';
 import {
   Farm,
@@ -284,7 +286,9 @@ function loadFromDb() {
   }
 }
 
-function saveToDb() {
+let lastSavedJson = '';
+
+function saveToDb(skipDevSrcWrite = false) {
   if (!fsModule || !pathModule) return;
 
   try {
@@ -307,6 +311,19 @@ function saveToDb() {
       siteSettings
     };
     const jsonStr = JSON.stringify(payload, null, 2);
+    if (jsonStr === lastSavedJson) return;
+    lastSavedJson = jsonStr;
+
+    // In dev mode with MongoDB, NEVER write src/data/db.json — that file is watched by
+    // Turbopack and any write triggers [Fast Refresh] rebuilding → page reload loop.
+    // Always use TMP_DB_FILE (/tmp) in dev+mongo so the loop is impossible.
+    const isDev = process.env.NODE_ENV !== 'production';
+    if (isDev && process.env.MONGODB_URI) {
+      if (TMP_DB_FILE) {
+        try { fsModule.writeFileSync(TMP_DB_FILE, jsonStr, 'utf-8'); } catch {}
+      }
+      return;
+    }
 
     let saved = false;
     if (DB_FILE) {
@@ -332,15 +349,14 @@ function syncDiskImages() {
   return;
 }
 
-// Initial hydration from DB
+// Initial hydration from DB (read-only on boot so dev server never triggers an immediate recompile)
 if (typeof window === 'undefined') {
   loadFromDb();
-  saveToDb();
 }
 
 let mongoSyncPromise: Promise<void> | null = null;
 let lastMongoSyncTime = 0;
-const MONGO_SYNC_TTL = 3000;
+const MONGO_SYNC_TTL = 15000;
 
 async function syncFromMongo(force = false): Promise<void> {
   const now = Date.now();
@@ -516,7 +532,7 @@ async function syncFromMongo(force = false): Promise<void> {
 
       lastMongoSyncTime = Date.now();
       reconcileInventoryLedger();
-      saveToDb();
+      saveToDb(true);
     } catch (err) {
       console.warn('MongoDB syncFromMongo warning:', err);
     } finally {
@@ -525,6 +541,45 @@ async function syncFromMongo(force = false): Promise<void> {
   })();
 
   return mongoSyncPromise;
+}
+
+async function syncAnalyticsFromMongo(): Promise<void> {
+  try {
+    const conn = await connectToDatabase();
+    if (!conn) return;
+    const [mPageViews, mVisitorJourneys] = await Promise.all([
+      PageViewModel.find({}).sort({ timestamp: -1 }).limit(2000).lean(),
+      VisitorJourneyModel.find({}).sort({ lastActiveAt: -1 }).limit(500).lean()
+    ]);
+    if (Array.isArray(mPageViews) && mPageViews.length > 0) {
+      pageViews = mPageViews.map((pv: any) => ({
+        id: pv.id || `pv-${pv._id}`,
+        sessionId: pv.sessionId || 'anonymous',
+        path: pv.path || '/',
+        title: pv.title,
+        referrer: pv.referrer,
+        referrerSource: pv.referrerSource || 'Direct / Bookmark',
+        device: pv.device || 'desktop',
+        screenSize: pv.screenSize,
+        timestamp: pv.timestamp || new Date().toISOString()
+      }));
+    }
+    if (Array.isArray(mVisitorJourneys) && mVisitorJourneys.length > 0) {
+      visitorJourneys = mVisitorJourneys.map((vj: any) => ({
+        sessionId: vj.sessionId,
+        startedAt: vj.startedAt || vj.lastActiveAt || new Date().toISOString(),
+        lastActiveAt: vj.lastActiveAt || vj.startedAt || new Date().toISOString(),
+        device: vj.device || 'desktop',
+        referrerSource: vj.referrerSource || 'Direct / Bookmark',
+        pathCount: Number(vj.pathCount) || (Array.isArray(vj.steps) ? vj.steps.length : 1),
+        steps: Array.isArray(vj.steps) ? vj.steps : [],
+        convertedToOrder: Boolean(vj.convertedToOrder),
+        orderId: vj.orderId
+      }));
+    }
+  } catch (err) {
+    console.warn('MongoDB syncAnalyticsFromMongo warning:', err);
+  }
 }
 
 export const DataStore = {
@@ -2867,20 +2922,71 @@ export const DataStore = {
 
   recordPageView: (event: any): PageViewEvent => {
     loadFromDb();
+    const nowIso = event.timestamp || new Date().toISOString();
+    const cleanPath = event.path || '/';
+    const sessionId = event.sessionId || 'anonymous';
     const created: PageViewEvent = {
       id: `pv-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-      sessionId: event.sessionId || 'anonymous',
-      path: event.path || '/',
+      sessionId,
+      path: cleanPath,
       title: event.title,
       referrer: event.referrer,
       referrerSource: event.referrerSource || 'Direct / Bookmark',
       device: event.device || 'desktop',
       screenSize: event.screenSize,
-      timestamp: event.timestamp || new Date().toISOString()
+      timestamp: nowIso
     };
     pageViews.unshift(created);
-    saveToDb();
+    if (pageViews.length > 2000) {
+      pageViews.length = 2000;
+    }
+
+    // Maintain VisitorJourney in memory & db.json
+    const confirmMatch = cleanPath.match(/^\/confirmation\/([^/?#]+)/i);
+    const derivedOrderId = event.orderId || (confirmMatch ? decodeURIComponent(confirmMatch[1]) : undefined);
+    const isConversion = Boolean(derivedOrderId || cleanPath.startsWith('/confirmation'));
+
+    let journey = visitorJourneys.find(j => j.sessionId === sessionId);
+    if (!journey) {
+      journey = {
+        sessionId,
+        startedAt: nowIso,
+        lastActiveAt: nowIso,
+        device: created.device,
+        referrerSource: created.referrerSource,
+        pathCount: 1,
+        steps: [cleanPath],
+        convertedToOrder: isConversion,
+        ...(derivedOrderId ? { orderId: derivedOrderId } : {}),
+      };
+      visitorJourneys.unshift(journey);
+      if (visitorJourneys.length > 500) {
+        visitorJourneys.length = 500;
+      }
+    } else {
+      journey.lastActiveAt = nowIso;
+      journey.pathCount = (Number(journey.pathCount) || 0) + 1;
+      if (!Array.isArray(journey.steps)) journey.steps = [];
+      if (journey.steps[journey.steps.length - 1] !== cleanPath) {
+        journey.steps.push(cleanPath);
+      }
+      if (isConversion) {
+        journey.convertedToOrder = true;
+        if (derivedOrderId) journey.orderId = derivedOrderId;
+      }
+    }
+
+    saveToDb(true);
     return created;
+  },
+
+  updateSessionEnd: (sessionId: string): void => {
+    loadFromDb();
+    const journey = visitorJourneys.find(j => j.sessionId === sessionId);
+    if (journey) {
+      journey.lastActiveAt = new Date().toISOString();
+      saveToDb(true);
+    }
   },
 
   // ─── Batch Unique Visitor Views Tracking ─────────────────────────────────
@@ -3285,12 +3391,15 @@ export const DataStore = {
       .sort((a, b) => b.count - a.count)
       .slice(0, 10);
 
-    // Traffic Sources
-    const trafficSources: Record<string, number> = {};
+    // Traffic Sources (sorted by count descending)
+    const rawTrafficSources: Record<string, number> = {};
     for (const v of filteredViews) {
       const src = v.referrerSource || 'Direct / Bookmark';
-      trafficSources[src] = (trafficSources[src] || 0) + 1;
+      rawTrafficSources[src] = (rawTrafficSources[src] || 0) + 1;
     }
+    const trafficSources: Record<string, number> = Object.fromEntries(
+      Object.entries(rawTrafficSources).sort((a, b) => b[1] - a[1])
+    );
 
     // Devices
     const devices = { mobile: 0, desktop: 0, tablet: 0 };
@@ -3331,15 +3440,21 @@ export const DataStore = {
     const batchAnalytics = batches.map(b => {
       const bViews = batchViews.filter(v => v.batchCode.toLowerCase() === b.batchCode.toLowerCase());
       const distinctVisitors = new Set(bViews.map(v => v.visitorId)).size;
+      const totalViews = Math.max(Number(b.viewsCount) || 0, bViews.length);
       return {
         batchCode: b.batchCode,
         name: b.name,
         price: b.price,
         status: b.status,
         uniqueVisitors: Math.max(Number(b.viewsCount) || 0, distinctVisitors),
+        viewsCount: totalViews,
         totalPings: bViews.length
       };
-    });
+    }).sort((a, b) => b.uniqueVisitors - a.uniqueVisitors);
+
+    const sortedJourneys = filteredJourneys
+      .slice()
+      .sort((a, b) => new Date(b.lastActiveAt || b.startedAt).getTime() - new Date(a.lastActiveAt || a.startedAt).getTime());
 
     return {
       range,
@@ -3356,14 +3471,14 @@ export const DataStore = {
       trafficSources,
       devices,
       funnel,
-      recentJourneys: filteredJourneys.slice(0, 30),
+      recentJourneys: sortedJourneys.slice(0, 50),
       batchAnalytics
     };
   },
 
   getAnalyticsSummaryAsync: async (range: 'daily' | 'weekly' | 'monthly' | 'all' = 'weekly'): Promise<any> => {
     loadFromDb();
-    await syncFromMongo();
+    await Promise.all([syncFromMongo(), syncAnalyticsFromMongo()]);
     return DataStore.getAnalyticsSummary(range);
   },
 

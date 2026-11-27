@@ -26,8 +26,8 @@ const RATE_LIMIT_PRESETS: Record<RateLimitType, RateLimitConfig> = {
   // General API: 60 requests per 1 minute per IP
   general: { windowMs: 60 * 1000, max: 60 },
 
-  // Analytics: 120 pageviews per 10 minutes per IP
-  analytics: { windowMs: 10 * 60 * 1000, max: 120 },
+  // Analytics: 300 pageviews per 10 minutes per IP
+  analytics: { windowMs: 10 * 60 * 1000, max: 300 },
 };
 
 interface RateLimitRecord {

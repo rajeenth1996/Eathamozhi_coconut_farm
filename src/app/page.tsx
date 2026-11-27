@@ -11,12 +11,16 @@ import { Trans } from '@/context/LanguageContext';
 export const dynamic = 'force-dynamic';
 
 export default async function Home() {
-  const allBatches = await DataStore.getBatchesAsync();
+  const [allBatches, allMotherPalms, reviews, allYouTubeVideos] = await Promise.all([
+    DataStore.getBatchesAsync(),
+    DataStore.getParentPalmsAsync(),
+    DataStore.getReviewsAsync(),
+    DataStore.getYouTubeVideosAsync(),
+  ]);
   const visibleBatches = allBatches.filter(b => b.isVisible !== false);
   const currentBatch = visibleBatches.find(b => (b.availableQuantity ?? 0) > 0 && b.status !== 'COMING_SOON') || visibleBatches[0];
-  const allMotherPalms = await DataStore.getParentPalmsAsync();
   const visibleMotherPalms = allMotherPalms.filter(p => p.isVisible !== false);
-  const reviews = await DataStore.getReviewsAsync();
+  const initialYouTubeVideos = allYouTubeVideos.filter(v => v.isVisible !== false);
 
   // Only populated with batches and mother trees that have their customer visibility toggle turned ON
   const batches = visibleBatches;
@@ -385,7 +389,7 @@ export default async function Home() {
       </section>
 
       {/* 6.5 YOUTUBE FARM VIDEOS & HARVEST TOURS */}
-      <YouTubeSection />
+      <YouTubeSection initialVideos={initialYouTubeVideos} />
 
       {/* 7. CALL TO ACTION BANNER */}
       <section className="py-5 bg-dark text-white text-center position-relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #022c22 0%, #064e3b 100%)' }}>

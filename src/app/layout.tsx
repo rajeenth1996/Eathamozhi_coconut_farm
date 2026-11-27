@@ -84,7 +84,6 @@ export default function RootLayout({
           rel="stylesheet" 
           href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" 
         />
-        <ExternalAnalytics />
 
         {/* Structured Data (JSON-LD) for Search Engines */}
         <script
@@ -131,6 +130,7 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-light">
+        <ExternalAnalytics />
         <LanguageProvider>
           <AnalyticsTracker />
           {/* Active Page Aware Navigation */}

@@ -14,7 +14,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const { sessionId, path, title, referrer, referrerSource, device, screenSize, orderId } = body;
+    const { sessionId, path, title, referrer, referrerSource, device, screenSize, orderId, isSessionEnd } = body;
 
     if (!sessionId || !path) {
       return NextResponse.json({ error: 'sessionId and path are required' }, { status: 400 });
@@ -25,7 +25,29 @@ export async function POST(request: Request) {
       return NextResponse.json({ skipped: true });
     }
 
-    // 1. Record in DataStore
+    // Handle session end ping without creating duplicate pageviews
+    if (isSessionEnd) {
+      DataStore.updateSessionEnd(sessionId);
+      if (process.env.MONGODB_URI) {
+        try {
+          const conn = await connectToDatabase();
+          if (conn) {
+            await VisitorJourneyModel.updateOne(
+              { sessionId },
+              { $set: { lastActiveAt: new Date().toISOString() } }
+            );
+          }
+        } catch {
+          // Non-fatal
+        }
+      }
+      return NextResponse.json({ success: true, sessionEnded: true }, { status: 200 });
+    }
+
+    const confirmMatch = path.match(/^\/confirmation\/([^/?#]+)/i);
+    const derivedOrderId = orderId || (confirmMatch ? decodeURIComponent(confirmMatch[1]) : undefined);
+
+    // 1. Record in DataStore (updates both pageViews and visitorJourneys)
     const recordedEvent = DataStore.recordPageView({
       sessionId,
       path,
@@ -34,7 +56,7 @@ export async function POST(request: Request) {
       referrerSource,
       device,
       screenSize,
-      orderId,
+      orderId: derivedOrderId,
     });
 
     // 1.1 Automatically capture farmer batch views for batch & booking pages
@@ -43,16 +65,16 @@ export async function POST(request: Request) {
       const batchCode = decodeURIComponent(batchMatch[1]);
       try {
         await DataStore.recordBatchViewAsync(batchCode, sessionId);
-      } catch (bvErr) {
+      } catch {
         // non-fatal
       }
     }
 
-    // 2. Asynchronously save to MongoDB Atlas if connected
+    // 2. Persist to MongoDB Atlas if connected (awaited so serverless functions don't drop writes)
     if (process.env.MONGODB_URI) {
-      (async () => {
-        try {
-          await connectToDatabase();
+      try {
+        const conn = await connectToDatabase();
+        if (conn) {
           await PageViewModel.create({
             id: recordedEvent.id,
             sessionId: recordedEvent.sessionId,
@@ -65,7 +87,7 @@ export async function POST(request: Request) {
             timestamp: recordedEvent.timestamp,
           });
 
-          const isConversion = Boolean(orderId || path.startsWith('/confirmation'));
+          const isConversion = Boolean(derivedOrderId || path.startsWith('/confirmation'));
           await VisitorJourneyModel.updateOne(
             { sessionId },
             {
@@ -77,17 +99,17 @@ export async function POST(request: Request) {
               },
               $set: {
                 lastActiveAt: recordedEvent.timestamp,
-                ...(isConversion ? { convertedToOrder: true, ...(orderId ? { orderId } : {}) } : {}),
+                ...(isConversion ? { convertedToOrder: true, ...(derivedOrderId ? { orderId: derivedOrderId } : {}) } : {}),
               },
               $inc: { pathCount: 1 },
               $addToSet: { steps: path },
             },
             { upsert: true }
           );
-        } catch (dbErr) {
-          // Non-fatal background sync error
         }
-      })();
+      } catch {
+        // Non-fatal sync error
+      }
     }
 
     return NextResponse.json({ success: true }, { status: 201 });

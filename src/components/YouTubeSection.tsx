@@ -13,13 +13,22 @@ interface YouTubeVideoItem {
   isVisible: boolean;
 }
 
-export default function YouTubeSection() {
+interface YouTubeSectionProps {
+  initialVideos?: YouTubeVideoItem[];
+}
+
+export default function YouTubeSection({ initialVideos }: YouTubeSectionProps) {
   const { isTamil } = useLanguage();
-  const [videos, setVideos] = useState<YouTubeVideoItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [videos, setVideos] = useState<YouTubeVideoItem[]>(initialVideos ?? []);
+  const [loading, setLoading] = useState(!initialVideos);
   const [activePlayingId, setActivePlayingId] = useState<string | null>(null);
 
   useEffect(() => {
+    // If we already have server-provided initial data, skip the client-side fetch
+    if (initialVideos && initialVideos.length > 0) {
+      setLoading(false);
+      return;
+    }
     fetch('/api/youtube')
       .then(res => res.json())
       .then(data => {

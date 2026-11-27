@@ -12,10 +12,22 @@ export default async function ParentPalmDetailPage({
   params: Promise<{ code: string }>;
 }) {
   const { code } = await params;
-  const palm = await DataStore.getParentPalmByCodeAsync(code);
+  const allPalms = await DataStore.getParentPalmsAsync();
+  const visiblePalms = allPalms.filter(p => p.isVisible !== false);
+  const currentIndex = visiblePalms.findIndex(
+    p => p.code.toLowerCase() === code.toLowerCase() || (p.motherTreeCode && p.motherTreeCode.toLowerCase() === code.toLowerCase())
+  );
+  const palm = currentIndex !== -1 ? visiblePalms[currentIndex] : await DataStore.getParentPalmByCodeAsync(code);
   if (!palm || palm.isVisible === false) {
     notFound();
   }
+
+  const prevPalm = visiblePalms.length > 1 && currentIndex > 0
+    ? visiblePalms[currentIndex - 1]
+    : null;
+  const nextPalm = visiblePalms.length > 1 && currentIndex !== -1 && currentIndex < visiblePalms.length - 1
+    ? visiblePalms[currentIndex + 1]
+    : null;
 
   const allBatches = await DataStore.getBatchesAsync();
   const relatedBatches = allBatches.filter(b => {
@@ -34,13 +46,73 @@ export default async function ParentPalmDetailPage({
               <li className="breadcrumb-item active text-light" aria-current="page">Parent Palm {palm.code}</li>
             </ol>
           </nav>
-          <div className="d-flex justify-content-between align-items-center">
+          <div className="d-flex flex-wrap justify-content-between align-items-center gap-2">
             <div>
               <span className="badge bg-warning text-dark px-3 py-2 me-2">{formatApproximateAge(palm.age).toUpperCase()}</span>
               <h1 className="fw-bold mb-0 text-light d-inline-block align-middle">{palm.name}</h1>
             </div>
             <span className="badge bg-success fs-6">{palm.healthStatus}</span>
           </div>
+
+          {/* In-Page Mother Tree Navigation Bar */}
+          {visiblePalms.length > 1 && (
+            <div className="mt-4 pt-3 border-top border-secondary border-opacity-25 d-flex flex-wrap justify-content-between align-items-center gap-2">
+              <div>
+                {prevPalm ? (
+                  <Link
+                    href={`/parent-palm/${prevPalm.code}`}
+                    prefetch={false}
+                    className="btn btn-outline-light btn-sm d-inline-flex align-items-center gap-2 rounded-pill px-3"
+                  >
+                    <i className="bi bi-arrow-left"></i>
+                    <span>Prev: <strong className="font-monospace">{prevPalm.motherTreeCode || prevPalm.code}</strong></span>
+                  </Link>
+                ) : (
+                  <span className="btn btn-outline-secondary btn-sm disabled rounded-pill px-3 opacity-50">
+                    <i className="bi bi-arrow-left me-1"></i> First Tree
+                  </span>
+                )}
+              </div>
+
+              <div className="d-flex flex-wrap justify-content-center gap-1">
+                {visiblePalms.map((p) => {
+                  const isCurrent = p.code.toLowerCase() === palm.code.toLowerCase();
+                  return (
+                    <Link
+                      key={p.code}
+                      href={`/parent-palm/${p.code}`}
+                      prefetch={false}
+                      className={`btn btn-sm rounded-pill font-monospace extra-small px-2 py-1 ${
+                        isCurrent
+                          ? 'btn-success fw-bold shadow-sm'
+                          : 'btn-outline-light opacity-75'
+                      }`}
+                      title={`${p.motherTreeCode || p.code} - ${p.name}`}
+                    >
+                      {p.motherTreeCode || p.code}
+                    </Link>
+                  );
+                })}
+              </div>
+
+              <div>
+                {nextPalm ? (
+                  <Link
+                    href={`/parent-palm/${nextPalm.code}`}
+                    prefetch={false}
+                    className="btn btn-success btn-sm d-inline-flex align-items-center gap-2 rounded-pill px-3 fw-semibold shadow-sm"
+                  >
+                    <span>Next: <strong className="font-monospace">{nextPalm.motherTreeCode || nextPalm.code}</strong></span>
+                    <i className="bi bi-arrow-right"></i>
+                  </Link>
+                ) : (
+                  <span className="btn btn-outline-secondary btn-sm disabled rounded-pill px-3 opacity-50">
+                    Last Tree <i className="bi bi-arrow-right ms-1"></i>
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
@@ -185,6 +257,73 @@ export default async function ParentPalmDetailPage({
               ))}
             </div>
           </div>
+
+          {/* Bottom Previous / Next Mother Tree Navigation */}
+          {visiblePalms.length > 1 && (
+            <div className="row g-3 mt-4 pt-3 border-top">
+              <div className="col-6">
+                {prevPalm ? (
+                  <Link
+                    href={`/parent-palm/${prevPalm.code}`}
+                    className="card border-0 shadow-sm rounded-4 p-3 text-decoration-none hover-lift bg-white h-100 d-flex flex-row align-items-center gap-3"
+                  >
+                    <span className="btn btn-outline-success rounded-circle p-2 d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '40px', height: '40px' }}>
+                      <i className="bi bi-arrow-left fs-5"></i>
+                    </span>
+                    <div className="overflow-hidden">
+                      <small className="text-muted text-uppercase extra-small fw-bold d-block">Previous Mother Tree</small>
+                      <div className="fw-bold text-dark text-truncate">{prevPalm.name}</div>
+                      <span className="badge bg-dark font-monospace extra-small mt-1">{prevPalm.motherTreeCode || prevPalm.code}</span>
+                    </div>
+                  </Link>
+                ) : (
+                  <Link
+                    href="/farm"
+                    className="card border-0 shadow-sm rounded-4 p-3 text-decoration-none hover-lift bg-white h-100 d-flex flex-row align-items-center gap-3"
+                  >
+                    <span className="btn btn-outline-secondary rounded-circle p-2 d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '40px', height: '40px' }}>
+                      <i className="bi bi-grid fs-5"></i>
+                    </span>
+                    <div>
+                      <small className="text-muted text-uppercase extra-small fw-bold d-block">Back to Registry</small>
+                      <div className="fw-bold text-dark">View All Mother Trees</div>
+                    </div>
+                  </Link>
+                )}
+              </div>
+
+              <div className="col-6">
+                {nextPalm ? (
+                  <Link
+                    href={`/parent-palm/${nextPalm.code}`}
+                    className="card border-0 shadow-sm rounded-4 p-3 text-decoration-none hover-lift bg-white h-100 d-flex flex-row-reverse align-items-center justify-content-start text-end gap-3"
+                  >
+                    <span className="btn btn-success rounded-circle p-2 d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '40px', height: '40px' }}>
+                      <i className="bi bi-arrow-right fs-5"></i>
+                    </span>
+                    <div className="overflow-hidden">
+                      <small className="text-success text-uppercase extra-small fw-bold d-block">Next Mother Tree</small>
+                      <div className="fw-bold text-dark text-truncate">{nextPalm.name}</div>
+                      <span className="badge bg-dark font-monospace extra-small mt-1">{nextPalm.motherTreeCode || nextPalm.code}</span>
+                    </div>
+                  </Link>
+                ) : (
+                  <Link
+                    href="/farm"
+                    className="card border-0 shadow-sm rounded-4 p-3 text-decoration-none hover-lift bg-white h-100 d-flex flex-row-reverse align-items-center justify-content-start text-end gap-3"
+                  >
+                    <span className="btn btn-outline-secondary rounded-circle p-2 d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '40px', height: '40px' }}>
+                      <i className="bi bi-grid fs-5"></i>
+                    </span>
+                    <div>
+                      <small className="text-muted text-uppercase extra-small fw-bold d-block">All Mother Trees</small>
+                      <div className="fw-bold text-dark">Browse Full Registry</div>
+                    </div>
+                  </Link>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </section>
     </>

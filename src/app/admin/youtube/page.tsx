@@ -404,6 +404,7 @@ export default function AdminYouTubePage() {
                             >
                               {video.url} <i className="bi bi-box-arrow-up-right extra-small"></i>
                             </a>
+                          </td>
                           <td className="text-center">
                             <div className="d-inline-flex align-items-center gap-1 bg-light px-2 py-1 rounded-pill border shadow-sm">
                               <span className="badge bg-danger text-white font-monospace fw-bold px-2 py-1">
@@ -433,6 +434,7 @@ export default function AdminYouTubePage() {
                               </div>
                             </div>
                           </td>
+                          <td className="text-center">
                             <div className="form-check form-switch d-inline-block">
                               <input
                                 className="form-check-input cursor-pointer"

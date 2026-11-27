@@ -14,10 +14,22 @@ export default async function BatchDetailPage({
   params: Promise<{ code: string }>;
 }) {
   const { code } = await params;
-  const batch = await DataStore.getBatchByCodeAsync(code);
+  const allBatches = await DataStore.getBatchesAsync();
+  const visibleBatches = allBatches.filter(b => b.isVisible !== false);
+  const currentIndex = visibleBatches.findIndex(
+    b => b.batchCode.toLowerCase() === code.toLowerCase()
+  );
+  const batch = currentIndex !== -1 ? visibleBatches[currentIndex] : await DataStore.getBatchByCodeAsync(code);
   if (!batch || batch.isVisible === false) {
     notFound();
   }
+
+  const prevBatch = visibleBatches.length > 1 && currentIndex > 0
+    ? visibleBatches[currentIndex - 1]
+    : null;
+  const nextBatch = visibleBatches.length > 1 && currentIndex !== -1 && currentIndex < visibleBatches.length - 1
+    ? visibleBatches[currentIndex + 1]
+    : null;
 
   const motherTreeCodes = (batch.parentPalmCodes && batch.parentPalmCodes.length > 0) 
     ? batch.parentPalmCodes 
@@ -45,13 +57,74 @@ export default async function BatchDetailPage({
                   Batch ID: {batch.batchCode}
                 </span>
                 {/* Social Proof Views Counter */}
-                <BatchViewTracker batchCode={batch.batchCode} initialCount={batch.viewsCount ?? 0} />
+                <BatchViewTracker key={batch.batchCode} batchCode={batch.batchCode} initialCount={batch.viewsCount ?? 0} />
               </div>
 
               <h1 className="fw-bold mb-0 text-light d-inline-block align-middle fs-2 mt-2 mt-md-0">{batch.name}</h1>
             </div>
             <span className="fs-3 fw-bold text-success">₹{batch.price} <small className="fs-6 text-muted font-normal">/ sapling</small></span>
           </div>
+
+          {/* In-Page Batch Navigation Bar */}
+          {visibleBatches.length > 1 && (
+            <div className="mt-4 pt-3 border-top border-secondary border-opacity-25 d-flex flex-wrap justify-content-between align-items-center gap-2">
+              <div className="d-flex align-items-center gap-2">
+                {prevBatch ? (
+                  <Link
+                    href={`/batches/${prevBatch.batchCode}`}
+                    prefetch={false}
+                    className="btn btn-outline-light btn-sm d-inline-flex align-items-center gap-2 rounded-pill px-3"
+                  >
+                    <i className="bi bi-arrow-left"></i>
+                    <span>Prev: <strong className="font-monospace">{prevBatch.batchCode}</strong></span>
+                  </Link>
+                ) : (
+                  <span className="btn btn-outline-secondary btn-sm disabled rounded-pill px-3 opacity-50">
+                    <i className="bi bi-arrow-left me-1"></i> First Batch
+                  </span>
+                )}
+              </div>
+
+              {/* Quick Batch Pills */}
+              <div className="d-flex flex-wrap justify-content-center gap-1">
+                {visibleBatches.map((b) => {
+                  const isCurrent = b.batchCode.toLowerCase() === batch.batchCode.toLowerCase();
+                  return (
+                    <Link
+                      key={b.batchCode}
+                      href={`/batches/${b.batchCode}`}
+                      prefetch={false}
+                      className={`btn btn-sm rounded-pill font-monospace extra-small px-2 py-1 ${
+                        isCurrent
+                          ? 'btn-success fw-bold shadow-sm'
+                          : 'btn-outline-light opacity-75'
+                      }`}
+                      title={b.name}
+                    >
+                      {b.batchCode}
+                    </Link>
+                  );
+                })}
+              </div>
+
+              <div className="d-flex align-items-center gap-2">
+                {nextBatch ? (
+                  <Link
+                    href={`/batches/${nextBatch.batchCode}`}
+                    prefetch={false}
+                    className="btn btn-success btn-sm d-inline-flex align-items-center gap-2 rounded-pill px-3 fw-semibold shadow-sm"
+                  >
+                    <span>Next: <strong className="font-monospace">{nextBatch.batchCode}</strong></span>
+                    <i className="bi bi-arrow-right"></i>
+                  </Link>
+                ) : (
+                  <span className="btn btn-outline-secondary btn-sm disabled rounded-pill px-3 opacity-50">
+                    Last Batch <i className="bi bi-arrow-right ms-1"></i>
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
@@ -224,6 +297,73 @@ export default async function BatchDetailPage({
               </div>
             </div>
           </div>
+
+          {/* Bottom Previous / Next Batch Navigation */}
+          {visibleBatches.length > 1 && (
+            <div className="row g-3 mt-4 pt-3 border-top mb-5 pb-4 mb-md-0 pb-md-0">
+              <div className="col-6">
+                {prevBatch ? (
+                  <Link
+                    href={`/batches/${prevBatch.batchCode}`}
+                    className="card border-0 shadow-sm rounded-4 p-3 text-decoration-none hover-lift bg-white h-100 d-flex flex-row align-items-center gap-3"
+                  >
+                    <span className="btn btn-outline-success rounded-circle p-2 d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '40px', height: '40px' }}>
+                      <i className="bi bi-arrow-left fs-5"></i>
+                    </span>
+                    <div className="overflow-hidden">
+                      <small className="text-muted text-uppercase extra-small fw-bold d-block">Previous Batch</small>
+                      <div className="fw-bold text-dark text-truncate">{prevBatch.name}</div>
+                      <span className="badge bg-dark font-monospace extra-small mt-1">{prevBatch.batchCode}</span>
+                    </div>
+                  </Link>
+                ) : (
+                  <Link
+                    href="/batches"
+                    className="card border-0 shadow-sm rounded-4 p-3 text-decoration-none hover-lift bg-white h-100 d-flex flex-row align-items-center gap-3"
+                  >
+                    <span className="btn btn-outline-secondary rounded-circle p-2 d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '40px', height: '40px' }}>
+                      <i className="bi bi-grid fs-5"></i>
+                    </span>
+                    <div>
+                      <small className="text-muted text-uppercase extra-small fw-bold d-block">Back to Catalog</small>
+                      <div className="fw-bold text-dark">View All Batches</div>
+                    </div>
+                  </Link>
+                )}
+              </div>
+
+              <div className="col-6">
+                {nextBatch ? (
+                  <Link
+                    href={`/batches/${nextBatch.batchCode}`}
+                    className="card border-0 shadow-sm rounded-4 p-3 text-decoration-none hover-lift bg-white h-100 d-flex flex-row-reverse align-items-center justify-content-start text-end gap-3"
+                  >
+                    <span className="btn btn-success rounded-circle p-2 d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '40px', height: '40px' }}>
+                      <i className="bi bi-arrow-right fs-5"></i>
+                    </span>
+                    <div className="overflow-hidden">
+                      <small className="text-success text-uppercase extra-small fw-bold d-block">Next Batch</small>
+                      <div className="fw-bold text-dark text-truncate">{nextBatch.name}</div>
+                      <span className="badge bg-dark font-monospace extra-small mt-1">{nextBatch.batchCode}</span>
+                    </div>
+                  </Link>
+                ) : (
+                  <Link
+                    href="/batches"
+                    className="card border-0 shadow-sm rounded-4 p-3 text-decoration-none hover-lift bg-white h-100 d-flex flex-row-reverse align-items-center justify-content-start text-end gap-3"
+                  >
+                    <span className="btn btn-outline-secondary rounded-circle p-2 d-flex align-items-center justify-content-center flex-shrink-0" style={{ width: '40px', height: '40px' }}>
+                      <i className="bi bi-grid fs-5"></i>
+                    </span>
+                    <div>
+                      <small className="text-muted text-uppercase extra-small fw-bold d-block">All Batches</small>
+                      <div className="fw-bold text-dark">Browse Full Catalog</div>
+                    </div>
+                  </Link>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
