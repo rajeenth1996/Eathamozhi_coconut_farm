@@ -90,6 +90,17 @@ export function checkRateLimit(req: Request, type: RateLimitType): RateLimitResu
   cleanupExpiredRecords();
 
   const ip = getClientIp(req);
+
+  // In development, never block localhost requests
+  if (process.env.NODE_ENV !== 'production' && (ip === '127.0.0.1' || ip === '::1' || ip === 'localhost')) {
+    return {
+      success: true,
+      limit: 10000,
+      remaining: 9999,
+      resetSeconds: 0,
+    };
+  }
+
   const key = `${type}:${ip}`;
   const config = RATE_LIMIT_PRESETS[type] || RATE_LIMIT_PRESETS.general;
   const now = Date.now();
