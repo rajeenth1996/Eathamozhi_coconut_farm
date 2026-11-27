@@ -551,7 +551,7 @@ export default function AdminBatchesPage() {
                 </p>
               </div>
               <div className="text-end">
-                <span className="badge bg-dark font-monospace px-3 py-2 fs-6">
+                <span className="badge bg-dark font-monospace px-3 py-2 fs-6" suppressHydrationWarning>
                   ID: {batchCode || previewInfo.batchId}
                 </span>
               </div>
@@ -571,13 +571,13 @@ export default function AdminBatchesPage() {
                     required
                   >
                     {farms.map(f => (
-                      <option key={f.farmCode} value={f.farmCode}>
+                      <option key={f.farmCode} value={f.farmCode} suppressHydrationWarning>
                         {toShortFarmCode(f.farmCode, farms)} - {f.farmName} ({f.farmCode})
                       </option>
                     ))}
                   </select>
                   <small className="text-muted extra-small">
-                    Determines the Batch ID prefix (e.g. <code>{toShortFarmCode(primaryFarmCode, farms)}</code>).
+                    Determines the Batch ID prefix (e.g. <code suppressHydrationWarning>{toShortFarmCode(primaryFarmCode, farms)}</code>).
                   </small>
                 </div>
 
@@ -647,11 +647,12 @@ export default function AdminBatchesPage() {
                           value={batchCode}
                           onChange={(e) => handleBatchCodeChange(e.target.value)}
                           placeholder="e.g. EF01-Nov26-B1"
+                          suppressHydrationWarning
                           required
                         />
                       </div>
                       <small className="text-muted extra-small d-block mt-1">
-                        Picks value from Primary Farm ID (<code>{toShortFarmCode(primaryFarmCode, farms)}</code>). Editable.
+                        Picks value from Primary Farm ID (<code suppressHydrationWarning>{toShortFarmCode(primaryFarmCode, farms)}</code>). Editable.
                       </small>
                     </div>
 
@@ -672,6 +673,7 @@ export default function AdminBatchesPage() {
                             setIsManualBatchName(true);
                           }}
                           placeholder="e.g. November 2026 (EF01-Nov26-B1)"
+                          suppressHydrationWarning
                           required
                         />
                       </div>
