@@ -244,7 +244,10 @@ function reconcileInventoryLedger() {
     b.bookedQuantity = totalOrdersPlaced;
     b.availableQuantity = totalAvail;
     b.bookedQuantity = totalOrdersPlaced;
-    if (b.status !== 'COMING_SOON') {
+    const dynamicStatus = getDynamicBatchStatus(totalAvail, b.seededDate, b.age);
+    if (dynamicStatus === 'COMING_SOON' || b.status === 'COMING_SOON') {
+      b.status = 'COMING_SOON';
+    } else {
       b.status = totalAvail <= 0 ? 'SOLD_OUT' : (totalAvail < 50 ? 'LIMITED' : 'AVAILABLE');
     }
   }
@@ -932,8 +935,8 @@ export const DataStore = {
 
       const totalCap = b.totalQuantity > 0 ? b.totalQuantity : Math.max(0, b.totalQuantity + (b.inventoryAdjustments || 0));
       const bookedPercentage = totalCap > 0 ? Math.min(100, Math.round((computedBookedQuantity / totalCap) * 100)) : 100;
-      const dynamicStatus = getDynamicBatchStatus(availableQuantity, b.seededDate);
-      const metrics = getSaplingMetrics(b.seededDate);
+      const dynamicStatus = getDynamicBatchStatus(availableQuantity, b.seededDate, b.age);
+      const metrics = getSaplingMetrics(b.seededDate, b.age);
       const age = b.age || metrics.age;
       let height = b.height || metrics.height;
       if (!height.toLowerCase().startsWith('approx')) {
@@ -941,6 +944,8 @@ export const DataStore = {
       }
       const totalViewsCount = Number(b.viewsCount) || 0;
       b.viewsCount = totalViewsCount;
+
+      const isUpcoming = dynamicStatus === 'COMING_SOON' || b.status === 'COMING_SOON';
 
       return {
         ...b,
@@ -950,7 +955,7 @@ export const DataStore = {
         bookedQuantity: computedBookedQuantity,
         availableQuantity,
         bookedPercentage,
-        status: (b.status === 'COMING_SOON' && dynamicStatus === 'COMING_SOON') ? 'COMING_SOON' : (availableQuantity <= 0 ? 'SOLD_OUT' : (availableQuantity < 50 ? 'LIMITED' : 'AVAILABLE')),
+        status: isUpcoming ? 'COMING_SOON' : (availableQuantity <= 0 ? 'SOLD_OUT' : (availableQuantity < 50 ? 'LIMITED' : 'AVAILABLE')),
         sources: bSources,
         inventory: bInventory
       };
@@ -1040,6 +1045,12 @@ export const DataStore = {
       height = `Approx. ${height}`;
     }
 
+    const initialStatus = getDynamicBatchStatus(
+      Number(newBatchData.totalQuantity) || 500,
+      seededDate,
+      age
+    );
+
     const created: Batch = {
       id: `b-${Date.now()}`,
       batchCode,
@@ -1062,7 +1073,7 @@ export const DataStore = {
       bookedQuantity: 0,
       inventoryAdjustments: 0,
       price: Number(newBatchData.price) || 150,
-      status: 'AVAILABLE',
+      status: (newBatchData.status === 'COMING_SOON' || initialStatus === 'COMING_SOON') ? 'COMING_SOON' : 'AVAILABLE',
       description: newBatchData.description || '',
       viewsCount: 15,
       images: newBatchData.images && newBatchData.images.length > 0 ? newBatchData.images : defaultFolderImages,
@@ -1269,6 +1280,17 @@ export const DataStore = {
     if (Array.isArray(updatedFields.parentPalmCodes) && updatedFields.parentPalmCodes.length > 0) {
       target.parentPalmCodes = updatedFields.parentPalmCodes;
       target.parentPalmCode = updatedFields.parentPalmCodes[0];
+    }
+    if (updatedFields.status !== undefined) {
+      target.status = updatedFields.status;
+    } else {
+      const avail = target.availableQuantity ?? target.totalQuantity ?? 0;
+      const dynStatus = getDynamicBatchStatus(avail, target.seededDate, target.age);
+      if (dynStatus === 'COMING_SOON') {
+        target.status = 'COMING_SOON';
+      } else if (target.status === 'COMING_SOON') {
+        target.status = avail <= 0 ? 'SOLD_OUT' : (avail < 50 ? 'LIMITED' : 'AVAILABLE');
+      }
     }
     target.updatedAt = new Date().toISOString();
 
