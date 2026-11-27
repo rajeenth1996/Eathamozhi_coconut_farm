@@ -40,6 +40,10 @@ export default function AdminBatchesPage() {
   const [primaryFarmCode, setPrimaryFarmCode] = useState('ETH-RA-F001');
   const [batchSeededDate, setBatchSeededDate] = useState('2026-11-15');
   const [batchHarvestDate, setBatchHarvestDate] = useState('2026-11-01');
+  const [batchCode, setBatchCode] = useState<string>('');
+  const [customerBatchName, setCustomerBatchName] = useState<string>('');
+  const [isManualBatchCode, setIsManualBatchCode] = useState<boolean>(false);
+  const [isManualBatchName, setIsManualBatchName] = useState<boolean>(false);
   const [batchPrice, setBatchPrice] = useState(150);
   const [batchAge, setBatchAge] = useState('8–10 months');
   const [batchHeight, setBatchHeight] = useState('Approx. 2–3 ft');
@@ -112,7 +116,7 @@ export default function AdminBatchesPage() {
     const shortMonthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const fullMonth = monthNames[monthNum - 1] || 'November';
     const shortMonth = shortMonthNames[monthNum - 1] || 'Nov';
-    const shortFarmCode = toShortFarmCode(primaryFarmCode);
+    const shortFarmCode = toShortFarmCode(primaryFarmCode, farms);
     const prefix = `${shortFarmCode}-${shortMonth}${twoDigitYear}`;
 
     let maxSeq = 0;
@@ -130,6 +134,41 @@ export default function AdminBatchesPage() {
   };
 
   const previewInfo = getPreviewBatchIdAndName();
+
+  // Keep Batch ID & Customer Batch Name automatically synchronized to Primary Farm & Seeded Date unless manually edited
+  useEffect(() => {
+    const preview = getPreviewBatchIdAndName();
+    if (!isManualBatchCode) {
+      setBatchCode(preview.batchId);
+    }
+    if (!isManualBatchName) {
+      setCustomerBatchName(preview.displayName);
+    }
+  }, [primaryFarmCode, batchSeededDate, batches, farms, isManualBatchCode, isManualBatchName]);
+
+  const handleBatchCodeChange = (newCode: string) => {
+    setBatchCode(newCode);
+    setIsManualBatchCode(true);
+    // If the customer batch name hasn't been manually detached, keep its parenthesized code aligned
+    if (!isManualBatchName) {
+      const d = new Date(batchSeededDate || '2026-11-15');
+      const monthNames = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+      ];
+      const fullMonth = monthNames[d.getMonth()] || 'November';
+      const yearNum = d.getFullYear();
+      setCustomerBatchName(`${fullMonth} ${yearNum} (${newCode.trim()})`);
+    }
+  };
+
+  const handleResetToAuto = () => {
+    setIsManualBatchCode(false);
+    setIsManualBatchName(false);
+    const preview = getPreviewBatchIdAndName();
+    setBatchCode(preview.batchId);
+    setCustomerBatchName(preview.displayName);
+  };
 
   // Add tree to sources
   const handleAddTreeToSources = (tree: any) => {
@@ -171,6 +210,25 @@ export default function AdminBatchesPage() {
       return;
     }
 
+    const finalBatchCode = (batchCode || previewInfo.batchId).trim();
+    const finalBatchName = (customerBatchName || previewInfo.displayName).trim();
+
+    if (!finalBatchCode) {
+      alert('⚠️ Batch ID is required.');
+      return;
+    }
+
+    if (!finalBatchName) {
+      alert('⚠️ Customer Batch Name is required.');
+      return;
+    }
+
+    const duplicate = batches.find(b => b.batchCode.toLowerCase() === finalBatchCode.toLowerCase());
+    if (duplicate) {
+      alert(`⚠️ A batch with ID "${finalBatchCode}" already exists. Please choose a unique Batch ID.`);
+      return;
+    }
+
     setSubmitting(true);
     let uploadedUrls: string[] = [];
 
@@ -179,7 +237,7 @@ export default function AdminBatchesPage() {
       const formData = new FormData();
       batchFiles.forEach(f => formData.append('files', f));
       formData.append('category', 'batches');
-      formData.append('tag', previewInfo.batchId);
+      formData.append('tag', finalBatchCode);
 
       try {
         const res = await fetch('/api/upload', {
@@ -205,9 +263,9 @@ export default function AdminBatchesPage() {
 
     try {
       const payload = {
-        batchCode: previewInfo.batchId,
+        batchCode: finalBatchCode,
         primaryFarmCode,
-        name: previewInfo.displayName,
+        name: finalBatchName,
         harvestDate: batchHarvestDate,
         seededDate: batchSeededDate,
         totalQuantity: totalCoconuts,
@@ -234,8 +292,10 @@ export default function AdminBatchesPage() {
       });
 
       if (res.ok) {
-        alert(`✅ Batch ${previewInfo.batchId} created successfully with ${sourcesList.length} sources!`);
+        alert(`✅ Batch "${finalBatchName}" (${finalBatchCode}) created successfully with ${sourcesList.length} sources!`);
         fetchInitialData();
+        setIsManualBatchCode(false);
+        setIsManualBatchName(false);
         setSourcesList([]);
         setBatchFiles([]);
       } else {
@@ -492,7 +552,7 @@ export default function AdminBatchesPage() {
               </div>
               <div className="text-end">
                 <span className="badge bg-dark font-monospace px-3 py-2 fs-6">
-                  ID: {previewInfo.batchId}
+                  ID: {batchCode || previewInfo.batchId}
                 </span>
               </div>
             </div>
@@ -512,12 +572,12 @@ export default function AdminBatchesPage() {
                   >
                     {farms.map(f => (
                       <option key={f.farmCode} value={f.farmCode}>
-                        {f.farmCode} - {f.farmName}
+                        {toShortFarmCode(f.farmCode, farms)} - {f.farmName} ({f.farmCode})
                       </option>
                     ))}
                   </select>
                   <small className="text-muted extra-small">
-                    Determines the Batch ID prefix (e.g. <code>{primaryFarmCode}-MMYYYY-BNNN</code>).
+                    Determines the Batch ID prefix (e.g. <code>{toShortFarmCode(primaryFarmCode, farms)}</code>).
                   </small>
                 </div>
 
@@ -550,26 +610,84 @@ export default function AdminBatchesPage() {
                   />
                 </div>
 
-                {/* Batch Name Display Requirement */}
-                <div className="col-12 pt-2 border-top">
-                  <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                    <div className="small d-flex flex-wrap align-items-center gap-2">
-                      <div>
-                        <strong className="text-dark">Batch ID:</strong>
-                        <span className="badge bg-dark text-white ms-1 font-monospace fs-6 px-2 py-1 shadow-sm border border-secondary">
-                          {previewInfo.batchId}
-                        </span>
-                      </div>
-                      <div>
-                        <strong className="text-dark">Customer Batch Name:</strong>
-                        <span className="badge bg-success-subtle text-success ms-1 font-monospace fs-6">
-                          {previewInfo.displayName}
-                        </span>
-                      </div>
+                {/* Step 3: Batch ID & Customer-Facing Batch Name (Auto-computed from Primary Farm ID + Date, Editable) */}
+                <div className="col-12 pt-3 border-top">
+                  <div className="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+                    <div className="d-flex align-items-center gap-2">
+                      <span className="badge bg-success rounded-circle">3</span>
+                      <h6 className="mb-0 fw-bold text-dark">Batch Identification &amp; Customer Name</h6>
+                      <span className="badge bg-success-subtle text-success border border-success extra-small">
+                        Auto-assigned from Farm ID • Editable
+                      </span>
                     </div>
-                    <div className="d-flex align-items-center gap-3">
-                      <div className="input-group input-group-sm" style={{ width: '170px' }}>
-                        <span className="input-group-text">Price (₹)</span>
+                    {(isManualBatchCode || isManualBatchName) && (
+                      <button
+                        type="button"
+                        onClick={handleResetToAuto}
+                        className="btn btn-outline-secondary btn-sm py-0 px-2 extra-small"
+                        title="Recompute from Primary Farm ID and Seeded Date"
+                      >
+                        <i className="bi bi-arrow-counterclockwise me-1"></i> Reset to Auto-Generated
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="row g-3">
+                    <div className="col-md-5">
+                      <label className="form-label fw-bold small text-secondary mb-1">
+                        Batch ID * <span className="text-muted fw-normal">(&lt;Farm ID&gt;-&lt;Month&gt;&lt;YY&gt;-B&lt;Num&gt;)</span>
+                      </label>
+                      <div className="input-group">
+                        <span className="input-group-text bg-dark text-white fw-bold font-monospace">
+                          <i className="bi bi-upc-scan me-1"></i> ID
+                        </span>
+                        <input
+                          type="text"
+                          className="form-control font-monospace fw-bold fs-6"
+                          value={batchCode}
+                          onChange={(e) => handleBatchCodeChange(e.target.value)}
+                          placeholder="e.g. EF01-Nov26-B1"
+                          required
+                        />
+                      </div>
+                      <small className="text-muted extra-small d-block mt-1">
+                        Picks value from Primary Farm ID (<code>{toShortFarmCode(primaryFarmCode, farms)}</code>). Editable.
+                      </small>
+                    </div>
+
+                    <div className="col-md-7">
+                      <label className="form-label fw-bold small text-secondary mb-1">
+                        Customer Batch Name * <span className="text-muted fw-normal">(Visible to customers on website)</span>
+                      </label>
+                      <div className="input-group">
+                        <span className="input-group-text bg-success text-white fw-bold">
+                          <i className="bi bi-tag-fill me-1"></i> Name
+                        </span>
+                        <input
+                          type="text"
+                          className="form-control fw-semibold fs-6"
+                          value={customerBatchName}
+                          onChange={(e) => {
+                            setCustomerBatchName(e.target.value);
+                            setIsManualBatchName(true);
+                          }}
+                          placeholder="e.g. November 2026 (EF01-Nov26-B1)"
+                          required
+                        />
+                      </div>
+                      <small className="text-muted extra-small d-block mt-1">
+                        Format: <code>&lt;Month&gt; &lt;Year&gt; (&lt;Batch ID&gt;)</code>. Editable.
+                      </small>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Step 4: Pricing, Age, Height & Customer Visibility */}
+                <div className="col-12 pt-3 border-top">
+                  <div className="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                    <div className="d-flex align-items-center gap-3 flex-wrap">
+                      <div className="input-group input-group-sm" style={{ width: '180px' }}>
+                        <span className="input-group-text fw-semibold">Price (₹) *</span>
                         <input
                           type="number"
                           className="form-control"
@@ -578,18 +696,18 @@ export default function AdminBatchesPage() {
                           required
                         />
                       </div>
-                      <div className="input-group input-group-sm" style={{ width: '180px' }}>
-                        <span className="input-group-text">Age</span>
+                      <div className="input-group input-group-sm" style={{ width: '190px' }}>
+                        <span className="input-group-text fw-semibold">Age</span>
                         <input
                           type="text"
                           className="form-control"
-                          placeholder="e.g. 9 months"
+                          placeholder="e.g. 8–10 months"
                           value={batchAge}
                           onChange={(e) => setBatchAge(e.target.value)}
                         />
                       </div>
                       <div className="input-group input-group-sm" style={{ width: '210px' }}>
-                        <span className="input-group-text">Height</span>
+                        <span className="input-group-text fw-semibold">Height</span>
                         <input
                           type="text"
                           className="form-control"
@@ -598,19 +716,19 @@ export default function AdminBatchesPage() {
                           onChange={(e) => setBatchHeight(e.target.value)}
                         />
                       </div>
-                      <div className="form-check form-switch mb-0">
-                        <input
-                          className="form-check-input cursor-pointer"
-                          type="checkbox"
-                          role="switch"
-                          id="batchVisSwitch"
-                          checked={batchIsVisible}
-                          onChange={(e) => setBatchIsVisible(e.target.checked)}
-                        />
-                        <label className="form-check-label extra-small fw-semibold" htmlFor="batchVisSwitch">
-                          Visible to Customers ({batchIsVisible ? 'ON' : 'OFF'})
-                        </label>
-                      </div>
+                    </div>
+                    <div className="form-check form-switch mb-0">
+                      <input
+                        className="form-check-input cursor-pointer"
+                        type="checkbox"
+                        role="switch"
+                        id="batchVisSwitch"
+                        checked={batchIsVisible}
+                        onChange={(e) => setBatchIsVisible(e.target.checked)}
+                      />
+                      <label className="form-check-label extra-small fw-semibold" htmlFor="batchVisSwitch">
+                        Visible to Customers ({batchIsVisible ? 'ON' : 'OFF'})
+                      </label>
                     </div>
                   </div>
                 </div>

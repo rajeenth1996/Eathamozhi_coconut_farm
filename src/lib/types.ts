@@ -321,19 +321,39 @@ export function formatApproximateAge(age: number | string | undefined): string {
   return `${floored}+ years`;
 }
 
+const KNOWN_FARM_SHORT_CODES: Record<string, string> = {
+  'ETH-RA-F001': 'EF01',
+  'SUN-SE-F001': 'EF02',
+  'MAN-SE-F001': 'EF03',
+  'SOO-SE-F001': 'EF04',
+  'KAA-KA-F001': 'EF05',
+  'SOO-RA-F001': 'EF06',
+  'SOO-TA-F001': 'EF07',
+  'PER-TA-F001': 'EF08',
+};
+
 /**
  * Normalizes farm ID / farm code to short farm code format (e.g. EF01, EF02).
  * Examples:
  * - "ETH-RA-F001" -> "EF01"
- * - "SUN-SE-F001" -> "EF01"
+ * - "SUN-SE-F001" -> "EF02"
  * - "SUN-SE-F002" -> "EF02"
  * - "EF01" -> "EF01"
  * - "EF02" -> "EF02"
  */
-export function toShortFarmCode(farmCode: string): string {
+export function toShortFarmCode(farmCode: string, allFarms?: Array<{ farmCode: string }>): string {
   if (!farmCode) return 'EF01';
   const clean = farmCode.trim().toUpperCase();
   if (/^EF\d{2}$/.test(clean)) return clean;
+  if (KNOWN_FARM_SHORT_CODES[clean]) return KNOWN_FARM_SHORT_CODES[clean];
+
+  if (allFarms && Array.isArray(allFarms)) {
+    const idx = allFarms.findIndex(f => f.farmCode?.trim().toUpperCase() === clean);
+    if (idx !== -1) {
+      return `EF${String(idx + 1).padStart(2, '0')}`;
+    }
+  }
+
   const match = clean.match(/F0*(\d+)$/);
   if (match) {
     const num = parseInt(match[1], 10);
