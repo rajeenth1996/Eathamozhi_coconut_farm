@@ -635,7 +635,7 @@
       "price": 155,
       "status": "SOLD_OUT",
       "description": "Handpicked West Coast Tall seedlings sourced from verified mother palms under Farm ID ETH-RA-F001.",
-      "viewsCount": 34,
+      "viewsCount": 37,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1795676545/eathamozhi-farm/batches/348b42b4-a803-41d5-95a3-49b4a0280a45-1795676545039.jpg"
       ],
@@ -671,7 +671,7 @@
       "price": 155,
       "status": "SOLD_OUT",
       "description": "Handpicked West Coast Tall seedlings sourced from verified mother palms under Farm ID MAN-SE-F001.",
-      "viewsCount": 10,
+      "viewsCount": 15,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1795676708/eathamozhi-farm/batches/82e16cf2-acb8-4d39-aedc-0d8519543d75-1795676707587.jpg"
       ],
@@ -707,7 +707,7 @@
       "price": 155,
       "status": "SOLD_OUT",
       "description": "Handpicked West Coast Tall seedlings sourced from verified mother palms under Farm ID SOO-SE-F001.",
-      "viewsCount": 1,
+      "viewsCount": 4,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792909391/eathamozhi-farm/batches/5700477e-967d-4133-9a99-76560430a143-1792909391250.jpg"
       ],
@@ -743,7 +743,7 @@
       "price": 160,
       "status": "LIMITED",
       "description": "Handpicked West Coast Tall seedlings sourced from verified mother palms under Farm ID SOO-RA-F001.",
-      "viewsCount": 758,
+      "viewsCount": 759,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1792888376/eathamozhy-farm/batches/b76f3226-817a-4ae2-8511-d66aeb861dca-1792888375115.jpg"
       ],
@@ -779,7 +779,7 @@
       "price": 155,
       "status": "AVAILABLE",
       "description": "Handpicked West Coast Tall seedlings sourced from verified mother palms under Farm ID ETH-RA-F001.",
-      "viewsCount": 18,
+      "viewsCount": 23,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1795239211/eathamozhi-farm/batches/060444db-723a-4cc6-8d3a-b7b28f23d3a3-1795239211348.jpg"
       ],
@@ -815,7 +815,7 @@
       "price": 155,
       "status": "LIMITED",
       "description": "Handpicked West Coast Tall seedlings sourced from verified mother palms under Farm ID KAA-KA-F001.",
-      "viewsCount": 1,
+      "viewsCount": 7,
       "images": [
         "https://res.cloudinary.com/ub9fl2yg/image/upload/v1795239212/eathamozhi-farm/batches/236c9a4c-95f8-4538-b07d-69d361383e93-1795239212256.jpg"
       ],
@@ -823,6 +823,42 @@
       "createdAt": "2026-11-25T05:02:50.156Z",
       "updatedAt": "2026-11-27T12:03:10.563Z",
       "availableQuantity": 20
+    },
+    {
+      "id": "b-1795801674685",
+      "batchCode": "EF02-Aug26-B1",
+      "primaryFarmId": "farm-sun-se-f001",
+      "primaryFarmCode": "SUN-SE-F001",
+      "batchMonth": 8,
+      "batchYear": 2026,
+      "batchNumber": 1,
+      "totalCoconuts": 200,
+      "totalSeedlings": 100,
+      "parentPalmId": "mp-2",
+      "parentPalmCode": "SUN-SE-F001-MT001",
+      "parentPalmCodes": [
+        "SUN-SE-F001-MT001",
+        "SUN-SE-F001-MT002"
+      ],
+      "name": "August 2026 (SUN-SE-Aug26-B1)",
+      "harvestDate": "2026-08-01",
+      "seededDate": "2026-08-31",
+      "age": "3 months",
+      "height": "Approx. 0-1 ft",
+      "totalQuantity": 100,
+      "bookedQuantity": 0,
+      "inventoryAdjustments": 0,
+      "price": 180,
+      "status": "COMING_SOON",
+      "description": "",
+      "viewsCount": 15,
+      "images": [
+        "https://res.cloudinary.com/ub9fl2yg/image/upload/v1795802389/eathamozhi-farm/batches/82ac41d6-68eb-4d76-9863-7c74dfb5af39-1795802389270.jpg"
+      ],
+      "isVisible": true,
+      "createdAt": "2026-11-27T17:47:54.685Z",
+      "updatedAt": "2026-11-27T18:51:01.091Z",
+      "availableQuantity": 100
     }
   ],
   "batchSources": [
@@ -1070,6 +1106,50 @@
       "notes": "Collected from verified mother tree SUN-SE-F001-MT001",
       "rejectedQuantity": 0,
       "updatedAt": "2026-11-02T17:53:18.639Z"
+    },
+    {
+      "_id": "6b09c24b28a5f35075a2ca02",
+      "id": "bs-EF02-Aug26-B1-SUN-SE-F001-MT001",
+      "__v": 0,
+      "batchCode": "EF02-Aug26-B1",
+      "batchId": "b-1795801674685",
+      "coconutQuantity": 100,
+      "coconutsSown": 100,
+      "collectionDate": "2026-08-01",
+      "collectionStatus": "Verified",
+      "createdAt": "2026-11-27T17:47:54.685Z",
+      "farmCode": "SUN-SE-F001",
+      "farmId": "farm-sun-se-f001",
+      "farmName": "Sundapattivilai amman kovil thattu",
+      "germinatedQuantity": 100,
+      "motherTreeCode": "SUN-SE-F001-MT001",
+      "motherTreeId": "mp-2",
+      "notes": "Collected from verified mother tree SUN-SE-F001-MT001",
+      "rejectedQuantity": 0,
+      "updatedAt": "2026-11-27T17:47:54.685Z",
+      "germinationRate": "100%"
+    },
+    {
+      "_id": "6b09c24b28a5f35075a2ca04",
+      "id": "bs-EF02-Aug26-B1-SUN-SE-F001-MT002",
+      "__v": 0,
+      "batchCode": "EF02-Aug26-B1",
+      "batchId": "b-1795801674685",
+      "coconutQuantity": 100,
+      "coconutsSown": 100,
+      "collectionDate": "2026-08-01",
+      "collectionStatus": "Verified",
+      "createdAt": "2026-11-27T17:47:54.685Z",
+      "farmCode": "SUN-SE-F001",
+      "farmId": "farm-sun-se-f001",
+      "farmName": "Sundapattivilai amman kovil thattu",
+      "germinatedQuantity": 100,
+      "motherTreeCode": "SUN-SE-F001-MT002",
+      "motherTreeId": "mp-6",
+      "notes": "Collected from verified mother tree SUN-SE-F001-MT002",
+      "rejectedQuantity": 0,
+      "updatedAt": "2026-11-27T17:47:54.685Z",
+      "germinationRate": "100%"
     }
   ],
   "batchInventory": [
@@ -1262,6 +1342,44 @@
       "rejectedQuantity": 0,
       "seedlingsProduced": 100,
       "updatedAt": "2026-11-02T18:23:21.882Z"
+    },
+    {
+      "_id": "6b09c24b28a5f35075a2ca05",
+      "id": "bi-bs-EF02-Aug26-B1-SUN-SE-F001-MT001",
+      "__v": 0,
+      "availableQuantity": 50,
+      "batchCode": "EF02-Aug26-B1",
+      "batchId": "b-1795801674685",
+      "batchSourceId": "bs-EF02-Aug26-B1-SUN-SE-F001-MT001",
+      "bookedQuantity": 0,
+      "damagedQuantity": 0,
+      "dispatchedQuantity": 0,
+      "farmCode": "SUN-SE-F001",
+      "farmId": "farm-sun-se-f001",
+      "motherTreeCode": "SUN-SE-F001-MT001",
+      "motherTreeId": "mp-2",
+      "rejectedQuantity": 0,
+      "seedlingsProduced": 50,
+      "updatedAt": "2026-11-27T18:51:01.091Z"
+    },
+    {
+      "_id": "6b09c24b28a5f35075a2ca06",
+      "id": "bi-bs-EF02-Aug26-B1-SUN-SE-F001-MT002",
+      "__v": 0,
+      "availableQuantity": 50,
+      "batchCode": "EF02-Aug26-B1",
+      "batchId": "b-1795801674685",
+      "batchSourceId": "bs-EF02-Aug26-B1-SUN-SE-F001-MT002",
+      "bookedQuantity": 0,
+      "damagedQuantity": 0,
+      "dispatchedQuantity": 0,
+      "farmCode": "SUN-SE-F001",
+      "farmId": "farm-sun-se-f001",
+      "motherTreeCode": "SUN-SE-F001-MT002",
+      "motherTreeId": "mp-6",
+      "rejectedQuantity": 0,
+      "seedlingsProduced": 50,
+      "updatedAt": "2026-11-27T18:51:01.091Z"
     }
   ],
   "bookings": [
@@ -25330,6 +25448,594 @@
       "visitorId": "v_sr4cq746_1795791590376-1795791597969",
       "firstViewedAt": "2026-11-27T14:59:57.969Z",
       "lastViewedAt": "2026-11-27T14:59:57.969Z"
+    },
+    {
+      "id": "bv-1795791965104-385",
+      "batchCode": "EM-0426-D",
+      "visitorId": "v_3bj0mcqg_1795791957349-1795791965104",
+      "firstViewedAt": "2026-11-27T15:06:05.104Z",
+      "lastViewedAt": "2026-11-27T15:06:05.104Z"
+    },
+    {
+      "id": "bv-1795791965099-772",
+      "batchCode": "EM-0426-D",
+      "visitorId": "v_hm8oxjnj_1795791957594-1795791965099",
+      "firstViewedAt": "2026-11-27T15:06:05.099Z",
+      "lastViewedAt": "2026-11-27T15:06:05.099Z"
+    },
+    {
+      "id": "bv-1795791983405-65",
+      "batchCode": "EM-0126-A",
+      "visitorId": "v_xacsbc3v_1795791977091-1795791983405",
+      "firstViewedAt": "2026-11-27T15:06:23.405Z",
+      "lastViewedAt": "2026-11-27T15:06:23.405Z"
+    },
+    {
+      "id": "bv-1795791984144-581",
+      "batchCode": "EM-0126-A",
+      "visitorId": "sess_1795791962632_ptiygaj-1795791984144",
+      "firstViewedAt": "2026-11-27T15:06:24.144Z",
+      "lastViewedAt": "2026-11-27T15:06:24.144Z"
+    },
+    {
+      "id": "bv-1795792271391-592",
+      "batchCode": "EM-1026-A",
+      "visitorId": "sess_1793788503627_kq91s1o-1795792271391",
+      "firstViewedAt": "2026-11-27T15:11:11.391Z",
+      "lastViewedAt": "2026-11-27T15:11:11.392Z"
+    },
+    {
+      "id": "bv-1795792272455-457",
+      "batchCode": "EM-1026-A",
+      "visitorId": "v_75srsapf_1795781417374-1795792272455",
+      "firstViewedAt": "2026-11-27T15:11:12.455Z",
+      "lastViewedAt": "2026-11-27T15:11:12.455Z"
+    },
+    {
+      "id": "bv-1795792275507-327",
+      "batchCode": "EM-0126-A",
+      "visitorId": "v_75srsapf_1795781417374-1795792275507",
+      "firstViewedAt": "2026-11-27T15:11:15.507Z",
+      "lastViewedAt": "2026-11-27T15:11:15.507Z"
+    },
+    {
+      "id": "bv-1795792275525-783",
+      "batchCode": "EM-0126-A",
+      "visitorId": "sess_1793788503627_kq91s1o-1795792275525",
+      "firstViewedAt": "2026-11-27T15:11:15.525Z",
+      "lastViewedAt": "2026-11-27T15:11:15.525Z"
+    },
+    {
+      "id": "bv-1795792294566-724",
+      "batchCode": "EM-0226-B",
+      "visitorId": "sess_1793788503627_kq91s1o-1795792294566",
+      "firstViewedAt": "2026-11-27T15:11:34.566Z",
+      "lastViewedAt": "2026-11-27T15:11:34.566Z"
+    },
+    {
+      "id": "bv-1795792294731-469",
+      "batchCode": "EM-0226-B",
+      "visitorId": "v_75srsapf_1795781417374-1795792294731",
+      "firstViewedAt": "2026-11-27T15:11:34.731Z",
+      "lastViewedAt": "2026-11-27T15:11:34.731Z"
+    },
+    {
+      "id": "bv-1795792294731-619",
+      "batchCode": "EM-0426-D",
+      "visitorId": "v_75srsapf_1795781417374-1795792294731",
+      "firstViewedAt": "2026-11-27T15:11:34.731Z",
+      "lastViewedAt": "2026-11-27T15:11:34.731Z"
+    },
+    {
+      "id": "bv-1795792294731-212",
+      "batchCode": "EM-0426-D",
+      "visitorId": "sess_1793788503627_kq91s1o-1795792294731",
+      "firstViewedAt": "2026-11-27T15:11:34.731Z",
+      "lastViewedAt": "2026-11-27T15:11:34.731Z"
+    },
+    {
+      "id": "bv-1795792304184-29",
+      "batchCode": "EM-0426-D",
+      "visitorId": "v_y0jfp6yr_1795783871246-1795792304184",
+      "firstViewedAt": "2026-11-27T15:11:44.184Z",
+      "lastViewedAt": "2026-11-27T15:11:44.184Z"
+    },
+    {
+      "id": "bv-1795792658910-401",
+      "batchCode": "EM-0426-D",
+      "visitorId": "v_75srsapf_1795781417374-1795792658910",
+      "firstViewedAt": "2026-11-27T15:17:38.910Z",
+      "lastViewedAt": "2026-11-27T15:17:38.910Z"
+    },
+    {
+      "id": "bv-1795792681927-761",
+      "batchCode": "EM-1026-A",
+      "visitorId": "v_75srsapf_1795781417374-1795792681927",
+      "firstViewedAt": "2026-11-27T15:18:01.927Z",
+      "lastViewedAt": "2026-11-27T15:18:01.927Z"
+    },
+    {
+      "id": "bv-1795792681927-888",
+      "batchCode": "EM-0126-A",
+      "visitorId": "v_75srsapf_1795781417374-1795792681927",
+      "firstViewedAt": "2026-11-27T15:18:01.927Z",
+      "lastViewedAt": "2026-11-27T15:18:01.927Z"
+    },
+    {
+      "id": "bv-1795792687463-77",
+      "batchCode": "EM-0226-B",
+      "visitorId": "v_75srsapf_1795781417374-1795792687463",
+      "firstViewedAt": "2026-11-27T15:18:07.463Z",
+      "lastViewedAt": "2026-11-27T15:18:07.463Z"
+    },
+    {
+      "id": "bv-1795792687463-419",
+      "batchCode": "EM-0126-A",
+      "visitorId": "sess_1793788503627_kq91s1o-1795792687463",
+      "firstViewedAt": "2026-11-27T15:18:07.463Z",
+      "lastViewedAt": "2026-11-27T15:18:07.463Z"
+    },
+    {
+      "id": "bv-1795792687458-778",
+      "batchCode": "EM-1026-A",
+      "visitorId": "sess_1793788503627_kq91s1o-1795792687458",
+      "firstViewedAt": "2026-11-27T15:18:07.458Z",
+      "lastViewedAt": "2026-11-27T15:18:07.458Z"
+    },
+    {
+      "id": "bv-1795792688515-322",
+      "batchCode": "EM-0126-A",
+      "visitorId": "sess_1793788503627_kq91s1o-1795792688515",
+      "firstViewedAt": "2026-11-27T15:18:08.515Z",
+      "lastViewedAt": "2026-11-27T15:18:08.515Z"
+    },
+    {
+      "id": "bv-1795792688523-644",
+      "batchCode": "EM-0126-A",
+      "visitorId": "v_75srsapf_1795781417374-1795792688523",
+      "firstViewedAt": "2026-11-27T15:18:08.523Z",
+      "lastViewedAt": "2026-11-27T15:18:08.523Z"
+    },
+    {
+      "id": "bv-1795792688523-973",
+      "batchCode": "EM-0226-B",
+      "visitorId": "sess_1793788503627_kq91s1o-1795792688523",
+      "firstViewedAt": "2026-11-27T15:18:08.523Z",
+      "lastViewedAt": "2026-11-27T15:18:08.523Z"
+    },
+    {
+      "id": "bv-1795792691407-569",
+      "batchCode": "EM-0226-B",
+      "visitorId": "v_75srsapf_1795781417374-1795792691407",
+      "firstViewedAt": "2026-11-27T15:18:11.407Z",
+      "lastViewedAt": "2026-11-27T15:18:11.407Z"
+    },
+    {
+      "id": "bv-1795792691411-177",
+      "batchCode": "EM-0226-B",
+      "visitorId": "sess_1793788503627_kq91s1o-1795792691411",
+      "firstViewedAt": "2026-11-27T15:18:11.411Z",
+      "lastViewedAt": "2026-11-27T15:18:11.411Z"
+    },
+    {
+      "id": "bv-1795792693665-733",
+      "batchCode": "EM-0426-D",
+      "visitorId": "v_75srsapf_1795781417374-1795792693665",
+      "firstViewedAt": "2026-11-27T15:18:13.665Z",
+      "lastViewedAt": "2026-11-27T15:18:13.665Z"
+    },
+    {
+      "id": "bv-1795792693723-28",
+      "batchCode": "EM-0426-D",
+      "visitorId": "sess_1793788503627_kq91s1o-1795792693723",
+      "firstViewedAt": "2026-11-27T15:18:13.723Z",
+      "lastViewedAt": "2026-11-27T15:18:13.723Z"
+    },
+    {
+      "id": "bv-1795792699499-456",
+      "batchCode": "EM-0526-E",
+      "visitorId": "sess_1793788503627_kq91s1o-1795792699499",
+      "firstViewedAt": "2026-11-27T15:18:19.499Z",
+      "lastViewedAt": "2026-11-27T15:18:19.499Z"
+    },
+    {
+      "id": "bv-1795792699510-706",
+      "batchCode": "EM-0526-E",
+      "visitorId": "v_75srsapf_1795781417374-1795792699510",
+      "firstViewedAt": "2026-11-27T15:18:19.510Z",
+      "lastViewedAt": "2026-11-27T15:18:19.510Z"
+    },
+    {
+      "id": "bv-1795792702823-298",
+      "batchCode": "EM-0626-F",
+      "visitorId": "sess_1793788503627_kq91s1o-1795792702823",
+      "firstViewedAt": "2026-11-27T15:18:22.823Z",
+      "lastViewedAt": "2026-11-27T15:18:22.823Z"
+    },
+    {
+      "id": "bv-1795792704211-958",
+      "batchCode": "EM-0626-F",
+      "visitorId": "v_75srsapf_1795781417374-1795792704211",
+      "firstViewedAt": "2026-11-27T15:18:24.211Z",
+      "lastViewedAt": "2026-11-27T15:18:24.211Z"
+    },
+    {
+      "id": "bv-1795792710289-581",
+      "batchCode": "EM-0426-D",
+      "visitorId": "v_y0jfp6yr_1795783871246-1795792710289",
+      "firstViewedAt": "2026-11-27T15:18:30.289Z",
+      "lastViewedAt": "2026-11-27T15:18:30.289Z"
+    },
+    {
+      "id": "bv-1795792724656-620",
+      "batchCode": "EM-0626-F",
+      "visitorId": "v_75srsapf_1795781417374-1795792724656",
+      "firstViewedAt": "2026-11-27T15:18:44.656Z",
+      "lastViewedAt": "2026-11-27T15:18:44.656Z"
+    },
+    {
+      "id": "bv-1795792755927-366",
+      "batchCode": "EM-0626-F",
+      "visitorId": "v_75srsapf_1795781417374-1795792755927",
+      "firstViewedAt": "2026-11-27T15:19:15.927Z",
+      "lastViewedAt": "2026-11-27T15:19:15.927Z"
+    },
+    {
+      "id": "bv-1795792755948-688",
+      "batchCode": "EM-0626-F",
+      "visitorId": "sess_1793788503627_kq91s1o-1795792755948",
+      "firstViewedAt": "2026-11-27T15:19:15.948Z",
+      "lastViewedAt": "2026-11-27T15:19:15.948Z"
+    },
+    {
+      "id": "bv-1795792828145-311",
+      "batchCode": "EM-0426-D",
+      "visitorId": "v_orp2n4qm_1795792825172-1795792828145",
+      "firstViewedAt": "2026-11-27T15:20:28.145Z",
+      "lastViewedAt": "2026-11-27T15:20:28.145Z"
+    },
+    {
+      "id": "bv-1795793017770-920",
+      "batchCode": "EM-0426-D",
+      "visitorId": "v_orp2n4qm_1795792825172-1795793017770",
+      "firstViewedAt": "2026-11-27T15:23:37.770Z",
+      "lastViewedAt": "2026-11-27T15:23:37.770Z"
+    },
+    {
+      "id": "bv-1795793720953-56",
+      "batchCode": "EM-0426-D",
+      "visitorId": "v_duhhfamf_1795793714126-1795793720953",
+      "firstViewedAt": "2026-11-27T15:35:20.953Z",
+      "lastViewedAt": "2026-11-27T15:35:20.953Z"
+    },
+    {
+      "id": "bv-1795793730422-701",
+      "batchCode": "EM-0426-D",
+      "visitorId": "v_gpklr5ch_1795793730153-1795793730422",
+      "firstViewedAt": "2026-11-27T15:35:30.422Z",
+      "lastViewedAt": "2026-11-27T15:35:30.422Z"
+    },
+    {
+      "id": "bv-1795794866354-223",
+      "batchCode": "EM-0426-D",
+      "visitorId": "v_gpklr5ch_1795793730153-1795794866354",
+      "firstViewedAt": "2026-11-27T15:54:26.355Z",
+      "lastViewedAt": "2026-11-27T15:54:26.355Z"
+    },
+    {
+      "id": "bv-1795795015532-0",
+      "batchCode": "EM-0626-F",
+      "visitorId": "v_75srsapf_1795781417374-1795795015532",
+      "firstViewedAt": "2026-11-27T15:56:55.532Z",
+      "lastViewedAt": "2026-11-27T15:56:55.532Z"
+    },
+    {
+      "id": "bv-1795795026416-705",
+      "batchCode": "EM-0626-F",
+      "visitorId": "v_75srsapf_1795781417374-1795795026416",
+      "firstViewedAt": "2026-11-27T15:57:06.416Z",
+      "lastViewedAt": "2026-11-27T15:57:06.416Z"
+    },
+    {
+      "id": "bv-1795795026643-25",
+      "batchCode": "EM-0626-F",
+      "visitorId": "sess_1793788503627_kq91s1o-1795795026643",
+      "firstViewedAt": "2026-11-27T15:57:06.643Z",
+      "lastViewedAt": "2026-11-27T15:57:06.643Z"
+    },
+    {
+      "id": "bv-1795795030121-42",
+      "batchCode": "EF01-Aug26-B1",
+      "visitorId": "v_75srsapf_1795781417374-1795795030121",
+      "firstViewedAt": "2026-11-27T15:57:10.121Z",
+      "lastViewedAt": "2026-11-27T15:57:10.121Z"
+    },
+    {
+      "id": "bv-1795795031584-843",
+      "batchCode": "EF01-Aug26-B1",
+      "visitorId": "sess_1793788503627_kq91s1o-1795795031584",
+      "firstViewedAt": "2026-11-27T15:57:11.584Z",
+      "lastViewedAt": "2026-11-27T15:57:11.584Z"
+    },
+    {
+      "id": "bv-1795795068291-530",
+      "batchCode": "EM-0426-D",
+      "visitorId": "v_y0jfp6yr_1795783871246-1795795068291",
+      "firstViewedAt": "2026-11-27T15:57:48.291Z",
+      "lastViewedAt": "2026-11-27T15:57:48.291Z"
+    },
+    {
+      "id": "bv-1795795070302-563",
+      "batchCode": "EF01-Aug26-B1",
+      "visitorId": "v_75srsapf_1795781417374-1795795070302",
+      "firstViewedAt": "2026-11-27T15:57:50.302Z",
+      "lastViewedAt": "2026-11-27T15:57:50.302Z"
+    },
+    {
+      "id": "bv-1795795073482-608",
+      "batchCode": "EF01-Aug26-B1",
+      "visitorId": "v_75srsapf_1795781417374-1795795073482",
+      "firstViewedAt": "2026-11-27T15:57:53.482Z",
+      "lastViewedAt": "2026-11-27T15:57:53.482Z"
+    },
+    {
+      "id": "bv-1795795073504-975",
+      "batchCode": "EF01-Aug26-B1",
+      "visitorId": "sess_1793788503627_kq91s1o-1795795073504",
+      "firstViewedAt": "2026-11-27T15:57:53.504Z",
+      "lastViewedAt": "2026-11-27T15:57:53.504Z"
+    },
+    {
+      "id": "bv-1795796337801-975",
+      "batchCode": "EM-0426-D",
+      "visitorId": "v_z36tj0qx_1795796330112-1795796337801",
+      "firstViewedAt": "2026-11-27T16:18:57.801Z",
+      "lastViewedAt": "2026-11-27T16:18:57.801Z"
+    },
+    {
+      "id": "bv-1795796338420-907",
+      "batchCode": "EM-0426-D",
+      "visitorId": "v_p0c5qshj_1795796330477-1795796338420",
+      "firstViewedAt": "2026-11-27T16:18:58.420Z",
+      "lastViewedAt": "2026-11-27T16:18:58.420Z"
+    },
+    {
+      "id": "bv-1795801974824-524",
+      "batchCode": "EM-0426-D",
+      "visitorId": "v_jtih0ztq_1795801974476-1795801974824",
+      "firstViewedAt": "2026-11-27T17:52:54.824Z",
+      "lastViewedAt": "2026-11-27T17:52:54.824Z"
+    },
+    {
+      "id": "bv-1795802005429-104",
+      "batchCode": "EM-0426-D",
+      "visitorId": "v_4xe7ycx7_1795802005091-1795802005429",
+      "firstViewedAt": "2026-11-27T17:53:25.429Z",
+      "lastViewedAt": "2026-11-27T17:53:25.429Z"
+    },
+    {
+      "id": "bv-1795802156880-836",
+      "batchCode": "EM-0426-D",
+      "visitorId": "v_t85epk8v_1795802156751-1795802156880",
+      "firstViewedAt": "2026-11-27T17:55:56.880Z",
+      "lastViewedAt": "2026-11-27T17:55:56.880Z"
+    },
+    {
+      "id": "bv-1795802187788-195",
+      "batchCode": "EM-0426-D",
+      "visitorId": "v_t85epk8v_1795802156751-1795802187788",
+      "firstViewedAt": "2026-11-27T17:56:27.788Z",
+      "lastViewedAt": "2026-11-27T17:56:27.788Z"
+    },
+    {
+      "id": "bv-1795802534609-104",
+      "batchCode": "EM-0426-D",
+      "visitorId": "v_75srsapf_1795781417374-1795802534609",
+      "firstViewedAt": "2026-11-27T18:02:14.609Z",
+      "lastViewedAt": "2026-11-27T18:02:14.609Z"
+    },
+    {
+      "id": "bv-1795803552575-779",
+      "batchCode": "EM-0426-D",
+      "visitorId": "v_6hfjo6o8_1795803551129-1795803552575",
+      "firstViewedAt": "2026-11-27T18:19:12.575Z",
+      "lastViewedAt": "2026-11-27T18:19:12.575Z"
+    },
+    {
+      "id": "bv-1795803782665-890",
+      "batchCode": "EM-0426-D",
+      "visitorId": "v_o069x4n4_1795803776181-1795803782665",
+      "firstViewedAt": "2026-11-27T18:23:02.665Z",
+      "lastViewedAt": "2026-11-27T18:23:02.665Z"
+    },
+    {
+      "id": "bv-1795803782666-644",
+      "batchCode": "EM-0426-D",
+      "visitorId": "v_23ulyr3b_1795803778476-1795803782666",
+      "firstViewedAt": "2026-11-27T18:23:02.666Z",
+      "lastViewedAt": "2026-11-27T18:23:02.666Z"
+    },
+    {
+      "id": "bv-1795804436192-967",
+      "batchCode": "EM-0426-D",
+      "visitorId": "v_lgo2u0q6_1795804428625-1795804436192",
+      "firstViewedAt": "2026-11-27T18:33:56.192Z",
+      "lastViewedAt": "2026-11-27T18:33:56.192Z"
+    },
+    {
+      "id": "bv-1795804436450-704",
+      "batchCode": "EM-0426-D",
+      "visitorId": "v_wsvaxlev_1795804429143-1795804436450",
+      "firstViewedAt": "2026-11-27T18:33:56.450Z",
+      "lastViewedAt": "2026-11-27T18:33:56.450Z"
+    },
+    {
+      "id": "bv-1795804879119-513",
+      "batchCode": "EM-0426-D",
+      "visitorId": "v_y0jfp6yr_1795783871246-1795804879119",
+      "firstViewedAt": "2026-11-27T18:41:19.119Z",
+      "lastViewedAt": "2026-11-27T18:41:19.119Z"
+    },
+    {
+      "id": "bv-1795805015629-580",
+      "batchCode": "EM-0426-D",
+      "visitorId": "v_74i5i6sz_1795805007095-1795805015629",
+      "firstViewedAt": "2026-11-27T18:43:35.629Z",
+      "lastViewedAt": "2026-11-27T18:43:35.629Z"
+    },
+    {
+      "id": "bv-1795805322617-461",
+      "batchCode": "EM-0426-D",
+      "visitorId": "v_75srsapf_1795781417374-1795805322617",
+      "firstViewedAt": "2026-11-27T18:48:42.617Z",
+      "lastViewedAt": "2026-11-27T18:48:42.617Z"
+    },
+    {
+      "id": "bv-1795805883543-592",
+      "batchCode": "EM-0426-D",
+      "visitorId": "v_y0jfp6yr_1795783871246-1795805883543",
+      "firstViewedAt": "2026-11-27T18:58:03.543Z",
+      "lastViewedAt": "2026-11-27T18:58:03.543Z"
+    },
+    {
+      "id": "bv-1795805954212-404",
+      "batchCode": "EM-0426-D",
+      "visitorId": "v_y0jfp6yr_1795783871246-1795805954212",
+      "firstViewedAt": "2026-11-27T18:59:14.212Z",
+      "lastViewedAt": "2026-11-27T18:59:14.212Z"
+    },
+    {
+      "id": "bv-1795836023878-276",
+      "batchCode": "EM-0426-D",
+      "visitorId": "v_udjro2od_1795836016855-1795836023878",
+      "firstViewedAt": "2026-11-28T03:20:23.878Z",
+      "lastViewedAt": "2026-11-28T03:20:23.878Z"
+    },
+    {
+      "id": "bv-1795836226171-605",
+      "batchCode": "EM-0426-D",
+      "visitorId": "v_m2hf1pj4_1795836224842-1795836226171",
+      "firstViewedAt": "2026-11-28T03:23:46.171Z",
+      "lastViewedAt": "2026-11-28T03:23:46.171Z"
+    },
+    {
+      "id": "bv-1795836249710-374",
+      "batchCode": "EM-0426-D",
+      "visitorId": "v_m2hf1pj4_1795836224842-1795836249710",
+      "firstViewedAt": "2026-11-28T03:24:09.710Z",
+      "lastViewedAt": "2026-11-28T03:24:09.710Z"
+    },
+    {
+      "id": "bv-1795840010373-26",
+      "batchCode": "EM-0426-D",
+      "visitorId": "v_9znly3gf_1795840004479-1795840010373",
+      "firstViewedAt": "2026-11-28T04:26:50.373Z",
+      "lastViewedAt": "2026-11-28T04:26:50.373Z"
+    },
+    {
+      "id": "bv-1795840052553-88",
+      "batchCode": "EM-0426-D",
+      "visitorId": "v_xv9d0x96_1795840052248-1795840052553",
+      "firstViewedAt": "2026-11-28T04:27:32.553Z",
+      "lastViewedAt": "2026-11-28T04:27:32.553Z"
+    },
+    {
+      "id": "bv-1795842868566-996",
+      "batchCode": "EM-0426-D",
+      "visitorId": "v_p88ik42d_1795842861250-1795842868566",
+      "firstViewedAt": "2026-11-28T05:14:28.566Z",
+      "lastViewedAt": "2026-11-28T05:14:28.566Z"
+    },
+    {
+      "id": "bv-1795849166289-111",
+      "batchCode": "EM-0426-D",
+      "visitorId": "v_johtw4q5_1795454407451-1795849166289",
+      "firstViewedAt": "2026-11-28T06:59:26.289Z",
+      "lastViewedAt": "2026-11-28T06:59:26.289Z"
+    },
+    {
+      "id": "bv-1795850461041-16",
+      "batchCode": "EM-0426-D",
+      "visitorId": "v_m4ekv3qf_1795850453584-1795850461041",
+      "firstViewedAt": "2026-11-28T07:21:01.041Z",
+      "lastViewedAt": "2026-11-28T07:21:01.041Z"
+    },
+    {
+      "id": "bv-1795851520693-27",
+      "batchCode": "EM-0426-D",
+      "visitorId": "v_75srsapf_1795781417374-1795851520693",
+      "firstViewedAt": "2026-11-28T07:38:40.693Z",
+      "lastViewedAt": "2026-11-28T07:38:40.693Z"
+    },
+    {
+      "id": "bv-1795855429583-386",
+      "batchCode": "EM-0426-D",
+      "visitorId": "v_84cvtgkb_1795855424547-1795855429583",
+      "firstViewedAt": "2026-11-28T08:43:49.583Z",
+      "lastViewedAt": "2026-11-28T08:43:49.583Z"
+    },
+    {
+      "id": "bv-1795855446139-809",
+      "batchCode": "EM-0426-D",
+      "visitorId": "v_84cvtgkb_1795855424547-1795855446139",
+      "firstViewedAt": "2026-11-28T08:44:06.139Z",
+      "lastViewedAt": "2026-11-28T08:44:06.139Z"
+    },
+    {
+      "id": "bv-1795855499112-290",
+      "batchCode": "EM-0526-E",
+      "visitorId": "v_84cvtgkb_1795855424547-1795855499112",
+      "firstViewedAt": "2026-11-28T08:44:59.112Z",
+      "lastViewedAt": "2026-11-28T08:44:59.112Z"
+    },
+    {
+      "id": "bv-1795855500323-49",
+      "batchCode": "EM-0526-E",
+      "visitorId": "sess_1795855424574_fapvfuo-1795855500323",
+      "firstViewedAt": "2026-11-28T08:45:00.323Z",
+      "lastViewedAt": "2026-11-28T08:45:00.323Z"
+    },
+    {
+      "id": "bv-1795855524005-444",
+      "batchCode": "EM-0526-E",
+      "visitorId": "v_y5k19hzw_1795855522421-1795855524005",
+      "firstViewedAt": "2026-11-28T08:45:24.005Z",
+      "lastViewedAt": "2026-11-28T08:45:24.005Z"
+    },
+    {
+      "id": "bv-1795855524094-319",
+      "batchCode": "EM-0526-E",
+      "visitorId": "sess_1795855522442_bbkryp4-1795855524094",
+      "firstViewedAt": "2026-11-28T08:45:24.094Z",
+      "lastViewedAt": "2026-11-28T08:45:24.094Z"
+    },
+    {
+      "id": "bv-1795855626320-929",
+      "batchCode": "EM-0526-E",
+      "visitorId": "v_btu8xv5b_1795855626656-1795855626320",
+      "firstViewedAt": "2026-11-28T08:47:06.320Z",
+      "lastViewedAt": "2026-11-28T08:47:06.320Z"
+    },
+    {
+      "id": "bv-1795855626320-576",
+      "batchCode": "EM-0526-E",
+      "visitorId": "sess_1795855626668_f0ndn5y-1795855626320",
+      "firstViewedAt": "2026-11-28T08:47:06.320Z",
+      "lastViewedAt": "2026-11-28T08:47:06.320Z"
+    },
+    {
+      "id": "bv-1795855674971-393",
+      "batchCode": "EM-0426-D",
+      "visitorId": "v_y0jfp6yr_1795783871246-1795855674971",
+      "firstViewedAt": "2026-11-28T08:47:54.971Z",
+      "lastViewedAt": "2026-11-28T08:47:54.972Z"
+    },
+    {
+      "id": "bv-1795855693817-224",
+      "batchCode": "EM-0426-D",
+      "visitorId": "v_y0jfp6yr_1795783871246-1795855693817",
+      "firstViewedAt": "2026-11-28T08:48:13.817Z",
+      "lastViewedAt": "2026-11-28T08:48:13.817Z"
     }
   ],
   "youtubeVideos": [
