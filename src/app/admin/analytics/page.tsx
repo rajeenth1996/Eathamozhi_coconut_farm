@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import AdminNav from '@/components/AdminNav';
 import AdminLogoutButton from '@/components/AdminLogoutButton';
 import AdminPagination from '@/components/AdminPagination';
+import { sortData, SortDirection } from '@/lib/sortUtils';
+import SortableTh from '@/components/SortableTh';
 
 interface AnalyticsData {
   kpis: {
@@ -52,6 +54,40 @@ export default function AdminAnalyticsPage() {
   // Pagination for user journeys
   const [journeyPage, setJourneyPage] = useState(1);
   const [journeyPageSize, setJourneyPageSize] = useState(10);
+
+  // Sorting for Batch Analytics
+  const [batchSortField, setBatchSortField] = useState<string>('uniqueVisitors');
+  const [batchSortDirection, setBatchSortDirection] = useState<SortDirection>('desc');
+  const handleBatchSort = (field: string) => {
+    if (batchSortField === field) {
+      setBatchSortDirection(prev => (prev === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setBatchSortField(field);
+      setBatchSortDirection('desc');
+    }
+  };
+
+  const sortedBatchAnalytics = useMemo(() => {
+    if (!data?.batchAnalytics) return [];
+    return sortData(data.batchAnalytics, batchSortField, batchSortDirection);
+  }, [data?.batchAnalytics, batchSortField, batchSortDirection]);
+
+  // Sorting for Top Pages
+  const [pageSortField, setPageSortField] = useState<string>('count');
+  const [pageSortDirection, setPageSortDirection] = useState<SortDirection>('desc');
+  const handlePageSort = (field: string) => {
+    if (pageSortField === field) {
+      setPageSortDirection(prev => (prev === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setPageSortField(field);
+      setPageSortDirection('desc');
+    }
+  };
+
+  const sortedTopPages = useMemo(() => {
+    if (!data?.topPages) return [];
+    return sortData(data.topPages, pageSortField, pageSortDirection);
+  }, [data?.topPages, pageSortField, pageSortDirection]);
 
   useEffect(() => {
     setJourneyPage(1);
@@ -314,14 +350,14 @@ export default function AdminAnalyticsPage() {
                 <table className="table table-hover align-middle mb-0">
                   <thead className="table-light">
                     <tr className="extra-small text-uppercase">
-                      <th>Batch Code</th>
-                      <th className="text-center">Unique Farmers Viewed</th>
-                      <th className="text-center">Total View Hits</th>
+                      <SortableTh field="batchCode" currentSort={batchSortField} currentDirection={batchSortDirection} onSort={handleBatchSort}>Batch Code</SortableTh>
+                      <SortableTh field="uniqueVisitors" currentSort={batchSortField} currentDirection={batchSortDirection} onSort={handleBatchSort} align="center">Unique Farmers Viewed</SortableTh>
+                      <SortableTh field="viewsCount" currentSort={batchSortField} currentDirection={batchSortDirection} onSort={handleBatchSort} align="center">Total View Hits</SortableTh>
                       <th className="text-end">Action</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {data.batchAnalytics.map(b => (
+                    {sortedBatchAnalytics.map(b => (
                       <tr key={b.batchCode}>
                         <td>
                           <span className="badge bg-secondary-subtle text-secondary font-monospace fw-bold me-2">{b.batchCode}</span>
@@ -360,16 +396,17 @@ export default function AdminAnalyticsPage() {
                   <table className="table table-hover align-middle mb-0">
                     <thead className="table-light">
                       <tr className="extra-small text-uppercase">
-                        <th>Page Path</th>
-                        <th className="text-end">Views</th>
+                        <SortableTh field="path" currentSort={pageSortField} currentDirection={pageSortDirection} onSort={handlePageSort}>Page Path</SortableTh>
+                        <SortableTh field="count" currentSort={pageSortField} currentDirection={pageSortDirection} onSort={handlePageSort} align="right">Views</SortableTh>
                         <th className="text-end">Share</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {data?.topPages && data.topPages.length > 0 ? (
-                        data.topPages.map((page, idx) => {
-                          const pct = data.kpis.totalViews > 0
-                            ? Math.round((page.count / data.kpis.totalViews) * 100)
+                      {sortedTopPages && sortedTopPages.length > 0 ? (
+                        sortedTopPages.map((page, idx) => {
+                          const totalViews = data?.kpis?.totalViews || 0;
+                          const pct = totalViews > 0
+                            ? Math.round((page.count / totalViews) * 100)
                             : 0;
                           return (
                             <tr key={idx}>

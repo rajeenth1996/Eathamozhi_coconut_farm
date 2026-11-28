@@ -1,11 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import AdminNav from '@/components/AdminNav';
 import AdminPagination from '@/components/AdminPagination';
 import WhatsAppBroadcastModal, { BroadcastRecipient } from '@/components/WhatsAppBroadcastModal';
 import * as XLSX from 'xlsx';
+import SortableTh from '@/components/SortableTh';
+import { sortData, SortDirection } from '@/lib/sortUtils';
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<any[]>([]);
@@ -226,12 +228,31 @@ export default function AdminOrdersPage() {
     return matchSearch && matchStatus && matchOrderStart && matchOrderEnd && matchDelivStart && matchDelivEnd;
   });
 
+  // Sorting State
+  const [sortField, setSortField] = useState<string>('createdAt');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const sortedOrders = useMemo(() => {
+    return sortData(filteredOrders, sortField, sortDirection, {
+      balanceAmount: (o) => (o.totalPrice || 0) - (o.advanceAmount || 0),
+    });
+  }, [filteredOrders, sortField, sortDirection]);
+
   // Reset to first page whenever search or filter criteria change
   useEffect(() => {
     setCurrentPage(1);
-  }, [search, filterStatus, orderStartDate, orderEndDate, deliveryStartDate, deliveryEndDate]);
+  }, [search, filterStatus, orderStartDate, orderEndDate, deliveryStartDate, deliveryEndDate, sortField, sortDirection]);
 
-  const paginatedOrders = filteredOrders.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const paginatedOrders = sortedOrders.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   // Multi-select & WhatsApp Broadcast State
   const [selectedOrderIds, setSelectedOrderIds] = useState<string[]>([]);
@@ -959,15 +980,17 @@ export default function AdminOrdersPage() {
                           title="Select / Deselect all orders on this page"
                         />
                       </th>
-                      <th>Booking ID &amp; Order Date</th>
-                      <th>Customer Details</th>
-                      <th>Expected Delivery</th>
-                      <th>Batch</th>
-                      <th>Qty</th>
-                      <th>Order &amp; Total</th>
-                      <th>Balance Amount</th>
+                      <SortableTh label="Booking ID & Date" field="createdAt" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort}>
+                        Booking ID &amp; Order Date
+                      </SortableTh>
+                      <SortableTh label="Customer Details" field="customerName" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} />
+                      <SortableTh label="Expected Delivery" field="expectedDeliveryDate" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} />
+                      <SortableTh label="Batch" field="batchCode" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} />
+                      <SortableTh label="Qty" field="quantity" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center" />
+                      <SortableTh label="Order & Total" field="totalPrice" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} />
+                      <SortableTh label="Balance Amount" field="balanceAmount" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} />
                       <th>UPI &amp; Screenshot</th>
-                      <th>Fulfillment Status</th>
+                      <SortableTh label="Fulfillment Status" field="bookingStatus" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} />
                       <th>Action</th>
                     </tr>
                   </thead>

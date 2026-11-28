@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import AdminNav from '@/components/AdminNav';
 import AdminLogoutButton from '@/components/AdminLogoutButton';
 import AdminPagination from '@/components/AdminPagination';
+import { sortData, SortDirection } from '@/lib/sortUtils';
+import SortableTh from '@/components/SortableTh';
 
 export default function AdminFarmRegistryPage() {
   const [farms, setFarms] = useState<any[]>([]);
@@ -203,6 +205,19 @@ export default function AdminFarmRegistryPage() {
   // Unique locations for filter
   const locations = Array.from(new Set(farms.map(f => f.location).filter(Boolean)));
 
+  // Sorting
+  const [sortField, setSortField] = useState<string>('farmName');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      setSortDirection(prev => (prev === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
   // Filtered farms
   const filteredFarms = farms.filter(f => {
     const matchSearch = !search ||
@@ -217,8 +232,12 @@ export default function AdminFarmRegistryPage() {
     return matchSearch && matchStatus && matchLoc;
   });
 
-  const totalPages = Math.ceil(filteredFarms.length / pageSize) || 1;
-  const paginatedFarms = filteredFarms.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const sortedFarms = useMemo(() => {
+    return sortData(filteredFarms, sortField, sortDirection);
+  }, [filteredFarms, sortField, sortDirection]);
+
+  const totalPages = Math.ceil(sortedFarms.length / pageSize) || 1;
+  const paginatedFarms = sortedFarms.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   return (
     <>
@@ -311,18 +330,18 @@ export default function AdminFarmRegistryPage() {
               <table className="table table-hover align-middle mb-0 text-nowrap">
                 <thead className="table-dark">
                   <tr>
-                    <th>Farm Name</th>
-                    <th>Farm ID</th>
-                    <th>Owner</th>
-                    <th>Location</th>
-                    <th className="text-center">Mother Trees</th>
-                    <th className="text-center">Selected</th>
-                    <th className="text-center">Active Batches</th>
-                    <th className="text-center">Produced</th>
-                    <th className="text-center">Available</th>
-                    <th className="text-center">Booked</th>
-                    <th className="text-center">Dispatched</th>
-                    <th className="text-center">Status</th>
+                    <SortableTh field="farmName" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort}>Farm Name</SortableTh>
+                    <SortableTh field="farmCode" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort}>Farm ID</SortableTh>
+                    <SortableTh field="ownerName" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort}>Owner</SortableTh>
+                    <SortableTh field="location" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort}>Location</SortableTh>
+                    <SortableTh field="totalMotherTrees" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center">Mother Trees</SortableTh>
+                    <SortableTh field="selectedMotherTrees" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center">Selected</SortableTh>
+                    <SortableTh field="activeBatches" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center">Active Batches</SortableTh>
+                    <SortableTh field="totalSeedlingsProduced" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center">Produced</SortableTh>
+                    <SortableTh field="availableSeedlings" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center">Available</SortableTh>
+                    <SortableTh field="bookedSeedlings" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center">Booked</SortableTh>
+                    <SortableTh field="dispatchedSeedlings" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center">Dispatched</SortableTh>
+                    <SortableTh field="status" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center">Status</SortableTh>
                     <th className="text-end">Actions</th>
                   </tr>
                 </thead>

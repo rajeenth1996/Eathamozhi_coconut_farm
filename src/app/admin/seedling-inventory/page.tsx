@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import AdminNav from '@/components/AdminNav';
 import AdminPagination from '@/components/AdminPagination';
 import * as XLSX from 'xlsx';
+import { sortData, SortDirection } from '@/lib/sortUtils';
+import SortableTh from '@/components/SortableTh';
 
 export default function AdminSeedlingInventoryPage() {
   const [inventory, setInventory] = useState<any[]>([]);
@@ -125,6 +127,19 @@ export default function AdminSeedlingInventoryPage() {
     return matchesSearch && matchesFarm && matchesBatch;
   });
 
+  // Sorting
+  const [sortField, setSortField] = useState<string>('batchCode');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      setSortDirection(prev => (prev === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -133,7 +148,14 @@ export default function AdminSeedlingInventoryPage() {
     setCurrentPage(1);
   }, [search, selectedFarm, selectedBatch]);
 
-  const paginatedInventory = filteredInventory.slice(
+  const sortedInventory = useMemo(() => {
+    return sortData(filteredInventory, sortField, sortDirection, {
+      farmCode: (item) => `${item.farmCode} ${item.farmName || ''}`,
+      motherTreeCode: (item) => `${item.motherTreeCode} ${item.variety || ''}`,
+    });
+  }, [filteredInventory, sortField, sortDirection]);
+
+  const paginatedInventory = sortedInventory.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
@@ -349,15 +371,15 @@ export default function AdminSeedlingInventoryPage() {
                 <table className="table table-hover align-middle">
                   <thead className="table-dark">
                     <tr>
-                      <th>Batch Code</th>
-                      <th>Farm ID &amp; Location</th>
-                      <th>Mother Tree &amp; Variety</th>
-                      <th className="text-center">Produced</th>
-                      <th className="text-center text-success">Available</th>
-                      <th className="text-center text-warning">Booked</th>
-                      <th className="text-center text-primary">Dispatched</th>
-                      <th className="text-center text-danger">Damaged</th>
-                      <th className="text-center text-secondary">Rejected</th>
+                      <SortableTh field="batchCode" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort}>Batch Code</SortableTh>
+                      <SortableTh field="farmCode" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort}>Farm ID &amp; Location</SortableTh>
+                      <SortableTh field="motherTreeCode" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort}>Mother Tree &amp; Variety</SortableTh>
+                      <SortableTh field="seedlingsProduced" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center">Produced</SortableTh>
+                      <SortableTh field="availableQuantity" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center" className="text-success">Available</SortableTh>
+                      <SortableTh field="bookedQuantity" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center" className="text-warning">Booked</SortableTh>
+                      <SortableTh field="dispatchedQuantity" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center" className="text-primary">Dispatched</SortableTh>
+                      <SortableTh field="damagedQuantity" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center" className="text-danger">Damaged</SortableTh>
+                      <SortableTh field="rejectedQuantity" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center" className="text-secondary">Rejected</SortableTh>
                       <th className="text-center">Action</th>
                     </tr>
                   </thead>

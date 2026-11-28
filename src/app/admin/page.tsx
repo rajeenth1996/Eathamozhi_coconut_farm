@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import AdminNav from '@/components/AdminNav';
 import AdminLogoutButton from '@/components/AdminLogoutButton';
+import { sortData, SortDirection } from '@/lib/sortUtils';
+import SortableTh from '@/components/SortableTh';
 
 export default function AdminDashboardPage() {
   const [dashboardData, setDashboardData] = useState<any | null>(null);
@@ -11,6 +13,26 @@ export default function AdminDashboardPage() {
   const [parentPalms, setParentPalms] = useState<any[]>([]);
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Sorting for Farms breakdown table
+  const [sortField, setSortField] = useState<string>('farmName');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      setSortDirection(prev => (prev === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const sortedFarms = useMemo(() => {
+    if (!dashboardData?.farms) return [];
+    return sortData(dashboardData.farms, sortField, sortDirection, {
+      damagedRejected: (f: any) => Number(f.damagedSeedlings || 0) + Number(f.rejectedSeedlings || 0),
+    });
+  }, [dashboardData?.farms, sortField, sortDirection]);
 
   const fetchDashboardData = async () => {
     try {
@@ -210,18 +232,18 @@ export default function AdminDashboardPage() {
               <table className="table table-hover align-middle mb-0 text-nowrap">
                 <thead className="table-light">
                   <tr>
-                    <th>Farm ID</th>
-                    <th>Farm Name</th>
-                    <th className="text-center">Total Trees</th>
-                    <th className="text-center">Selected</th>
-                    <th className="text-center">Trees in Batches</th>
-                    <th className="text-center">Active Batches</th>
-                    <th className="text-center">Coconuts Collected</th>
-                    <th className="text-center">Produced</th>
-                    <th className="text-center">Available</th>
-                    <th className="text-center">Reserved / Booked</th>
-                    <th className="text-center">Dispatched</th>
-                    <th className="text-center">Damaged / Rejected</th>
+                    <SortableTh field="farmCode" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort}>Farm ID</SortableTh>
+                    <SortableTh field="farmName" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort}>Farm Name</SortableTh>
+                    <SortableTh field="totalMotherTrees" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center">Total Trees</SortableTh>
+                    <SortableTh field="selectedMotherTrees" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center">Selected</SortableTh>
+                    <SortableTh field="treesUsedInBatches" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center">Trees in Batches</SortableTh>
+                    <SortableTh field="activeBatches" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center">Active Batches</SortableTh>
+                    <SortableTh field="totalCoconutsCollected" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center">Coconuts Collected</SortableTh>
+                    <SortableTh field="totalSeedlingsProduced" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center">Produced</SortableTh>
+                    <SortableTh field="availableSeedlings" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center">Available</SortableTh>
+                    <SortableTh field="bookedSeedlings" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center">Reserved / Booked</SortableTh>
+                    <SortableTh field="dispatchedSeedlings" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center">Dispatched</SortableTh>
+                    <SortableTh field="damagedRejected" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center">Damaged / Rejected</SortableTh>
                   </tr>
                 </thead>
                 <tbody>
@@ -232,14 +254,14 @@ export default function AdminDashboardPage() {
                         Calculating dynamic farm metrics...
                       </td>
                     </tr>
-                  ) : !dashboardData?.farms || dashboardData.farms.length === 0 ? (
+                  ) : !sortedFarms || sortedFarms.length === 0 ? (
                     <tr>
                       <td colSpan={12} className="text-center py-4 text-muted">
                         No farms registered yet. Click &quot;Manage Farms&quot; to register your first farm.
                       </td>
                     </tr>
                   ) : (
-                    dashboardData.farms.map((f: any) => (
+                    sortedFarms.map((f: any) => (
                       <tr key={f.farmCode}>
                         <td>
                           <span className="badge bg-secondary-subtle text-secondary font-monospace fw-bold">

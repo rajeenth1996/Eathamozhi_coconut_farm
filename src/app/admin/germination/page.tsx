@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import AdminNav from '@/components/AdminNav';
 import AdminLogoutButton from '@/components/AdminLogoutButton';
 import AdminPagination from '@/components/AdminPagination';
+import { sortData, SortDirection } from '@/lib/sortUtils';
+import SortableTh from '@/components/SortableTh';
 
 export default function AdminGerminationPage() {
   const [records, setRecords] = useState<any[]>([]);
@@ -137,6 +139,19 @@ export default function AdminGerminationPage() {
     return matchSearch && matchBatch && matchFarm;
   });
 
+  // Sorting
+  const [sortField, setSortField] = useState<string>('batchCode');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      setSortDirection(prev => (prev === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -145,7 +160,26 @@ export default function AdminGerminationPage() {
     setCurrentPage(1);
   }, [search, batchFilter, farmFilter]);
 
-  const paginatedRecords = filteredRecords.slice(
+  const sortedRecords = useMemo(() => {
+    return sortData(filteredRecords, sortField, sortDirection, {
+      coconutsSown: (r) => Number(r.coconutsSown || r.coconutQuantity) || 0,
+      coconutQuantity: (r) => Number(r.coconutQuantity) || 0,
+      germinatedQuantity: (r) => Number(r.germinatedQuantity) || 0,
+      rejectedQuantity: (r) => Number(r.rejectedQuantity) || 0,
+      pendingQuantity: (r) => {
+        const sown = Number(r.coconutsSown || r.coconutQuantity) || 0;
+        return Math.max(0, sown - (Number(r.germinatedQuantity) || 0) - (Number(r.rejectedQuantity) || 0));
+      },
+      rate: (r) => {
+        const sown = Number(r.coconutsSown || r.coconutQuantity) || 0;
+        return sown > 0 ? (Number(r.germinatedQuantity) || 0) / sown : 0;
+      },
+      farmCode: (r) => `${r.farmCode} ${r.farmName || ''}`,
+      date: (r) => r.germinationStartDate || r.collectionDate || '',
+    });
+  }, [filteredRecords, sortField, sortDirection]);
+
+  const paginatedRecords = sortedRecords.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
@@ -263,17 +297,17 @@ export default function AdminGerminationPage() {
               <table className="table table-hover align-middle mb-0 text-nowrap">
                 <thead className="table-dark">
                   <tr>
-                    <th>Batch ID</th>
-                    <th>Contributing Farm</th>
-                    <th>Mother Tree ID</th>
-                    <th className="text-center">Collected</th>
-                    <th className="text-center">Sown</th>
-                    <th className="text-center">Germinated</th>
-                    <th className="text-center">Damaged / Rejected</th>
-                    <th className="text-center">Pending</th>
-                    <th className="text-center">Rate (%)</th>
-                    <th>Start / End Date</th>
-                    <th className="text-center">Status</th>
+                    <SortableTh field="batchCode" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort}>Batch ID</SortableTh>
+                    <SortableTh field="farmCode" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort}>Contributing Farm</SortableTh>
+                    <SortableTh field="motherTreeCode" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort}>Mother Tree ID</SortableTh>
+                    <SortableTh field="coconutQuantity" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center">Collected</SortableTh>
+                    <SortableTh field="coconutsSown" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center">Sown</SortableTh>
+                    <SortableTh field="germinatedQuantity" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center">Germinated</SortableTh>
+                    <SortableTh field="rejectedQuantity" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center">Damaged / Rejected</SortableTh>
+                    <SortableTh field="pendingQuantity" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center">Pending</SortableTh>
+                    <SortableTh field="rate" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center">Rate (%)</SortableTh>
+                    <SortableTh field="date" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort}>Start / End Date</SortableTh>
+                    <SortableTh field="collectionStatus" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center">Status</SortableTh>
                     <th className="text-end">Update</th>
                   </tr>
                 </thead>

@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import AdminPagination from '@/components/AdminPagination';
+import { sortData, SortDirection } from '@/lib/sortUtils';
+import SortableTh from '@/components/SortableTh';
 
 interface Review {
   id: string;
@@ -196,26 +198,37 @@ export default function AdminReviewsPage() {
     }
   };
 
+  // Sorting
+  const [sortField, setSortField] = useState<string>('date');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      setSortDirection(prev => (prev === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
   // Filter & Sort Logic
-  const filteredReviews = reviews.filter(r => {
-    const matchSearch = !search ||
-      r.customerName?.toLowerCase().includes(search.toLowerCase()) ||
-      r.location?.toLowerCase().includes(search.toLowerCase()) ||
-      r.batchCode?.toLowerCase().includes(search.toLowerCase()) ||
-      r.comment?.toLowerCase().includes(search.toLowerCase());
+  const filteredReviews = useMemo(() => {
+    const matched = reviews.filter(r => {
+      const matchSearch = !search ||
+        r.customerName?.toLowerCase().includes(search.toLowerCase()) ||
+        r.location?.toLowerCase().includes(search.toLowerCase()) ||
+        r.batchCode?.toLowerCase().includes(search.toLowerCase()) ||
+        r.comment?.toLowerCase().includes(search.toLowerCase());
 
-    const matchRating = filterRating === 'ALL' || r.rating === Number(filterRating);
-    const matchVerified = filterVerified === 'ALL' || 
-      (filterVerified === 'VERIFIED' ? r.verified : !r.verified);
+      const matchRating = filterRating === 'ALL' || r.rating === Number(filterRating);
+      const matchVerified = filterVerified === 'ALL' || 
+        (filterVerified === 'VERIFIED' ? r.verified : !r.verified);
 
-    return matchSearch && matchRating && matchVerified;
-  }).sort((a, b) => {
-    if (sortBy === 'newest') return new Date(b.date).getTime() - new Date(a.date).getTime();
-    if (sortBy === 'oldest') return new Date(a.date).getTime() - new Date(b.date).getTime();
-    if (sortBy === 'highest') return b.rating - a.rating;
-    if (sortBy === 'lowest') return a.rating - b.rating;
-    return 0;
-  });
+      return matchSearch && matchRating && matchVerified;
+    });
+
+    return sortData(matched, sortField, sortDirection);
+  }, [reviews, search, filterRating, filterVerified, sortField, sortDirection]);
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -223,7 +236,7 @@ export default function AdminReviewsPage() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [search, filterRating, filterVerified, sortBy]);
+  }, [search, filterRating, filterVerified, sortField, sortDirection]);
 
   const paginatedReviews = filteredReviews.slice(
     (currentPage - 1) * pageSize,
@@ -581,7 +594,14 @@ export default function AdminReviewsPage() {
                 <select
                   className="form-select"
                   value={sortBy}
-                  onChange={e => setSortBy(e.target.value as any)}
+                  onChange={e => {
+                    const val = e.target.value as any;
+                    setSortBy(val);
+                    if (val === 'newest') { setSortField('date'); setSortDirection('desc'); }
+                    else if (val === 'oldest') { setSortField('date'); setSortDirection('asc'); }
+                    else if (val === 'highest') { setSortField('rating'); setSortDirection('desc'); }
+                    else if (val === 'lowest') { setSortField('rating'); setSortDirection('asc'); }
+                  }}
                 >
                   <option value="newest">Newest Date First</option>
                   <option value="oldest">Oldest Date First</option>
@@ -649,11 +669,11 @@ export default function AdminReviewsPage() {
                 <table className="table table-hover align-middle mb-0">
                   <thead className="table-light extra-small text-uppercase">
                     <tr>
-                      <th style={{ width: '18%' }}>Farmer &amp; Location</th>
-                      <th style={{ width: '14%' }}>Rating &amp; Status</th>
-                      <th style={{ width: '14%' }}>Batch &amp; Saplings</th>
-                      <th style={{ width: '38%' }}>Farmer Review Comment</th>
-                      <th style={{ width: '10%' }}>Date</th>
+                      <SortableTh field="customerName" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} style={{ width: '18%' }}>Farmer &amp; Location</SortableTh>
+                      <SortableTh field="rating" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} style={{ width: '14%' }}>Rating &amp; Status</SortableTh>
+                      <SortableTh field="batchCode" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} style={{ width: '14%' }}>Batch &amp; Saplings</SortableTh>
+                      <SortableTh field="comment" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} style={{ width: '38%' }}>Farmer Review Comment</SortableTh>
+                      <SortableTh field="date" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} style={{ width: '10%' }}>Date</SortableTh>
                       <th style={{ width: '6%' }} className="text-end">Actions</th>
                     </tr>
                   </thead>

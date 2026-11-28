@@ -1,11 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import AdminNav from '@/components/AdminNav';
 import AdminLogoutButton from '@/components/AdminLogoutButton';
 import AdminPagination from '@/components/AdminPagination';
 import { extractYouTubeVideoId } from '@/lib/types';
+import { sortData, SortDirection } from '@/lib/sortUtils';
+import SortableTh from '@/components/SortableTh';
 
 interface YouTubeVideoItem {
   id: string;
@@ -193,11 +195,30 @@ export default function AdminYouTubePage() {
     }
   };
 
+  // Sorting
+  const [sortField, setSortField] = useState<string>('order');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      setSortDirection(prev => (prev === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
   const filteredVideos = videos.filter(v =>
     !search ||
     v.title.toLowerCase().includes(search.toLowerCase()) ||
     v.url.toLowerCase().includes(search.toLowerCase())
   );
+
+  const sortedVideos = useMemo(() => {
+    return sortData(filteredVideos, sortField, sortDirection, {
+      isVisible: (v) => (v.isVisible ? 1 : 0),
+    });
+  }, [filteredVideos, sortField, sortDirection]);
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -207,7 +228,7 @@ export default function AdminYouTubePage() {
     setCurrentPage(1);
   }, [search]);
 
-  const paginatedVideos = filteredVideos.slice(
+  const paginatedVideos = sortedVideos.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
@@ -336,10 +357,10 @@ export default function AdminYouTubePage() {
                 <thead className="table-dark">
                   <tr>
                     <th style={{ width: '80px' }}>Thumbnail</th>
-                    <th>Video Title</th>
-                    <th>Video ID / URL</th>
-                    <th className="text-center" style={{ width: '90px' }}>Order</th>
-                    <th className="text-center" style={{ width: '130px' }}>Homepage Visibility</th>
+                    <SortableTh field="title" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort}>Video Title</SortableTh>
+                    <SortableTh field="url" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort}>Video ID / URL</SortableTh>
+                    <SortableTh field="order" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center" style={{ width: '90px' }}>Order</SortableTh>
+                    <SortableTh field="isVisible" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center" style={{ width: '130px' }}>Homepage Visibility</SortableTh>
                     <th className="text-end" style={{ width: '140px' }}>Actions</th>
                   </tr>
                 </thead>

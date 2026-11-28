@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import AdminNav from '@/components/AdminNav';
 import AdminLogoutButton from '@/components/AdminLogoutButton';
@@ -8,6 +8,8 @@ import { getSaplingMetrics } from '@/lib/metrics';
 import ImageCarousel from '@/components/ImageCarousel';
 import { toShortFarmCode } from '@/lib/types';
 import AdminPagination from '@/components/AdminPagination';
+import SortableTh from '@/components/SortableTh';
+import { sortData, SortDirection } from '@/lib/sortUtils';
 
 interface SourceItem {
   farmId: string;
@@ -485,15 +487,55 @@ export default function AdminBatchesPage() {
     return matchSearch && matchFarm && matchVis;
   });
 
+  // Sorting State for Batches
+  const [sortField, setSortField] = useState<string>('batchCode');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const sortedBatches = useMemo(() => {
+    return sortData(filteredBatches, sortField, sortDirection, {
+      parentPalmCodes: (b) => (b.parentPalmCodes?.length || 0),
+      age: (b) => {
+        const metrics = getSaplingMetrics(b.seededDate, b.age);
+        return metrics.monthsCount;
+      }
+    });
+  }, [filteredBatches, sortField, sortDirection]);
+
+  // Sorting State for Contributing Sources
+  const [sourceSortField, setSourceSortField] = useState<string>('motherTreeCode');
+  const [sourceSortDirection, setSourceSortDirection] = useState<SortDirection>('asc');
+
+  const handleSourceSort = (field: string) => {
+    if (sourceSortField === field) {
+      setSourceSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSourceSortField(field);
+      setSourceSortDirection('asc');
+    }
+  };
+
+  const sortedSourcesList = useMemo(() => {
+    return sortData(sourcesList, sourceSortField, sourceSortDirection);
+  }, [sourcesList, sourceSortField, sourceSortDirection]);
+
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [search, farmFilter, visibilityFilter]);
+  }, [search, farmFilter, visibilityFilter, sortField, sortDirection]);
 
-  const paginatedBatches = filteredBatches.slice(
+  const paginatedBatches = sortedBatches.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
@@ -864,17 +906,17 @@ export default function AdminBatchesPage() {
                       <table className="table table-sm table-bordered align-middle mb-0">
                         <thead className="table-light">
                           <tr>
-                            <th>Contributing Farm ID</th>
-                            <th>Farm Name</th>
-                            <th>Mother Tree ID</th>
-                            <th className="text-center">Coconut Qty</th>
-                            <th>Collection Date</th>
-                            <th className="text-center">Status</th>
+                            <SortableTh label="Contributing Farm ID" field="farmCode" currentSort={sourceSortField} currentDirection={sourceSortDirection} onSort={handleSourceSort} />
+                            <SortableTh label="Farm Name" field="farmName" currentSort={sourceSortField} currentDirection={sourceSortDirection} onSort={handleSourceSort} />
+                            <SortableTh label="Mother Tree ID" field="motherTreeCode" currentSort={sourceSortField} currentDirection={sourceSortDirection} onSort={handleSourceSort} />
+                            <SortableTh label="Coconut Qty" field="coconutQuantity" currentSort={sourceSortField} currentDirection={sourceSortDirection} onSort={handleSourceSort} align="center" />
+                            <SortableTh label="Collection Date" field="collectionDate" currentSort={sourceSortField} currentDirection={sourceSortDirection} onSort={handleSourceSort} />
+                            <SortableTh label="Status" field="collectionStatus" currentSort={sourceSortField} currentDirection={sourceSortDirection} onSort={handleSourceSort} align="center" />
                             <th className="text-end">Remove</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {sourcesList.map(s => (
+                          {sortedSourcesList.map(s => (
                             <tr key={s.motherTreeCode}>
                               <td><span className="badge bg-light text-dark border font-monospace">{s.farmCode}</span></td>
                               <td>{s.farmName}</td>
@@ -987,19 +1029,19 @@ export default function AdminBatchesPage() {
                 <thead className="table-dark">
                   <tr>
                     <th>Photo</th>
-                    <th>Batch ID</th>
-                    <th>Customer Display Name</th>
-                    <th>Age &amp; Height</th>
-                    <th>Primary Farm</th>
-                    <th className="text-center">Sources / Trees</th>
-                    <th>Harvest / Sown</th>
-                    <th className="text-center">Total Qty</th>
-                    <th className="text-center">Available</th>
-                    <th className="text-center">Booked</th>
-                    <th className="text-center">Farmer Views</th>
-                    <th>Price</th>
-                    <th className="text-center">Status</th>
-                    <th className="text-center">Customer Visibility</th>
+                    <SortableTh label="Batch ID" field="batchCode" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} />
+                    <SortableTh label="Customer Display Name" field="name" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} />
+                    <SortableTh label="Age & Height" field="age" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} />
+                    <SortableTh label="Primary Farm" field="primaryFarmCode" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} />
+                    <SortableTh label="Sources / Trees" field="parentPalmCodes" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center" />
+                    <SortableTh label="Harvest / Sown" field="seededDate" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} />
+                    <SortableTh label="Total Qty" field="totalQuantity" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center" />
+                    <SortableTh label="Available" field="availableQuantity" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center" />
+                    <SortableTh label="Booked" field="bookedQuantity" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center" />
+                    <SortableTh label="Farmer Views" field="viewsCount" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center" />
+                    <SortableTh label="Price" field="price" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} />
+                    <SortableTh label="Status" field="status" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center" />
+                    <SortableTh label="Customer Visibility" field="isVisible" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center" />
                     <th className="text-end">Actions</th>
                   </tr>
                 </thead>

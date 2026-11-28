@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import AdminPagination from '@/components/AdminPagination';
+import { sortData, SortDirection } from '@/lib/sortUtils';
+import SortableTh from '@/components/SortableTh';
 
 export default function AdminInventoryAdjustmentPage() {
   const [batches, setBatches] = useState<any[]>([]);
@@ -14,6 +16,39 @@ export default function AdminInventoryAdjustmentPage() {
   const [batchPageSize, setBatchPageSize] = useState(10);
   const [logPage, setLogPage] = useState(1);
   const [logPageSize, setLogPageSize] = useState(10);
+
+  // Sorting States
+  const [batchSortField, setBatchSortField] = useState<string>('batchCode');
+  const [batchSortDirection, setBatchSortDirection] = useState<SortDirection>('asc');
+
+  const handleBatchSort = (field: string) => {
+    if (batchSortField === field) {
+      setBatchSortDirection(prev => (prev === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setBatchSortField(field);
+      setBatchSortDirection('asc');
+    }
+  };
+
+  const [logSortField, setLogSortField] = useState<string>('createdAt');
+  const [logSortDirection, setLogSortDirection] = useState<SortDirection>('desc');
+
+  const handleLogSort = (field: string) => {
+    if (logSortField === field) {
+      setLogSortDirection(prev => (prev === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setLogSortField(field);
+      setLogSortDirection('asc');
+    }
+  };
+
+  const sortedBatches = useMemo(() => {
+    return sortData(batches, batchSortField, batchSortDirection);
+  }, [batches, batchSortField, batchSortDirection]);
+
+  const sortedAdjustments = useMemo(() => {
+    return sortData(adjustments, logSortField, logSortDirection);
+  }, [adjustments, logSortField, logSortDirection]);
 
   const [selectedBatch, setSelectedBatch] = useState('EM-0926-A');
   const [change, setChange] = useState<number>(-10);
@@ -178,15 +213,15 @@ export default function AdminInventoryAdjustmentPage() {
               <table className="table table-bordered align-middle">
                 <thead className="table-dark">
                   <tr>
-                    <th>Batch Code</th>
-                    <th>Total Produced</th>
-                    <th>Booked / Sold</th>
-                    <th>Adjustments Logged</th>
-                    <th>Current Available Stock</th>
+                    <SortableTh field="batchCode" currentSort={batchSortField} currentDirection={batchSortDirection} onSort={handleBatchSort}>Batch Code</SortableTh>
+                    <SortableTh field="totalQuantity" currentSort={batchSortField} currentDirection={batchSortDirection} onSort={handleBatchSort}>Total Produced</SortableTh>
+                    <SortableTh field="bookedQuantity" currentSort={batchSortField} currentDirection={batchSortDirection} onSort={handleBatchSort}>Booked / Sold</SortableTh>
+                    <SortableTh field="inventoryAdjustments" currentSort={batchSortField} currentDirection={batchSortDirection} onSort={handleBatchSort}>Adjustments Logged</SortableTh>
+                    <SortableTh field="availableQuantity" currentSort={batchSortField} currentDirection={batchSortDirection} onSort={handleBatchSort}>Current Available Stock</SortableTh>
                   </tr>
                 </thead>
                 <tbody>
-                  {batches.slice((batchPage - 1) * batchPageSize, batchPage * batchPageSize).map(b => (
+                  {sortedBatches.slice((batchPage - 1) * batchPageSize, batchPage * batchPageSize).map(b => (
                     <tr key={b.batchCode}>
                       <td><strong className="text-success">{b.batchCode}</strong></td>
                       <td>{b.totalQuantity}</td>
@@ -224,15 +259,15 @@ export default function AdminInventoryAdjustmentPage() {
               <table className="table table-hover align-middle">
                 <thead className="table-dark">
                   <tr>
-                    <th>Date & Time</th>
-                    <th>Batch</th>
-                    <th>Admin</th>
-                    <th>Quantity Change</th>
-                    <th>Audit Reason</th>
+                    <SortableTh field="createdAt" currentSort={logSortField} currentDirection={logSortDirection} onSort={handleLogSort}>Date &amp; Time</SortableTh>
+                    <SortableTh field="batchCode" currentSort={logSortField} currentDirection={logSortDirection} onSort={handleLogSort}>Batch</SortableTh>
+                    <SortableTh field="adminName" currentSort={logSortField} currentDirection={logSortDirection} onSort={handleLogSort}>Admin</SortableTh>
+                    <SortableTh field="quantityChange" currentSort={logSortField} currentDirection={logSortDirection} onSort={handleLogSort}>Quantity Change</SortableTh>
+                    <SortableTh field="reason" currentSort={logSortField} currentDirection={logSortDirection} onSort={handleLogSort}>Audit Reason</SortableTh>
                   </tr>
                 </thead>
                 <tbody>
-                  {adjustments.slice((logPage - 1) * logPageSize, logPage * logPageSize).map(log => (
+                  {sortedAdjustments.slice((logPage - 1) * logPageSize, logPage * logPageSize).map(log => (
                     <tr key={log.id}>
                       <td className="small text-muted">{new Date(log.createdAt).toLocaleString()}</td>
                       <td><strong className="text-success">{log.batchCode}</strong></td>

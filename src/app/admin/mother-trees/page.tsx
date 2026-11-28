@@ -1,12 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import AdminNav from '@/components/AdminNav';
 import AdminLogoutButton from '@/components/AdminLogoutButton';
 import ImageCarousel from '@/components/ImageCarousel';
 import { formatApproximateAge, extractYouTubeVideoId } from '@/lib/types';
 import AdminPagination from '@/components/AdminPagination';
+import { sortData, SortDirection } from '@/lib/sortUtils';
+import SortableTh from '@/components/SortableTh';
 
 export default function AdminMotherTreesPage() {
   const [palms, setPalms] = useState<any[]>([]);
@@ -372,6 +374,19 @@ export default function AdminMotherTreesPage() {
     return matchSearch && matchFarm && matchSelection && matchVerification && matchVis;
   });
 
+  // Sorting
+  const [sortField, setSortField] = useState<string>('motherTreeCode');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      setSortDirection(prev => (prev === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -380,7 +395,23 @@ export default function AdminMotherTreesPage() {
     setCurrentPage(1);
   }, [search, farmFilter, selectionFilter, verificationFilter, visibilityFilter]);
 
-  const paginatedPalms = filteredPalms.slice(
+  const sortedPalms = useMemo(() => {
+    return sortData(filteredPalms, sortField, sortDirection, {
+      motherTreeCode: (item) => item.motherTreeCode || item.code || '',
+      farmCode: (item) => item.farmCode || 'ETH-RA-F001',
+      name: (item) => item.name || '',
+      variety: (item) => item.variety || '',
+      age: (item) => item.age || '',
+      treeCount: (item) => Math.max(1, Number(item.treeCount) || 1),
+      selectionStatus: (item) => item.selectionStatus || '',
+      batchesUsedCount: (item) => item.batchesUsedCount || 0,
+      totalCoconutsCollected: (item) => item.totalCoconutsCollected || 0,
+      totalSeedlingsProduced: (item) => item.totalSeedlingsProduced || 0,
+      isVisible: (item) => (item.isVisible !== false ? 1 : 0),
+    });
+  }, [filteredPalms, sortField, sortDirection]);
+
+  const paginatedPalms = sortedPalms.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
@@ -536,17 +567,17 @@ export default function AdminMotherTreesPage() {
                       />
                     </th>
                     <th>Photo</th>
-                    <th>Mother Tree ID</th>
-                    <th>Farm ID</th>
-                    <th>Tree / Grove Name</th>
-                    <th>Variety</th>
-                    <th className="text-center">Age Group</th>
-                    <th className="text-center">Tree Count</th>
-                    <th className="text-center">Selection Status</th>
-                    <th className="text-center">Batches Used</th>
-                    <th className="text-center">Coconuts Collected</th>
-                    <th className="text-center">Seedlings Produced</th>
-                    <th className="text-center">Customer Visibility</th>
+                    <SortableTh field="motherTreeCode" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort}>Mother Tree ID</SortableTh>
+                    <SortableTh field="farmCode" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort}>Farm ID</SortableTh>
+                    <SortableTh field="name" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort}>Tree / Grove Name</SortableTh>
+                    <SortableTh field="variety" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort}>Variety</SortableTh>
+                    <SortableTh field="age" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center">Age Group</SortableTh>
+                    <SortableTh field="treeCount" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center">Tree Count</SortableTh>
+                    <SortableTh field="selectionStatus" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center">Selection Status</SortableTh>
+                    <SortableTh field="batchesUsedCount" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center">Batches Used</SortableTh>
+                    <SortableTh field="totalCoconutsCollected" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center">Coconuts Collected</SortableTh>
+                    <SortableTh field="totalSeedlingsProduced" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center">Seedlings Produced</SortableTh>
+                    <SortableTh field="isVisible" currentSort={sortField} currentDirection={sortDirection} onSort={handleSort} align="center">Customer Visibility</SortableTh>
                     <th className="text-end">Actions</th>
                   </tr>
                 </thead>
